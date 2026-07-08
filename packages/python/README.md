@@ -49,6 +49,23 @@ display_chromamark("::: success\nRun complete [=success 100%]\n:::")
 
 `ChromaDoc` also renders itself in notebooks via `_repr_html_`.
 
+## Parity with the JavaScript renderer
+
+`chromamark` produces byte-identical HTML to `@chromamark/renderer` for normal
+content — verified by a differential harness over ~140,000 inputs (every
+ChromaMark construct, GFM, linkify, and the full SPEC/demo documents all match
+exactly). Three **exotic** edge cases differ, all involving unusual whitespace or
+non-BMP characters; none affect typical agent-generated reports:
+
+- **Non-ASCII whitespace at a block edge** (e.g. a leading U+3000 ideographic
+  space): JS markdown-it preserves it (`asciiTrim`); markdown-it-py strips all
+  Unicode whitespace. Upstream base-engine difference.
+- **Six control/format code points inside ChromaMark constructs**
+  (U+001C–U+001F, U+0085 NEL, U+FEFF BOM): counted as whitespace by one engine's
+  regex/`strip` but not the other, which can flip pill/field parsing.
+- **Astral-plane (emoji) domain labels** in bare links (e.g. `🎉.com`): auto-linked
+  by JS linkify-it but not linkify-it-py. BMP and IDN letter hosts match.
+
 ## License
 
 Modified MIT License with a SaaS source-availability provision — see LICENSE.md.
