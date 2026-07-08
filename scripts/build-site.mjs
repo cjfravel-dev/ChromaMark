@@ -27,23 +27,28 @@ const playground = readFileSync(join(root, 'docs/playground/index.html'), 'utf8'
 writeFileSync(join(out, 'playground/index.html'), playground);
 
 // 2) Rendered documents via the CLI compiler.
+const FAVICON = '<link rel="icon" type="image/png" href="assets/favicon.png">';
 const docs = [
   { src: 'SPEC.md', out: 'spec.html', title: 'ChromaMark Specification' },
   { src: 'examples/demo.cm', out: 'gallery.html', title: 'ChromaMark — feature gallery' },
 ];
 for (const d of docs) {
-  writeFileSync(join(out, d.out), compile(readFileSync(join(root, d.src), 'utf8'), { title: d.title }));
+  const html = compile(readFileSync(join(root, d.src), 'utf8'), { title: d.title })
+    .replace('</title>', `</title>\n${FAVICON}`);
+  writeFileSync(join(out, d.out), html);
 }
 
-// 3) Logo + landing page.
+// 3) Logo, favicon + landing page.
 try {
   copyFileSync(join(root, 'docs/assets/chromamark-black.png'), join(out, 'assets/logo.png'));
 } catch {}
+copyFileSync(join(root, 'docs/assets/chromamark-icon.png'), join(out, 'assets/favicon.png'));
 
 const landing = `<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ChromaMark</title>
+<link rel="icon" type="image/png" href="assets/favicon.png">
 <style>
   body { max-width: 760px; margin: 0 auto; padding: 48px 20px; text-align: center; line-height: 1.6;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; color: #1f2328; }
