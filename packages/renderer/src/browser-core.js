@@ -36,18 +36,29 @@ export function injectTheme(doc) {
   (d.head || d.documentElement).appendChild(style);
 }
 
-/** Strip shared leading indentation so source can be indented inside HTML. */
+/** Strip shared leading indentation so source can be indented inside HTML.
+ * Only the common leading-whitespace prefix is removed; tabs that appear in
+ * content (e.g. inside a code span) are preserved. */
 function dedent(text) {
-  const lines = text.replace(/\t/g, '  ').replace(/\r/g, '').split('\n');
+  const lines = text.replace(/\r/g, '').split('\n');
   while (lines.length && lines[0].trim() === '') lines.shift();
   while (lines.length && lines[lines.length - 1].trim() === '') lines.pop();
-  let min = Infinity;
+  let prefix = null;
   for (const line of lines) {
     if (!line.trim()) continue;
-    min = Math.min(min, line.match(/^ */)[0].length);
+    const lead = line.match(/^[ \t]*/)[0];
+    if (prefix === null) {
+      prefix = lead;
+      continue;
+    }
+    let i = 0;
+    const lim = Math.min(prefix.length, lead.length);
+    while (i < lim && prefix[i] === lead[i]) i++;
+    prefix = prefix.slice(0, i);
+    if (prefix === '') break;
   }
-  if (!Number.isFinite(min)) min = 0;
-  return lines.map((line) => line.slice(min)).join('\n');
+  const cut = prefix ? prefix.length : 0;
+  return lines.map((line) => line.slice(cut)).join('\n');
 }
 
 function resolve(target) {

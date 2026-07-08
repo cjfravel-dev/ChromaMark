@@ -52,6 +52,20 @@ test('renderElement dedents indented source', () => {
   assert.doesNotMatch(out.innerHTML, /<pre>/);
 });
 
+test('renderElement preserves tabs inside content (only strips leading indent)', () => {
+  setup('<script type="text/chromamark" id="s">`a\tb`</script>');
+  const out = renderElement('#s');
+  assert.ok(out.innerHTML.includes('<code>a\tb</code>'), 'content tab is preserved, not turned into spaces');
+});
+
+test('renderElement dedents leading indentation while preserving inner tabs', () => {
+  setup('<div class="chromamark" id="d">\n    ::: success\n    `x\ty`\n    :::\n  </div>');
+  const out = renderElement('#d');
+  assert.match(out.innerHTML, /class="cm-block" data-tone="success"/);
+  assert.doesNotMatch(out.innerHTML, /<pre>/);
+  assert.ok(out.innerHTML.includes('<code>x\ty</code>'), 'inner tab survives dedent of the leading indent');
+});
+
 test('renderAll renders all default targets and is idempotent', () => {
   setup(
     '<div class="chromamark">::: info\na\n:::</div>' +
