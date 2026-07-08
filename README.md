@@ -75,6 +75,14 @@ Prefer to drive it yourself? Skip `data-chromamark-auto` and call the hook:
 Auto-render targets any `<script type="text/chromamark">`, `.chromamark`, or
 `[data-chromamark]` element on the page.
 
+Keep the page lean by loading the ChromaMark from an external file — like an
+external script or stylesheet — with `data-chromamark-src`:
+
+```html
+<div data-chromamark-src="report.cm"></div>
+<script src=".../chromamark.min.js" data-chromamark-auto></script>
+```
+
 ## Quick start (Node / bundler)
 
 ```bash
