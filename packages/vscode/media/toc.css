@@ -1,0 +1,119 @@
+/*
+ * Styles for the ChromaMark preview outline (media/toc.js). Colors follow the
+ * active VS Code theme via --vscode-* variables exposed in the preview webview.
+ */
+
+body.cm-has-toc {
+  padding-left: 256px;
+  transition: padding-left 0.15s ease;
+}
+body.cm-has-toc.cm-toc-collapsed {
+  padding-left: 0;
+}
+
+#cm-toc {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 240px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 6px 0 20px;
+  z-index: 20;
+  font-size: 13px;
+  line-height: 1.4;
+  background: var(--vscode-sideBar-background, var(--vscode-editorWidget-background, rgba(128, 128, 128, 0.06)));
+  border-right: 1px solid var(--vscode-sideBar-border, var(--vscode-panel-border, rgba(128, 128, 128, 0.35)));
+  transition: transform 0.15s ease;
+}
+body.cm-toc-collapsed #cm-toc {
+  transform: translateX(-100%);
+}
+
+.cm-toc-head {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 12px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  background: inherit;
+}
+.cm-toc-toggle,
+#cm-toc-show {
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: 15px;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.cm-toc-toggle:hover,
+#cm-toc-show:hover {
+  background: var(--vscode-toolbar-hoverBackground, rgba(128, 128, 128, 0.2));
+}
+
+.cm-toc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.cm-toc-item {
+  margin: 0;
+}
+.cm-toc-link {
+  display: block;
+  padding: 3px 12px;
+  color: var(--vscode-foreground, #333);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cm-toc-link:hover {
+  background: var(--vscode-list-hoverBackground, rgba(128, 128, 128, 0.12));
+}
+.cm-toc-link.cm-active {
+  border-left-color: var(--vscode-focusBorder, #0a84ff);
+  color: var(--vscode-textLink-foreground, #0a84ff);
+  background: var(--vscode-list-inactiveSelectionBackground, rgba(10, 132, 255, 0.12));
+}
+
+.cm-toc-l0 > .cm-toc-link { padding-left: 12px; font-weight: 600; }
+.cm-toc-l1 > .cm-toc-link { padding-left: 26px; }
+.cm-toc-l2 > .cm-toc-link { padding-left: 40px; opacity: 0.92; }
+.cm-toc-l3 > .cm-toc-link { padding-left: 54px; opacity: 0.85; }
+.cm-toc-l4 > .cm-toc-link { padding-left: 68px; opacity: 0.8; }
+.cm-toc-l5 > .cm-toc-link { padding-left: 82px; opacity: 0.75; }
+
+#cm-toc-show {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 21;
+  display: none;
+  padding: 4px 8px;
+  background: var(--vscode-sideBar-background, var(--vscode-editorWidget-background, #f3f3f3));
+  border: 1px solid var(--vscode-panel-border, rgba(128, 128, 128, 0.35));
+}
+body.cm-toc-collapsed #cm-toc-show {
+  display: block;
+}
+
+@media (max-width: 720px) {
+  body.cm-has-toc { padding-left: 0; }
+  #cm-toc { transform: translateX(-100%); }
+  #cm-toc-show { display: block; }
+  body.cm-has-toc:not(.cm-toc-collapsed) #cm-toc { transform: none; }
+}

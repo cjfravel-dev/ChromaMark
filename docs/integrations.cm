@@ -1,0 +1,54 @@
+# ChromaMark — ecosystem
+
+::: info What this is
+Where ChromaMark plugs in today, and where it could go next. Written in ChromaMark
+(dogfooding the format) — open it in the VS Code preview or the playground.
+:::
+
+## Current state
+
+::: success Available now
+- **npm** — `@chromamark/renderer` (a markdown-it plugin plus a browser/CDN bundle) and `@chromamark/cli` (`.cm` → one self-contained HTML file, theme inlined, no CDN).
+- **PyPI** — `chromamark`: a markdown-it-py renderer with byte-identical HTML, a fluent `ChromaDoc` builder, and Jupyter `display_chromamark`.
+- **VS Code** — live preview, syntax highlighting, and a left-side outline for `.cm` files.
+- **Playground** — a split-pane live editor and preview, hosted on GitHub Pages.
+- **Docs site** — landing, spec, gallery, and playground on GitHub Pages.
+- **LLMs** — `docs/llms.txt`, a token-lean cheat sheet to drop into a system prompt.
+:::
+
+Every surface above is **full fidelity** — the real CSS theme renders and adapts to
+light/dark. Distribution is npm (`@chromamark/*`) and PyPI (`chromamark`).
+
+## Possible future state
+
+Ordered roughly by leverage. Not every surface can render the real theme, so some
+need a translation layer.
+
+| Idea | Effort | Approach |
+| ---- | ------ | -------- |
+| GitHub sanitized surfaces (README / PR / Actions) | [!warning Med] | transpile `.cm` → Alerts + badge images |
+| Code-fence highlighting in output | [!success Low] | wire the renderer's `highlight` hook to highlight.js / Prism |
+| Sublime grammar | [!success Low] | reuse the TextMate grammar; highlighting only |
+| Zed extension | [!warning Med] | tree-sitter grammar + a small Rust/WASM extension |
+| JetBrains plugin | [!danger High] | full IDE plugin with a JCEF webview preview |
+| Jekyll | [!warning Med] | JS-include on stock Pages, or CI prerender |
+| MCP resource | [!success Low] | expose the spec + quick reference; optional render tool |
+
+::: details info GitHub's two rendering tiers
+**Pages** is a plain static host — the full bundle works there today (that's the
+current docs site). But **README, PR/issue comments, and Actions summaries** run
+GitHub's sanitizer: no `<style>`, `class`/`id`, or `<script>`. The theme can't
+render, so those surfaces would need a transpile to GitHub-native equivalents:
+- colored blocks → **Alerts** (`[!NOTE]` / `[!WARNING]` / `[!TIP]` / `[!CAUTION]`)
+- pills and meters → **badge images** (shields.io or self-hosted SVG)
+- `::: details` → native `<details>`; `::: fields` → a table
+
+Degraded but styled. Open choice: shields.io (easy, external) vs. self-hosted SVG.
+:::
+
+::: details info Jekyll's safe-mode catch
+GitHub Pages builds Jekyll in safe mode, which disallows custom plugins — so a
+native Ruby `{% chromamark %}` tag only works if you build the site yourself in
+Actions. On stock Pages, either drop the JS bundle into the theme (client-side) or
+prerender with the CLI in CI.
+:::

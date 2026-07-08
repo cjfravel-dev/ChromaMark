@@ -1,0 +1,73 @@
+{
+  "name": "chromamark-vscode",
+  "displayName": "ChromaMark",
+  "description": "Syntax highlighting and live preview for ChromaMark — colored blocks, colored pills, collapsible sections, fields, meters and inline diff on top of Markdown.",
+  "version": "0.1.8",
+  "publisher": "chromamark",
+  "icon": "icon.png",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cjfravel-dev/ChromaMark.git",
+    "directory": "packages/vscode"
+  },
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Formatters"
+  ],
+  "keywords": [
+    "chromamark",
+    "markdown",
+    "callout",
+    "admonition",
+    "preview"
+  ],
+  "activationEvents": [
+    "onLanguage:markdown"
+  ],
+  "main": "./dist/extension.js",
+  "scripts": {
+    "build": "node build.mjs",
+    "vscode:prepublish": "node build.mjs",
+    "package": "vsce package --no-dependencies",
+    "test": "node --test"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "markdown",
+        "extensions": [
+          ".cm"
+        ]
+      }
+    ],
+    "grammars": [
+      {
+        "scopeName": "markup.chromamark.injection",
+        "path": "./syntaxes/chromamark.injection.tmLanguage.json",
+        "injectTo": [
+          "text.html.markdown"
+        ]
+      }
+    ],
+    "markdown.markdownItPlugins": true,
+    "markdown.previewStyles": [
+      "./media/chromamark.css",
+      "./media/toc.css"
+    ],
+    "markdown.previewScripts": [
+      "./media/toc.js"
+    ]
+  },
+  "dependencies": {
+    "@chromamark/renderer": "^0.1.0"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^3.2.2",
+    "esbuild": "^0.24.2",
+    "jsdom": "^29.1.1"
+  }
+}

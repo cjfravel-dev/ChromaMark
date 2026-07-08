@@ -1,0 +1,86 @@
+# ChromaMark — feature gallery
+
+This whole page was produced by `@chromamark/renderer` from a `.cm` source file.
+Use the **Toggle theme** button to see that tone colors are owned by the renderer.
+
+## Colored blocks
+
+::: success
+All 247 tests passed.
+:::
+
+::: warning Deprecation
+`recon.flights` is removed in v3. Use `query_parameters` instead.
+:::
+
+::: info Heads up
+Build cache was warm — timings are optimistic.
+:::
+
+::: danger Release blocked
+Coverage gate failed at 71% (threshold 80%).
+:::
+
+::: tip Suggestion
+Prefer semantic tones so output adapts to the reader's theme.
+:::
+
+::: block color=#6f42c1 Custom hue
+The `color=#hex` escape hatch, for when a semantic token won't do.
+:::
+
+## Pills, colored text and meters
+
+Build [!success PASS] · lint [!warn 12 issues] · deploy [!danger FAILED] ·
+coverage [!info 87%] · flaky [!muted SKIPPED] · tag [!color=#6f42c1 beta]
+
+The gate is [.success green] but the [.danger critical] path is [.warning slow].
+
+Coverage [=success 87%] · Budget [=warning 72%] · Disk [=danger 96%] · Tasks [=info 3/10]
+
+| Suite       | Result          | Time  |
+| ----------- | --------------- | ----- |
+| unit        | [!pass 247]     | 4.1s  |
+| integration | [!fail 3 of 88] | 61.0s |
+| e2e         | [!skip]         | —     |
+
+## Collapsible sections
+
+::: details Stack trace (42 frames)
+```
+at merge (recon.ts:88)
+at run (pipeline.ts:12)
+at main (index.ts:3)
+```
+:::
+
+::: details open warning 12 lint warnings
+- `src/foo.ts:10` no-unused-vars
+- `src/bar.ts:4` no-explicit-any
+:::
+
+## Inline diff (CriticMarkup)
+
+The field was {--flights--}{++query_parameters++} and is {==worth reviewing==}
+before merge. {>>reviewer: confirm casing<<}
+
+## Putting it together — a deploy report
+
+:::: success Deploy succeeded in 3m12s
+::: fields
+Region: eastus
+Replicas: 3/3 [!ok healthy]
+Coverage: [=success 87%]
+Commit: `25d7426`
+:::
+::::
+
+::: details danger Integration failures (3)
+```
+FAILED test_recon_merge_precedence — expected config to win
+FAILED test_query_parameters_map  — key casing mismatch
+FAILED test_seller_ids_removed    — legacy field still referenced
+```
+:::
+
+Overall: [!warn SHIP WITH CAUTION]

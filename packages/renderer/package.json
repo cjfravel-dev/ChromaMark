@@ -1,0 +1,60 @@
+{
+  "name": "@chromamark/renderer",
+  "version": "0.1.1",
+  "description": "ChromaMark renderer — a markdown-it plugin adding colored blocks, colored pills, collapsible sections, fields, meters and inline diff on top of CommonMark + GFM.",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "author": "cjfravel-dev",
+  "homepage": "https://github.com/cjfravel-dev/ChromaMark#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cjfravel-dev/ChromaMark.git",
+    "directory": "packages/renderer"
+  },
+  "bugs": {
+    "url": "https://github.com/cjfravel-dev/ChromaMark/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "type": "module",
+  "main": "./src/index.js",
+  "browser": "./dist/chromamark.esm.js",
+  "unpkg": "./dist/chromamark.min.js",
+  "jsdelivr": "./dist/chromamark.min.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./browser": "./dist/chromamark.esm.js",
+    "./global": "./dist/chromamark.min.js",
+    "./theme.css": "./theme/chromamark.css"
+  },
+  "files": [
+    "src/",
+    "theme/",
+    "dist/"
+  ],
+  "scripts": {
+    "test": "node --test",
+    "build": "node build.js",
+    "prepublishOnly": "node build.js"
+  },
+  "keywords": [
+    "chromamark",
+    "markdown",
+    "markdown-it",
+    "markdown-it-plugin",
+    "commonmark",
+    "gfm",
+    "admonition",
+    "callout"
+  ],
+  "dependencies": {
+    "markdown-it": "^14.1.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.2",
+    "jsdom": "^29.1.1"
+  }
+}

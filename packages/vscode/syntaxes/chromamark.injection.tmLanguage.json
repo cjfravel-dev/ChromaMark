@@ -1,0 +1,59 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "scopeName": "markup.chromamark.injection",
+  "injectionSelector": "L:text.html.markdown -markup.raw -comment",
+  "patterns": [
+    { "include": "#container-open" },
+    { "include": "#container-close" },
+    { "include": "#pill" },
+    { "include": "#critic" }
+  ],
+  "repository": {
+    "container-open": {
+      "match": "^\\s*(:{3,})[ \\t]+(details|fields|block|success|danger|warning|info|tip|muted|ok|pass|error|fail|warn|note|hint|skip)\\b([^\\n]*)$",
+      "captures": {
+        "1": { "name": "punctuation.definition.chromamark.fence" },
+        "2": { "name": "entity.name.tag.chromamark.kind" },
+        "3": { "name": "string.unquoted.chromamark.title" }
+      }
+    },
+    "container-close": {
+      "match": "^\\s*(:{3,})[ \\t]*$",
+      "captures": {
+        "1": { "name": "punctuation.definition.chromamark.fence" }
+      }
+    },
+    "pill": {
+      "match": "(\\[[!.=])([^\\]\\n]*?)(\\])",
+      "captures": {
+        "1": { "name": "punctuation.definition.chromamark.pill.begin" },
+        "2": { "name": "markup.bold.chromamark.pill" },
+        "3": { "name": "punctuation.definition.chromamark.pill.end" }
+      }
+    },
+    "critic": {
+      "patterns": [
+        {
+          "name": "markup.inserted.chromamark",
+          "match": "(\\{\\+\\+)([^]*?)(\\+\\+\\})"
+        },
+        {
+          "name": "markup.deleted.chromamark",
+          "match": "(\\{--)([^]*?)(--\\})"
+        },
+        {
+          "name": "markup.changed.chromamark",
+          "match": "(\\{~~)([^]*?)(~~\\})"
+        },
+        {
+          "name": "markup.highlight.chromamark",
+          "match": "(\\{==)([^]*?)(==\\})"
+        },
+        {
+          "name": "comment.block.chromamark",
+          "match": "(\\{>>)([^]*?)(<<\\})"
+        }
+      ]
+    }
+  }
+}

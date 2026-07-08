@@ -1,0 +1,47 @@
+{
+  "name": "@chromamark/cli",
+  "version": "0.1.1",
+  "description": "ChromaMark command-line compiler — turn .cm files into self-contained HTML (theme inlined, no CDN).",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "author": "cjfravel-dev",
+  "homepage": "https://github.com/cjfravel-dev/ChromaMark#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cjfravel-dev/ChromaMark.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/cjfravel-dev/ChromaMark/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "type": "module",
+  "bin": {
+    "chromamark": "./bin/chromamark.js"
+  },
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": [
+    "bin/",
+    "src/"
+  ],
+  "scripts": {
+    "test": "node --test"
+  },
+  "keywords": [
+    "chromamark",
+    "markdown",
+    "cli",
+    "static-site",
+    "html"
+  ],
+  "dependencies": {
+    "@chromamark/renderer": "^0.1.1"
+  }
+}

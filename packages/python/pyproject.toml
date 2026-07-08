@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chromamark"
+version = "0.1.1"
+description = "ChromaMark for Python — render and build colored blocks, pills, collapsibles, fields, meters and inline diff on top of Markdown, with Jupyter display."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE.md" }
+authors = [{ name = "cjfravel-dev" }]
+keywords = ["chromamark", "markdown", "markdown-it", "jupyter", "report", "agent"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Topic :: Text Processing :: Markup :: Markdown",
+  "Framework :: Jupyter",
+]
+dependencies = ["markdown-it-py[linkify]>=3.0"]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[project.urls]
+Homepage = "https://github.com/cjfravel-dev/ChromaMark"
+Source = "https://github.com/cjfravel-dev/ChromaMark"
+Issues = "https://github.com/cjfravel-dev/ChromaMark/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+chromamark = ["theme.css"]
