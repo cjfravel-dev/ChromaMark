@@ -104,14 +104,37 @@ ChromaMark is designed to be emitted by AI agents as plain text. Drop
 syntax in a few hundred tokens. One gotcha worth repeating: **don't wrap pills in
 backticks** — `` `[!pass]` `` renders as literal code, not a pill.
 
+## Command line
+
+Compile `.cm` files to **self-contained HTML** (theme inlined, no CDN) with
+[`@chromamark/cli`](./packages/cli):
+
+```bash
+npx @chromamark/cli build report.cm        # → report.html
+npx @chromamark/cli build docs/ -o site/   # a whole tree
+```
+
+## Python & Jupyter
+
+The [`chromamark`](./packages/python) Python package renders ChromaMark to the
+same HTML and displays it inline in notebooks:
+
+```python
+from chromamark import display_chromamark, ChromaDoc
+display_chromamark("::: success\nRun complete [=success 100%]\n:::")
+```
+
 ## Repository layout
 
 ```
 ChromaMark/
 ├── SPEC.md                     the specification (written in ChromaMark)
+├── docs/                       llms.txt, integrations roadmap, logo assets
 ├── examples/                   demo.cm + generated client-side pages
 ├── packages/
 │   ├── renderer/               @chromamark/renderer — parser, theme, browser bundle
+│   ├── cli/                    @chromamark/cli — .cm → self-contained HTML
+│   ├── python/                 chromamark (pip) — renderer, builder, Jupyter
 │   └── vscode/                 chromamark-vscode — preview + highlighting
 └── scripts/build-examples.mjs  regenerates the example pages
 ```
