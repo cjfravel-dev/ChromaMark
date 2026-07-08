@@ -2,7 +2,7 @@
   "name": "chromamark-vscode",
   "displayName": "ChromaMark",
   "description": "Syntax highlighting and live preview for ChromaMark — colored blocks, colored pills, collapsible sections, fields, meters and inline diff on top of Markdown.",
-  "version": "0.2.0",
+  "version": "0.1.9",
   "publisher": "chromamark",
   "icon": "icon.png",
   "license": "SEE LICENSE IN LICENSE.md",
@@ -63,7 +63,7 @@
     ]
   },
   "dependencies": {
-    "@chromamark/renderer": "^0.3.0"
+    "@chromamark/renderer": "^0.2.1"
   },
   "devDependencies": {
     "@vscode/vsce": "^3.2.2",
