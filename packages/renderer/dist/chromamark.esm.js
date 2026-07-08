@@ -4,6 +4,122 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
+// theme/chromamark.css
+var chromamark_default = `/*
+ * ChromaMark theme \u2014 maps semantic tones to real colors and styles every
+ * rendered construct. Tones are theme-owned: switch light/dark and colors
+ * follow. Load alongside HTML produced by @chromamark/renderer.
+ *
+ * Theme resolution order: explicit [data-theme] wins; otherwise the reader's
+ * prefers-color-scheme is honored.
+ */
+
+:root {
+  --cm-success-fg:#1a7f37; --cm-success-bg:#dafbe1; --cm-success-bd:#2da44e;
+  --cm-danger-fg:#cf222e;  --cm-danger-bg:#ffebe9;  --cm-danger-bd:#ff8182;
+  --cm-warning-fg:#9a6700; --cm-warning-bg:#fff8c5; --cm-warning-bd:#d4a72c;
+  --cm-info-fg:#0969da;    --cm-info-bg:#ddf4ff;    --cm-info-bd:#54aeff;
+  --cm-tip-fg:#0f7b6c;     --cm-tip-bg:#d3f5f0;     --cm-tip-bd:#3bc4b0;
+  --cm-muted-fg:#656d76;   --cm-muted-bg:#f6f8fa;   --cm-muted-bd:#d0d7de;
+  --cm-neutral-bg:#f6f8fa; --cm-neutral-bd:#d0d7de;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --cm-success-fg:#3fb950; --cm-success-bg:#12261e; --cm-success-bd:#238636;
+    --cm-danger-fg:#f85149;  --cm-danger-bg:#25171c;  --cm-danger-bd:#da3633;
+    --cm-warning-fg:#d29922; --cm-warning-bg:#272115; --cm-warning-bd:#9e6a03;
+    --cm-info-fg:#58a6ff;    --cm-info-bg:#0d2233;    --cm-info-bd:#1f6feb;
+    --cm-tip-fg:#56d4c3;     --cm-tip-bg:#0c2620;     --cm-tip-bd:#1c6f63;
+    --cm-muted-fg:#8b949e;   --cm-muted-bg:#161b22;   --cm-muted-bd:#30363d;
+    --cm-neutral-bg:#161b22; --cm-neutral-bd:#30363d;
+  }
+}
+
+[data-theme="dark"] {
+  --cm-success-fg:#3fb950; --cm-success-bg:#12261e; --cm-success-bd:#238636;
+  --cm-danger-fg:#f85149;  --cm-danger-bg:#25171c;  --cm-danger-bd:#da3633;
+  --cm-warning-fg:#d29922; --cm-warning-bg:#272115; --cm-warning-bd:#9e6a03;
+  --cm-info-fg:#58a6ff;    --cm-info-bg:#0d2233;    --cm-info-bd:#1f6feb;
+  --cm-tip-fg:#56d4c3;     --cm-tip-bg:#0c2620;     --cm-tip-bd:#1c6f63;
+  --cm-muted-fg:#8b949e;   --cm-muted-bg:#161b22;   --cm-muted-bd:#30363d;
+  --cm-neutral-bg:#161b22; --cm-neutral-bd:#30363d;
+}
+
+/* Map a tone onto the generic --fg/--bg/--bd consumed by every component. */
+[data-tone="success"]{--fg:var(--cm-success-fg);--bg:var(--cm-success-bg);--bd:var(--cm-success-bd);}
+[data-tone="danger"] {--fg:var(--cm-danger-fg); --bg:var(--cm-danger-bg); --bd:var(--cm-danger-bd);}
+[data-tone="warning"]{--fg:var(--cm-warning-fg);--bg:var(--cm-warning-bg);--bd:var(--cm-warning-bd);}
+[data-tone="info"]   {--fg:var(--cm-info-fg);   --bg:var(--cm-info-bg);   --bd:var(--cm-info-bd);}
+[data-tone="tip"]    {--fg:var(--cm-tip-fg);    --bg:var(--cm-tip-bg);    --bd:var(--cm-tip-bd);}
+[data-tone="muted"]  {--fg:var(--cm-muted-fg);  --bg:var(--cm-muted-bg);  --bd:var(--cm-muted-bd);}
+
+/* Custom color (color=\u2026): derive a tinted bg/border from the chosen --fg. */
+.cm-custom {
+  --bg:color-mix(in srgb, var(--fg) 12%, transparent);
+  --bd:color-mix(in srgb, var(--fg) 45%, transparent);
+}
+
+/* ---- Colored block / callout ---- */
+.cm-block {
+  border:1px solid var(--bd, var(--cm-neutral-bd)); border-left-width:4px;
+  background:var(--bg, var(--cm-neutral-bg));
+  border-radius:8px; padding:10px 14px; margin:12px 0;
+}
+.cm-block > .cm-title { font-weight:700; color:var(--fg, inherit); }
+.cm-block > .cm-body > :first-child { margin-top:0; }
+.cm-block > .cm-body > :last-child { margin-bottom:0; }
+
+/* ---- Pill / badge ---- */
+.cm-pill {
+  display:inline-block; color:var(--fg); background:var(--bg); border:1px solid var(--bd);
+  border-radius:999px; padding:0 .55em; font-size:.82em; font-weight:600; line-height:1.7;
+  white-space:nowrap;
+}
+
+/* ---- Inline colored text (tint, no fill) ---- */
+.cm-text { color:var(--fg); font-weight:600; }
+
+/* ---- Progress meter ---- */
+.cm-meter { display:inline-flex; align-items:center; gap:8px; vertical-align:middle; }
+.cm-meter .cm-track {
+  width:120px; height:8px; border-radius:999px; background:var(--cm-neutral-bg);
+  border:1px solid var(--cm-neutral-bd); overflow:hidden;
+}
+.cm-meter .cm-fill { display:block; height:100%; background:var(--fg, var(--cm-info-fg)); }
+.cm-meter .cm-val { font-size:.82em; font-weight:600; color:var(--fg); }
+
+/* ---- Fields (key/value) ---- */
+.cm-fields {
+  display:grid; grid-template-columns:auto 1fr; gap:4px 16px; margin:12px 0;
+  border:1px solid var(--cm-neutral-bd); border-radius:8px; padding:12px 14px;
+  background:var(--cm-neutral-bg);
+}
+.cm-fields dt { font-weight:600; opacity:.75; }
+.cm-fields dd { margin:0; }
+
+/* ---- Collapsible ---- */
+.cm-details { border:1px solid var(--bd); border-radius:8px; margin:12px 0; overflow:hidden; }
+.cm-details > summary {
+  cursor:pointer; padding:8px 14px; font-weight:600; list-style:none; background:var(--cm-neutral-bg);
+}
+.cm-details[data-tone] > summary, .cm-details.cm-custom > summary { color:var(--fg); background:var(--bg); }
+.cm-details > summary::-webkit-details-marker { display:none; }
+.cm-details > summary::before {
+  content:"\\25B8"; display:inline-block; margin-right:8px; transition:transform .15s ease;
+}
+.cm-details[open] > summary::before { transform:rotate(90deg); }
+.cm-details > .cm-body { padding:10px 14px; }
+.cm-details > .cm-body > :first-child { margin-top:0; }
+.cm-details > .cm-body > :last-child { margin-bottom:0; }
+
+/* ---- Inline diff (CriticMarkup) ---- */
+.crit-add { background:var(--cm-success-bg); color:var(--cm-success-fg); text-decoration:none; border-radius:3px; padding:0 2px; }
+.crit-del { background:var(--cm-danger-bg); color:var(--cm-danger-fg); text-decoration:line-through; border-radius:3px; padding:0 2px; }
+.crit-mark { background:var(--cm-warning-bg); border-radius:3px; padding:0 2px; }
+.crit-comment { color:var(--cm-muted-fg); font-style:italic; }
+`;
+
 // ../../node_modules/markdown-it/lib/common/utils.mjs
 var utils_exports = {};
 __export(utils_exports, {
@@ -5858,11 +5974,17 @@ function containerPlugin(md, enabled) {
   };
   md.renderer.rules.cm_container_close = (tokens, idx) => tokens[idx].meta.structure === "details" ? "</div></details>" : "</div></div>";
   md.renderer.rules.cm_fields = (tokens, idx) => {
-    let html = '<dl class="cm-fields">';
-    for (const [key, value] of tokens[idx].meta.rows) {
-      html += `<dt>${esc(key)}</dt><dd>${md.renderInline(value)}</dd>`;
+    const prevHtml = md.options.html;
+    md.options.html = false;
+    try {
+      let html = '<dl class="cm-fields">';
+      for (const [key, value] of tokens[idx].meta.rows) {
+        html += `<dt>${esc(key)}</dt><dd>${md.renderInline(value)}</dd>`;
+      }
+      return html + "</dl>";
+    } finally {
+      md.options.html = prevHtml;
     }
-    return html + "</dl>";
   };
 }
 
@@ -5908,127 +6030,14 @@ function render(src, options = {}) {
   return createRenderer(options).render(String(src != null ? src : ""));
 }
 
-// theme/chromamark.css
-var chromamark_default = `/*
- * ChromaMark theme \u2014 maps semantic tones to real colors and styles every
- * rendered construct. Tones are theme-owned: switch light/dark and colors
- * follow. Load alongside HTML produced by @chromamark/renderer.
- *
- * Theme resolution order: explicit [data-theme] wins; otherwise the reader's
- * prefers-color-scheme is honored.
- */
-
-:root {
-  --cm-success-fg:#1a7f37; --cm-success-bg:#dafbe1; --cm-success-bd:#2da44e;
-  --cm-danger-fg:#cf222e;  --cm-danger-bg:#ffebe9;  --cm-danger-bd:#ff8182;
-  --cm-warning-fg:#9a6700; --cm-warning-bg:#fff8c5; --cm-warning-bd:#d4a72c;
-  --cm-info-fg:#0969da;    --cm-info-bg:#ddf4ff;    --cm-info-bd:#54aeff;
-  --cm-tip-fg:#0f7b6c;     --cm-tip-bg:#d3f5f0;     --cm-tip-bd:#3bc4b0;
-  --cm-muted-fg:#656d76;   --cm-muted-bg:#f6f8fa;   --cm-muted-bd:#d0d7de;
-  --cm-neutral-bg:#f6f8fa; --cm-neutral-bd:#d0d7de;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --cm-success-fg:#3fb950; --cm-success-bg:#12261e; --cm-success-bd:#238636;
-    --cm-danger-fg:#f85149;  --cm-danger-bg:#25171c;  --cm-danger-bd:#da3633;
-    --cm-warning-fg:#d29922; --cm-warning-bg:#272115; --cm-warning-bd:#9e6a03;
-    --cm-info-fg:#58a6ff;    --cm-info-bg:#0d2233;    --cm-info-bd:#1f6feb;
-    --cm-tip-fg:#56d4c3;     --cm-tip-bg:#0c2620;     --cm-tip-bd:#1c6f63;
-    --cm-muted-fg:#8b949e;   --cm-muted-bg:#161b22;   --cm-muted-bd:#30363d;
-    --cm-neutral-bg:#161b22; --cm-neutral-bd:#30363d;
-  }
-}
-
-[data-theme="dark"] {
-  --cm-success-fg:#3fb950; --cm-success-bg:#12261e; --cm-success-bd:#238636;
-  --cm-danger-fg:#f85149;  --cm-danger-bg:#25171c;  --cm-danger-bd:#da3633;
-  --cm-warning-fg:#d29922; --cm-warning-bg:#272115; --cm-warning-bd:#9e6a03;
-  --cm-info-fg:#58a6ff;    --cm-info-bg:#0d2233;    --cm-info-bd:#1f6feb;
-  --cm-tip-fg:#56d4c3;     --cm-tip-bg:#0c2620;     --cm-tip-bd:#1c6f63;
-  --cm-muted-fg:#8b949e;   --cm-muted-bg:#161b22;   --cm-muted-bd:#30363d;
-  --cm-neutral-bg:#161b22; --cm-neutral-bd:#30363d;
-}
-
-/* Map a tone onto the generic --fg/--bg/--bd consumed by every component. */
-[data-tone="success"]{--fg:var(--cm-success-fg);--bg:var(--cm-success-bg);--bd:var(--cm-success-bd);}
-[data-tone="danger"] {--fg:var(--cm-danger-fg); --bg:var(--cm-danger-bg); --bd:var(--cm-danger-bd);}
-[data-tone="warning"]{--fg:var(--cm-warning-fg);--bg:var(--cm-warning-bg);--bd:var(--cm-warning-bd);}
-[data-tone="info"]   {--fg:var(--cm-info-fg);   --bg:var(--cm-info-bg);   --bd:var(--cm-info-bd);}
-[data-tone="tip"]    {--fg:var(--cm-tip-fg);    --bg:var(--cm-tip-bg);    --bd:var(--cm-tip-bd);}
-[data-tone="muted"]  {--fg:var(--cm-muted-fg);  --bg:var(--cm-muted-bg);  --bd:var(--cm-muted-bd);}
-
-/* Custom color (color=\u2026): derive a tinted bg/border from the chosen --fg. */
-.cm-custom {
-  --bg:color-mix(in srgb, var(--fg) 12%, transparent);
-  --bd:color-mix(in srgb, var(--fg) 45%, transparent);
-}
-
-/* ---- Colored block / callout ---- */
-.cm-block {
-  border:1px solid var(--bd, var(--cm-neutral-bd)); border-left-width:4px;
-  background:var(--bg, var(--cm-neutral-bg));
-  border-radius:8px; padding:10px 14px; margin:12px 0;
-}
-.cm-block > .cm-title { font-weight:700; color:var(--fg, inherit); }
-.cm-block > .cm-body > :first-child { margin-top:0; }
-.cm-block > .cm-body > :last-child { margin-bottom:0; }
-
-/* ---- Pill / badge ---- */
-.cm-pill {
-  display:inline-block; color:var(--fg); background:var(--bg); border:1px solid var(--bd);
-  border-radius:999px; padding:0 .55em; font-size:.82em; font-weight:600; line-height:1.7;
-  white-space:nowrap;
-}
-
-/* ---- Inline colored text (tint, no fill) ---- */
-.cm-text { color:var(--fg); font-weight:600; }
-
-/* ---- Progress meter ---- */
-.cm-meter { display:inline-flex; align-items:center; gap:8px; vertical-align:middle; }
-.cm-meter .cm-track {
-  width:120px; height:8px; border-radius:999px; background:var(--cm-neutral-bg);
-  border:1px solid var(--cm-neutral-bd); overflow:hidden;
-}
-.cm-meter .cm-fill { display:block; height:100%; background:var(--fg, var(--cm-info-fg)); }
-.cm-meter .cm-val { font-size:.82em; font-weight:600; color:var(--fg); }
-
-/* ---- Fields (key/value) ---- */
-.cm-fields {
-  display:grid; grid-template-columns:auto 1fr; gap:4px 16px; margin:12px 0;
-  border:1px solid var(--cm-neutral-bd); border-radius:8px; padding:12px 14px;
-  background:var(--cm-neutral-bg);
-}
-.cm-fields dt { font-weight:600; opacity:.75; }
-.cm-fields dd { margin:0; }
-
-/* ---- Collapsible ---- */
-.cm-details { border:1px solid var(--bd); border-radius:8px; margin:12px 0; overflow:hidden; }
-.cm-details > summary {
-  cursor:pointer; padding:8px 14px; font-weight:600; list-style:none; background:var(--cm-neutral-bg);
-}
-.cm-details[data-tone] > summary, .cm-details.cm-custom > summary { color:var(--fg); background:var(--bg); }
-.cm-details > summary::-webkit-details-marker { display:none; }
-.cm-details > summary::before {
-  content:"\\25B8"; display:inline-block; margin-right:8px; transition:transform .15s ease;
-}
-.cm-details[open] > summary::before { transform:rotate(90deg); }
-.cm-details > .cm-body { padding:10px 14px; }
-.cm-details > .cm-body > :first-child { margin-top:0; }
-.cm-details > .cm-body > :last-child { margin-bottom:0; }
-
-/* ---- Inline diff (CriticMarkup) ---- */
-.crit-add { background:var(--cm-success-bg); color:var(--cm-success-fg); text-decoration:none; border-radius:3px; padding:0 2px; }
-.crit-del { background:var(--cm-danger-bg); color:var(--cm-danger-fg); text-decoration:line-through; border-radius:3px; padding:0 2px; }
-.crit-mark { background:var(--cm-warning-bg); border-radius:3px; padding:0 2px; }
-.crit-comment { color:var(--cm-muted-fg); font-style:italic; }
-`;
-
-// src/browser.js
+// src/browser-core.js
 var STYLE_ID = "chromamark-theme";
 var DONE_ATTR = "data-chromamark-done";
 var DEFAULT_SELECTOR = 'script[type="text/chromamark"], template.chromamark, [data-chromamark], .chromamark';
-var theme = chromamark_default;
+var theme = "";
+function configureTheme(css) {
+  theme = css || "";
+}
 function render2(src, options) {
   return render(src, options);
 }
@@ -6037,7 +6046,7 @@ function injectTheme(doc) {
   if (!d || d.getElementById(STYLE_ID)) return;
   const style = d.createElement("style");
   style.id = STYLE_ID;
-  style.textContent = chromamark_default;
+  style.textContent = theme;
   (d.head || d.documentElement).appendChild(style);
 }
 function dedent(text2) {
@@ -6055,11 +6064,15 @@ function dedent(text2) {
 function resolve(target) {
   return typeof target === "string" ? document.querySelector(target) : target;
 }
+function sourceOf(el, tag) {
+  if (tag === "template" && el.content) return el.content.textContent || "";
+  return el.textContent || "";
+}
 function renderElement(target, options) {
   const el = resolve(target);
   if (!el || el.hasAttribute(DONE_ATTR)) return null;
-  const html = render(dedent(el.textContent || ""), options);
   const tag = (el.tagName || "").toLowerCase();
+  const html = render(dedent(sourceOf(el, tag)), options);
   el.setAttribute(DONE_ATTR, "");
   if (tag === "script" || tag === "template") {
     const out = document.createElement("div");
@@ -6087,9 +6100,15 @@ var ChromaMark = {
   injectTheme,
   autoRender,
   createRenderer,
-  theme
+  get theme() {
+    return theme;
+  }
 };
-var browser_default = ChromaMark;
+var browser_core_default = ChromaMark;
+
+// src/browser.js
+configureTheme(chromamark_default);
+var browser_default = browser_core_default;
 (function autoInit() {
   if (typeof document === "undefined") return;
   const script = document.currentScript;
@@ -6103,6 +6122,7 @@ var browser_default = ChromaMark;
 export {
   ChromaMark,
   autoRender,
+  configureTheme,
   browser_default as default,
   injectTheme,
   render2 as render,

@@ -180,10 +180,18 @@ export default function containerPlugin(md, enabled) {
     tokens[idx].meta.structure === 'details' ? '</div></details>' : '</div></div>';
 
   md.renderer.rules.cm_fields = (tokens, idx) => {
-    let html = '<dl class="cm-fields">';
-    for (const [key, value] of tokens[idx].meta.rows) {
-      html += `<dt>${esc(key)}</dt><dd>${md.renderInline(value)}</dd>`;
+    // Field values go through renderInline; force html:false so raw HTML is
+    // escaped regardless of the host markdown-it configuration (defense in depth).
+    const prevHtml = md.options.html;
+    md.options.html = false;
+    try {
+      let html = '<dl class="cm-fields">';
+      for (const [key, value] of tokens[idx].meta.rows) {
+        html += `<dt>${esc(key)}</dt><dd>${md.renderInline(value)}</dd>`;
+      }
+      return html + '</dl>';
+    } finally {
+      md.options.html = prevHtml;
     }
-    return html + '</dl>';
   };
 }

@@ -39,7 +39,7 @@
 >
 > _This document is written **in ChromaMark**. On a plain markdown viewer (e.g._
 > _GitHub) the ChromaMark constructs degrade to readable text; for the full_
-> _experience render it with `@chromamark/renderer` or open `examples/demo.html`._
+> _experience render it with `@chromamark/renderer` or open `examples/index.html`._
 
 ---
 
@@ -154,9 +154,8 @@ Only when a semantic token won't do.
 ```
 
 ::: danger Fallback behavior
-On a plain markdown engine a colored block degrades to a blockquote whose first
-line is the **bolded title**, followed by the content — or, at worst, the literal
-`:::` lines, which are still readable.
+On a plain markdown engine a colored block degrades to its literal `:::` lines —
+the title and body text remain readable and nothing is hidden.
 :::
 
 ## 6 · Colored pills — `[!…]`
@@ -168,7 +167,9 @@ CommonMark (there, `[!x]` is just literal text — exactly the fallback we want)
 [!<token-or-color> <label>]
 ```
 
-- **token-or-color** — a semantic token (§4) or `color=`/hex/name.
+- **token-or-color** — a semantic token (§4), a bare `#hex`, or `color=<hex|name>`.
+  (Bare CSS color _names_ are only accepted via `color=` so they can't be mistaken
+  for a label word.)
 - **label** — free text up to the closing `]`. If omitted, the token name is the
   label (uppercased): `[!pass]` → `PASS`.
 
@@ -205,9 +206,10 @@ This body is hidden until you expand it. It may contain **any** markdown,
 including nested blocks and code fences.
 :::
 
-Fallback: maps to `<details><summary>` where available; in a plain engine, the
-summary shows as bold text with the content beneath it — content is **never**
-hidden in a non-supporting renderer (principle 3).
+Fallback: renders as a real `<details>`/`<summary>` where supported. On a plain
+markdown engine it degrades to its literal `:::` lines — the summary and body
+remain readable, and content is **never** hidden in a non-supporting renderer
+(principle 3).
 
 ## 8 · Extensions (v0.2)
 
@@ -298,16 +300,18 @@ Pills, text, and meters nest freely inside any block, list, heading, or table ce
 
 ## 11 · Graceful degradation summary
 
-| Construct     | ChromaMark          | Plain-markdown fallback                |
-| ------------- | ------------------- | -------------------------------------- |
-| Colored block | `::: warning Title` | blockquote with **bold title** + body  |
-| Pill          | `[!success PASS]`   | literal text `[!success PASS]`         |
-| Collapsible   | `::: details Sum…`  | **bold summary** + always-visible body |
-| Colored text  | `[.danger x]`       | literal text `[.danger x]`             |
-| Meter         | `[=success 87%]`    | literal text `[=success 87%]`          |
-| Fields        | `::: fields`        | blockquote of `key: value` lines       |
+| Construct     | ChromaMark          | Plain-markdown fallback                       |
+| ------------- | ------------------- | --------------------------------------------- |
+| Colored block | `::: warning Title` | literal `:::` lines; title + body readable    |
+| Pill          | `[!success PASS]`   | literal text `[!success PASS]`                |
+| Collapsible   | `::: details Sum…`  | literal `:::` lines; summary + body readable  |
+| Colored text  | `[.danger x]`       | literal text `[.danger x]`                    |
+| Meter         | `[=success 87%]`    | literal text `[=success 87%]`                 |
+| Fields        | `::: fields`        | literal `:::` lines of `key: value`           |
 
-Nothing is ever _hidden_ or _lost_ when unsupported.
+Nothing is ever _hidden_ or _lost_ when unsupported — a non-ChromaMark engine
+shows the literal source, which stays readable. Renderers MAY present richer
+fallbacks (e.g. a blockquote), but that is not required.
 
 ## 12 · Streaming behavior
 
@@ -331,14 +335,15 @@ kind         = tone | "block" | "details" | "fields" ;
 tone         = "success" | "danger" | "warning" | "info" | "tip" | "muted" | alias ;
 attrs        = { attr , ws } ;
 attr         = "color=" , colorval | "open" ;
-colorval     = "#" , 6*hexdig | named-color | tone ;
+colorval     = hexcolor | named-color ;
+hexcolor     = "#" , ( 3 | 6 | 8 ) * hexdig ;
 
 pill         = "[" , "!" , spec , [ ws , label ] , "]" ;
 text         = "[" , "." , spec , ws , label , "]" ;
 meter        = "[" , "=" , spec , ws , value , "]" ;
-spec         = tone | "color=" , colorval | colorval ;
+spec         = tone | "color=" , colorval | hexcolor ;
 label        = { any-char-except-"]" } ;
-value        = number , [ "%" ] | number , "/" , number | label ;
+value        = number , [ "%" ] | number , "/" , number ;
 
 critic       = "{++" , text , "++}" | "{--" , text , "--}"
              | "{~~" , text , "~>" , text , "~~}" | "{==" , text , "==}"
@@ -358,7 +363,7 @@ Level 2 — Interactive: adds real collapse/expand and streaming styling.
 ::: fields
 Renderer: `@chromamark/renderer` — a markdown-it plugin (`packages/renderer`). Works in any webpage; ships the CSS theme.
 VS Code: `chromamark-vscode` — reuses the renderer in the built-in markdown preview and adds syntax highlighting (`packages/vscode`).
-Demo: `examples/demo.html` — a rendered reference of every construct with a light/dark toggle.
+Demo: `examples/index.html` — a rendered reference of every construct with a light/dark toggle.
 :::
 
 ---
