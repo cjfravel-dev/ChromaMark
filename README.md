@@ -2,10 +2,11 @@
   <img src="docs/assets/chromamark-black.png" alt="ChromaMark" width="320">
 </p>
 
+[![CI](https://github.com/cjfravel-dev/ChromaMark/actions/workflows/ci.yml/badge.svg)](https://github.com/cjfravel-dev/ChromaMark/actions/workflows/ci.yml)
 [![npm renderer](https://img.shields.io/npm/v/@chromamark/renderer?label=npm%20renderer)](https://www.npmjs.com/package/@chromamark/renderer)
 [![npm cli](https://img.shields.io/npm/v/@chromamark/cli?label=npm%20cli)](https://www.npmjs.com/package/@chromamark/cli)
 [![PyPI](https://img.shields.io/pypi/v/chromamark?label=pypi)](https://pypi.org/project/chromamark/)
-[![VS Code Marketplace](https://vsmarketplacebadges.dev/version-short/chromamark.chromamark-vscode.svg)](https://marketplace.visualstudio.com/items?itemName=chromamark.chromamark-vscode)
+[![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/chromamark.chromamark-vscode?label=vs%20code)](https://marketplace.visualstudio.com/items?itemName=chromamark.chromamark-vscode)
 [![License](https://img.shields.io/badge/license-MIT%20%2B%20SaaS-blue)](LICENSE.md)
 
 **A lean rich-markup for agent-to-human communication.** ChromaMark is a strict
@@ -16,8 +17,19 @@ the tokens of equivalent HTML and degrades to readable plain text anywhere it
 isn't natively rendered.
 
 > Markdown can't color a callout or render a `PASS`/`FAIL` badge. HTML can, but
-> `<span class="pill pill--ok">PASS</span>` burns ~9 tokens per badge and reads
+> `<span class="pill pill--ok">PASS</span>` burns 12 tokens per badge and reads
 > terribly when unrendered. ChromaMark gets you both — cheap and legible.
+
+Same rendered badge, counted with the `o200k_base` tokenizer (GPT-4o/4.1/5-class):
+
+| Same `PASS` badge | Source                                    | Tokens |
+| ----------------- | ----------------------------------------- | ------ |
+| ChromaMark pill   | `[!ok PASS]`                              | **5**  |
+| HTML span         | `<span class="pill pill--ok">PASS</span>` | 12     |
+
+A colored callout shows the same ratio — `::: success` / body / `:::` is 10 tokens
+versus 22 for the `<div class="callout…">…</div>` equivalent — and it compounds
+across a status-heavy report.
 
 📄 **[Read the spec](./SPEC.md)** · 🎨 **[Playground](https://cjfravel-dev.github.io/ChromaMark/playground/)** · 🖼️ **[Gallery](https://cjfravel-dev.github.io/ChromaMark/gallery.html)**
 
@@ -115,6 +127,35 @@ ChromaMark is designed to be emitted by AI agents as plain text. Drop
 [`docs/llms.txt`](./docs/llms.txt) into a system prompt to teach a model the full
 syntax in a few hundred tokens. One gotcha worth repeating: **don't wrap pills in
 backticks** — `` `[!pass]` `` renders as literal code, not a pill.
+
+## Built for streaming
+
+Agents emit token-by-token and sometimes get cut off mid-thought. ChromaMark is
+designed so a **truncated** document still renders cleanly — no HTML-style broken
+tags, no lost content:
+
+- An unclosed `::: success` block auto-closes at end of input and still renders in full.
+- A half-written pill like `[!pass` degrades to readable literal text, not garbage.
+- Every construct's opener precedes its content, so a renderer can begin styling
+  with no lookahead.
+
+This is the thing HTML can't do gracefully and plain Markdown can't do at all. See
+the streaming contract in [SPEC §12](./SPEC.md).
+
+## Safety & sanitization
+
+Agent output is untrusted input, so ChromaMark is safe by default:
+
+- **Raw HTML is escaped, not injected.** The renderer runs markdown-it with
+  `html: false`, and block titles, `::: fields`, and container bodies are
+  force-escaped even when attached to a host that enables raw HTML — so a
+  `<script>` in agent output renders as literal text.
+- **No CSS injection.** `color=` accepts only hex literals or plain color names;
+  functional forms (e.g. `url(...)`, `expression(...)`) are rejected.
+- **No script execution.** No construct requires or permits `<script>`, event
+  handlers, or `javascript:` URLs.
+
+Details in [SPEC §2–3](./SPEC.md).
 
 ## Command line
 
