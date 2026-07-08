@@ -33,6 +33,18 @@ Phase 1 · Pages deploy: [!success Done — workflow ready (needs public repo + 
 - The repo isn't public yet, so the playground + Pages are built and locally verified (headless Chrome) but not reviewable online until it's published.
 :::
 
+::: success All of Phases 0, 1, 2 shipped (+ the VS Code outline)
+126 tests passing (renderer 63 · CLI 7 · Python 56). Everything committed and pushed to `main`.
+:::
+
+::: fields
+Publish npm: run `npm publish` in packages/renderer and packages/cli (or add an NPM_TOKEN secret and cut a GitHub Release — the workflow does it with provenance).
+Publish PyPI: `python -m build && twine upload dist/*` from packages/python (I can add a workflow if you want).
+Go live (Pages): make the repo public, then Settings → Pages → Source: GitHub Actions. The playground + docs deploy automatically.
+VS Code Marketplace: `vsce publish` needs a publisher + PAT; say the word and I'll wire the release workflow.
+Review locally: open any `.cm` in VS Code (renders as preview with the new left outline), or open `packages/cli` output / the playground.
+:::
+
 ## TL;DR
 
 ::: success Recommended first moves
