@@ -10,6 +10,8 @@ Live preview and syntax highlighting for [ChromaMark](https://github.com/cjfrave
   Markdown preview, so `:::` blocks, `[!pills]`, `[=meters]`, `::: fields`, and
   CriticMarkup render as you write. Open with **Markdown: Open Preview**
   (`Ctrl+Shift+V` / `Cmd+Shift+V`).
+- **Auto-preview.** Opens a preview to the side automatically when you open a
+  ChromaMark file. Configurable via `chromamark.autoPreview` (see Settings).
 - **Syntax highlighting.** An injection grammar highlights ChromaMark constructs
   inside any Markdown document.
 - **`.cm` / `.cmd` files.** These extensions are treated as Markdown, so they get
@@ -48,6 +50,12 @@ npm run build --workspace chromamark-vscode       # bundle the extension
 
 Then press <kbd>F5</kbd> in VS Code to launch an Extension Development Host and
 open any `.md` / `.cm` file with the preview.
+
+## Settings
+
+| Setting                  | Default | Description                                                            |
+| ------------------------ | ------- | ---------------------------------------------------------------------- |
+| `chromamark.autoPreview` | `cm`    | Auto-open a preview to the side: `off`, `cm` (`.cm`/`.cmd` files), `all` (any Markdown). |
 
 ## Build & install the VSIX
 
