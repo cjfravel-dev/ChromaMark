@@ -95,13 +95,56 @@ function makeRule(enabled) {
 
     let nextLine = startLine;
     let autoClosed = false;
+    let fenceCh = 0;
+    let fenceLen = 0;
     for (;;) {
       nextLine++;
       if (nextLine >= endLine) break;
       const lstart = state.bMarks[nextLine] + state.tShift[nextLine];
       const lmax = state.eMarks[nextLine];
-      if (state.src.charCodeAt(lstart) !== MARKER) continue;
-      if (state.sCount[nextLine] - state.blkIndent >= 4) continue;
+      const indent = state.sCount[nextLine] - state.blkIndent;
+
+      // Skip over fenced code blocks so a ::: (or fence) line inside one counts
+      // as content, not as the container's closing fence.
+      if (fenceCh) {
+        if (indent < 4 && state.src.charCodeAt(lstart) === fenceCh) {
+          let q = lstart;
+          while (q < lmax && state.src.charCodeAt(q) === fenceCh) q++;
+          if (q - lstart >= fenceLen) {
+            let r = q;
+            while (r < lmax && (state.src.charCodeAt(r) === 0x20 || state.src.charCodeAt(r) === 0x09)) r++;
+            if (r >= lmax) {
+              fenceCh = 0;
+              fenceLen = 0;
+            }
+          }
+        }
+        continue;
+      }
+      const openCh = state.src.charCodeAt(lstart);
+      if (indent < 4 && (openCh === 0x60 || openCh === 0x7e)) {
+        let q = lstart;
+        while (q < lmax && state.src.charCodeAt(q) === openCh) q++;
+        if (q - lstart >= 3) {
+          let ok = true;
+          if (openCh === 0x60) {
+            for (let r = q; r < lmax; r++) {
+              if (state.src.charCodeAt(r) === 0x60) {
+                ok = false;
+                break;
+              }
+            }
+          }
+          if (ok) {
+            fenceCh = openCh;
+            fenceLen = q - lstart;
+            continue;
+          }
+        }
+      }
+
+      if (openCh !== MARKER) continue;
+      if (indent >= 4) continue;
       const closeLen = fenceLength(state.src, lstart, lmax);
       if (closeLen < openLen) continue;
       let p = lstart + closeLen;
@@ -199,4 +242,28 @@ export default function containerPlugin(md, enabled) {
     }
     return html + '</dl>';
   };
+
+  // Container bodies are always safe: escape any raw HTML inside a container so
+  // ChromaMark stays consistent with its force-escaped titles/fields even when
+  // attached to a host MarkdownIt({ html: true }). Raw HTML outside a container
+  // still honors the host setting. Under the default html:false there are no
+  // html_block/html_inline tokens, so this is a no-op.
+  md.core.ruler.push('cm_sanitize_bodies', (state) => {
+    let depth = 0;
+    for (const token of state.tokens) {
+      if (token.type === 'cm_container_open') {
+        depth++;
+      } else if (token.type === 'cm_container_close') {
+        depth--;
+      } else if (depth > 0) {
+        if (token.type === 'html_block') {
+          token.content = esc(token.content);
+        } else if (token.type === 'inline' && token.children) {
+          for (const child of token.children) {
+            if (child.type === 'html_inline') child.content = esc(child.content);
+          }
+        }
+      }
+    }
+  });
 }

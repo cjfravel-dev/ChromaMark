@@ -1,4 +1,13 @@
 from chromamark import render
+from markdown_it import MarkdownIt
+
+from chromamark.plugin import chromamark_plugin
+
+
+def _html_true():
+    md = MarkdownIt("js-default", {"html": True, "linkify": True}).enable("linkify")
+    md.use(chromamark_plugin)
+    return md
 
 
 def test_bare_tone_block():
@@ -139,3 +148,52 @@ def test_title_escapes_raw_html():
 def test_plain_title_unchanged():
     h = render("::: success Deploy succeeded in 3m12s\nx\n:::")
     assert '<div class="cm-title">Deploy succeeded in 3m12s</div>' in h
+
+
+def test_code_fence_inside_container_not_closed_early():
+    h = render("::: success\n```\n:::\n```\n:::")
+    assert '<div class="cm-body"><pre><code>:::\n</code></pre>' in h
+    assert "</div></div>\n<pre>" not in h
+
+
+def test_chromamark_example_in_code_fence_stays_in_container():
+    h = render("::: info Example\n```\n::: success\nhi\n:::\n```\n:::")
+    assert 'data-tone="info"' in h
+    assert 'data-tone="success"' not in h
+    assert "<pre><code>::: success\nhi\n:::\n</code></pre>" in h
+
+
+def test_tilde_fence_inside_container_is_fence_aware():
+    h = render("::: success\n~~~\n:::\n~~~\n:::")
+    assert '<div class="cm-body"><pre><code>:::\n</code></pre>' in h
+    assert "</div></div>\n<pre>" not in h
+
+
+def test_container_body_escapes_raw_block_html_on_html_true_host():
+    h = _html_true().render("::: success\n<img src=x onerror=alert(1)>\n:::")
+    assert "<img" not in h
+    assert "&lt;img" in h
+
+
+def test_container_body_escapes_inline_html_on_html_true_host():
+    h = _html_true().render("::: info\ntext <b>bold</b> more\n:::")
+    assert "<b>bold</b>" not in h
+    assert "&lt;b&gt;bold&lt;/b&gt;" in h
+
+
+def test_details_body_escapes_raw_html_on_html_true_host():
+    h = _html_true().render("::: details Summary\n<script>alert(1)</script>\n:::")
+    assert "<script>" not in h
+    assert "&lt;script&gt;" in h
+
+
+def test_html_outside_container_passes_through_on_html_true_host():
+    h = _html_true().render("<div>outside</div>\n\n::: success\n<b>in</b>\n:::")
+    assert "<div>outside</div>" in h
+    assert "&lt;b&gt;in&lt;/b&gt;" in h
+
+
+def test_ws_bom_separates_container_kind_from_title():
+    h = render("::: success\ufeffDeploy\nbody\n:::")
+    assert 'data-tone="success"' in h
+    assert '<div class="cm-title">Deploy</div>' in h

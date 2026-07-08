@@ -6,12 +6,13 @@ from decimal import ROUND_HALF_UP, Decimal
 from markdown_it.common.utils import escapeHtml
 
 from .tones import parse_spec
+from .whitespace import WS, WSR
 
 SIGILS = {"!": "pill", ".": "text", "=": "meter"}
 
-_SPLIT = re.compile(r"^(\S+)(?:\s+([\s\S]*))?$")
-_PERCENT = re.compile(r"^([0-9]+(?:\.[0-9]+)?)\s*%$")
-_FRACTION = re.compile(r"^([0-9]+(?:\.[0-9]+)?)\s*/\s*([0-9]+(?:\.[0-9]+)?)$")
+_SPLIT = re.compile(r"^([^" + WSR + r"]+)(?:[" + WSR + r"]+([\s\S]*))?$")
+_PERCENT = re.compile(r"^([0-9]+(?:\.[0-9]+)?)[" + WSR + r"]*%$")
+_FRACTION = re.compile(r"^([0-9]+(?:\.[0-9]+)?)[" + WSR + r"]*/[" + WSR + r"]*([0-9]+(?:\.[0-9]+)?)$")
 _UNESCAPE = re.compile(r"\\([\s\S])")
 
 
@@ -23,7 +24,7 @@ def _split_spec(inner):
     m = _SPLIT.match(inner)
     if not m:
         return None
-    return m.group(1), (m.group(2) or "").strip()
+    return m.group(1), (m.group(2) or "").strip(WS)
 
 
 def _meter_width(value):
@@ -99,7 +100,7 @@ def _make_rule(enabled):
         if end == -1:
             return False
 
-        inner = src[start + 2:end].strip()
+        inner = src[start + 2:end].strip(WS)
         parts = _split_spec(inner) if inner else None
         if not parts:
             return False

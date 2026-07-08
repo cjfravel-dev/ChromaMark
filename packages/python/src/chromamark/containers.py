@@ -3,6 +3,8 @@
 from markdown_it.common.utils import escapeHtml
 
 from .tones import parse_spec, resolve_tone
+from .whitespace import WS
+from .whitespace import split as _ws_split
 
 MIN_FENCE = 3
 
@@ -14,7 +16,7 @@ def _cap(s):
 def _parse_opener(info):
     if not info:
         return None
-    tokens = info.split()
+    tokens = _ws_split(info)
     kind = tokens.pop(0).lower()
 
     tone = None
@@ -54,7 +56,7 @@ def _parse_opener(info):
             continue
         break
 
-    rest = " ".join(tokens).strip()
+    rest = " ".join(tokens).strip(WS)
     if structure == "details":
         return {"structure": "details", "tone": tone, "color": color,
                 "open": is_open, "summary": rest or "Details"}
@@ -82,7 +84,7 @@ def _make_rule(enabled):
         if open_len < MIN_FENCE:
             return False
 
-        parsed = _parse_opener(state.src[start + open_len:maximum].strip())
+        parsed = _parse_opener(state.src[start + open_len:maximum].strip(WS))
         if not parsed or not enabled.get(parsed["structure"]):
             return False
         if silent:
@@ -90,15 +92,54 @@ def _make_rule(enabled):
 
         next_line = startLine
         auto_closed = False
+        fence_ch = ""
+        fence_len = 0
         while True:
             next_line += 1
             if next_line >= endLine:
                 break
             lstart = state.bMarks[next_line] + state.tShift[next_line]
             lmax = state.eMarks[next_line]
-            if lstart >= len(state.src) or state.src[lstart] != ":":
+            indent = state.sCount[next_line] - state.blkIndent
+
+            # Skip over fenced code blocks so a ::: (or fence) line inside one
+            # counts as content, not as the container's closing fence.
+            if fence_ch:
+                if indent < 4 and lstart < len(state.src) and state.src[lstart] == fence_ch:
+                    q = lstart
+                    while q < lmax and state.src[q] == fence_ch:
+                        q += 1
+                    if q - lstart >= fence_len:
+                        r = q
+                        while r < lmax and state.src[r] in (" ", "\t"):
+                            r += 1
+                        if r >= lmax:
+                            fence_ch = ""
+                            fence_len = 0
                 continue
-            if state.sCount[next_line] - state.blkIndent >= 4:
+
+            open_ch = state.src[lstart] if lstart < len(state.src) else ""
+            if indent < 4 and open_ch in ("`", "~"):
+                q = lstart
+                while q < lmax and state.src[q] == open_ch:
+                    q += 1
+                if q - lstart >= 3:
+                    ok = True
+                    if open_ch == "`":
+                        r = q
+                        while r < lmax:
+                            if state.src[r] == "`":
+                                ok = False
+                                break
+                            r += 1
+                    if ok:
+                        fence_ch = open_ch
+                        fence_len = q - lstart
+                        continue
+
+            if open_ch != ":":
+                continue
+            if indent >= 4:
                 continue
             close_len = _fence_len(state.src, lstart, lmax)
             if close_len < open_len:
@@ -121,12 +162,12 @@ def _make_rule(enabled):
             ln = startLine + 1
             while ln < next_line:
                 line = state.src[state.bMarks[ln] + state.tShift[ln]:state.eMarks[ln]]
-                if line.strip():
+                if line.strip(WS):
                     ci = line.find(":")
                     if ci == -1:
-                        rows.append((line.strip(), ""))
+                        rows.append((line.strip(WS), ""))
                     else:
-                        rows.append((line[:ci].strip(), line[ci + 1:].strip()))
+                        rows.append((line[:ci].strip(WS), line[ci + 1:].strip(WS)))
                 ln += 1
             token = state.push("cm_fields", "", 0)
             token.meta = {"rows": rows}
@@ -201,3 +242,26 @@ def container_plugin(md, enabled):
     md.add_render_rule("cm_container_open", render_open)
     md.add_render_rule("cm_container_close", render_close)
     md.add_render_rule("cm_fields", render_fields)
+
+    def sanitize_bodies(state):
+        # Container bodies are always safe: escape any raw HTML inside a
+        # container so ChromaMark stays consistent with its force-escaped
+        # titles/fields even on a host MarkdownIt with html=True. Raw HTML
+        # outside a container still honors the host setting. Under the default
+        # html=False there are no html_block/html_inline tokens, so this is a
+        # no-op.
+        depth = 0
+        for token in state.tokens:
+            if token.type == "cm_container_open":
+                depth += 1
+            elif token.type == "cm_container_close":
+                depth -= 1
+            elif depth > 0:
+                if token.type == "html_block":
+                    token.content = escapeHtml(token.content)
+                elif token.type == "inline" and token.children:
+                    for child in token.children:
+                        if child.type == "html_inline":
+                            child.content = escapeHtml(child.content)
+
+    md.core.ruler.push("cm_sanitize_bodies", sanitize_bodies)
