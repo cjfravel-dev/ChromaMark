@@ -8,14 +8,15 @@ import {
 } from 'node:fs';
 import { join, basename, extname, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { compile, renderAnsi } from './index.js';
+import { compile, renderAnsi, lint } from './index.js';
 
-const HELP = `chromamark — compile ChromaMark (.cm) to HTML or render it to a terminal
+const HELP = `chromamark — compile ChromaMark (.cm) to HTML, render it, or lint it
 
 Usage:
   chromamark [build] <input.cm> [-o <output.html>]   compile one file to HTML
   chromamark [build] <dir> -o <outdir>               compile every .cm in a tree
   chromamark render <input.cm>                       render to ANSI on stdout
+  chromamark lint <input.cm>                         check for common mistakes
   cat file.cm | chromamark render                    render stdin to ANSI
   chromamark <input.cm> --stdout                     write HTML to stdout
   cat file.cm | chromamark -                          read HTML from stdin
@@ -26,12 +27,13 @@ Options:
   --title <text>        page title (default: derived from the file name)
   --color <when>        colorize render output: auto (default), always, never
   --no-color            disable color (same as --color never)
+  --disable <rules>     lint: comma-separated rule ids to suppress (e.g. CM001)
   --watch               rebuild when inputs change
   -h, --help            show this help
   -v, --version         print the version
 `;
 
-const COMMANDS = new Set(['build', 'render']);
+const COMMANDS = new Set(['build', 'render', 'lint']);
 
 function version() {
   const url = new URL('../package.json', import.meta.url);
@@ -40,7 +42,7 @@ function version() {
 
 function parseArgs(argv) {
   const opts = {
-    command: 'build', input: null, output: null, stdout: false, title: null, watch: false, color: 'auto',
+    command: 'build', input: null, output: null, stdout: false, title: null, watch: false, color: 'auto', disable: [],
   };
   let rest = argv;
   if (argv.length && COMMANDS.has(argv[0])) {
@@ -66,6 +68,8 @@ function parseArgs(argv) {
       const v = takeValue(a);
       if (!['auto', 'always', 'never'].includes(v)) throw new Error('--color must be auto, always, or never');
       opts.color = v;
+    } else if (a === '--disable') {
+      opts.disable = opts.disable.concat(takeValue(a).split(',').map((s) => s.trim()).filter(Boolean));
     } else if (a === '-o' || a === '--output') opts.output = takeValue(a);
     else if (a === '--title') opts.title = takeValue(a);
     else if (a === '-') opts.input = '-';
@@ -79,27 +83,57 @@ function titleFor(file) {
   return basename(file, extname(file));
 }
 
+/** Read source from a file, `-`, or piped stdin. Returns { src, path } or an
+ *  error shape ({ error } / { empty }) the command can turn into an exit code. */
+function readInput(opts) {
+  if (opts.input === '-' || (opts.input == null && !process.stdin.isTTY)) {
+    const src = readFileSync(0, 'utf8');
+    if (opts.input !== '-' && !src.trim()) return { empty: true };
+    return { src, path: '<stdin>' };
+  }
+  if (opts.input == null) return null;
+  return { src: readFileSync(opts.input, 'utf8'), path: opts.input };
+}
+
 /** Render ChromaMark to ANSI on stdout, from a file, `-`, or piped stdin. */
 function runRender(opts) {
-  let src;
+  let input;
   try {
-    if (opts.input === '-' || (opts.input == null && !process.stdin.isTTY)) {
-      src = readFileSync(0, 'utf8');
-      if (opts.input !== '-' && !src.trim()) {
-        process.stderr.write(`error: no input file given and stdin was empty\n\n${HELP}`);
-        return 1;
-      }
-    } else if (opts.input == null) {
-      process.stderr.write(`error: render needs an input file or piped stdin\n\n${HELP}`);
-      return 1;
-    } else {
-      src = readFileSync(opts.input, 'utf8');
-    }
+    input = readInput(opts);
   } catch (err) {
     process.stderr.write(`error: ${err.message}\n`);
     return 1;
   }
-  process.stdout.write(renderAnsi(src, { color: opts.color }));
+  if (!input || input.empty) {
+    process.stderr.write(`error: render needs an input file or piped stdin\n\n${HELP}`);
+    return 1;
+  }
+  process.stdout.write(renderAnsi(input.src, { color: opts.color }));
+  return 0;
+}
+
+/** Lint ChromaMark and print diagnostics; exit non-zero when any are found. */
+function runLint(opts) {
+  let input;
+  try {
+    input = readInput(opts);
+  } catch (err) {
+    process.stderr.write(`error: ${err.message}\n`);
+    return 1;
+  }
+  if (!input || input.empty) {
+    process.stderr.write(`error: lint needs an input file or piped stdin\n\n${HELP}`);
+    return 1;
+  }
+  const diags = lint(input.src, { disable: opts.disable });
+  for (const d of diags) {
+    process.stdout.write(`${input.path}:${d.line}:${d.column}  ${d.severity}  ${d.rule}  ${d.message}\n`);
+  }
+  if (diags.length) {
+    process.stderr.write(`✗ ${diags.length} problem${diags.length === 1 ? '' : 's'}\n`);
+    return 1;
+  }
+  process.stderr.write(`✓ ${input.path}: no problems\n`);
   return 0;
 }
 
@@ -152,6 +186,9 @@ export function run(argv = process.argv.slice(2)) {
 
   if (opts.command === 'render') {
     return runRender(opts);
+  }
+  if (opts.command === 'lint') {
+    return runLint(opts);
   }
 
   if (opts.input === '-' || (opts.input == null && !process.stdin.isTTY)) {

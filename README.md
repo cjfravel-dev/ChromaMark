@@ -126,7 +126,8 @@ treated as Markdown. Press <kbd>F5</kbd> from the repo to try it.
 ChromaMark is designed to be emitted by AI agents as plain text. Drop
 [`docs/llms.txt`](./docs/llms.txt) into a system prompt to teach a model the full
 syntax in a few hundred tokens. One gotcha worth repeating: **don't wrap pills in
-backticks** — `` `[!pass]` `` renders as literal code, not a pill.
+backticks** — `` `[!pass]` `` renders as literal code, not a pill. Guard against
+that (and other silent mistakes) in CI with [`chromamark lint`](#command-line).
 
 ## Built for streaming
 
@@ -174,6 +175,13 @@ for CI logs and agent CLIs; honors [`NO_COLOR`](https://no-color.org):
 ```bash
 npx @chromamark/cli render report.cm       # ANSI to your terminal
 cat report.cm | npx @chromamark/cli render # from stdin
+```
+
+Or **lint** a document in CI to catch the mistakes the format otherwise hides
+silently — a pill wrapped in backticks, a typo'd tone, an unclosed block:
+
+```bash
+npx @chromamark/cli lint report.cm         # exits non-zero on problems
 ```
 
 ## Python & Jupyter

@@ -167,3 +167,45 @@ test('CLI rejects an invalid --color value', () => {
     process.stderr.write = err;
   }
 });
+
+function runCapture(args, input) {
+  try {
+    const stdout = execFileSync(process.execPath, [BIN, ...args], { input, encoding: 'utf8' });
+    return { code: 0, stdout };
+  } catch (e) {
+    return { code: e.status, stdout: (e.stdout || '').toString() };
+  }
+}
+
+test('CLI lint reports problems and exits non-zero', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'cm-cli-'));
+  const input = join(dir, 'bad.cm');
+  writeFileSync(input, 'Build [!succes 3]\n');
+  const { code, stdout } = runCapture(['lint', input]);
+  assert.equal(code, 1);
+  assert.match(stdout, /CM002/);
+  assert.match(stdout, /bad\.cm:1:/);
+});
+
+test('CLI lint exits 0 for a clean file', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'cm-cli-'));
+  const input = join(dir, 'ok.cm');
+  writeFileSync(input, '::: success\nAll good [!pass]\n:::\n');
+  const { code } = runCapture(['lint', input]);
+  assert.equal(code, 0);
+});
+
+test('CLI lint --disable suppresses a rule', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'cm-cli-'));
+  const input = join(dir, 'doc.cm');
+  writeFileSync(input, 'Use `[!pass]` in docs.\n');
+  assert.equal(runCapture(['lint', input]).code, 1);
+  assert.equal(runCapture(['lint', input, '--disable', 'CM001']).code, 0);
+});
+
+test('CLI lint reads from stdin', () => {
+  const { code, stdout } = runCapture(['lint'], '[!nope x]\n');
+  assert.equal(code, 1);
+  assert.match(stdout, /<stdin>:1:/);
+  assert.match(stdout, /CM002/);
+});

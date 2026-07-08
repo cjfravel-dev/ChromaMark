@@ -25,6 +25,7 @@ import chromamark, { render, createRenderer } from '@chromamark/renderer';
 | `render(src, options?)`   | Convenience: ChromaMark string → HTML fragment.                   |
 | `createRenderer(options?)`| A `markdown-it` instance preconfigured with ChromaMark.           |
 | `renderAnsi(src, opts?)`  | ChromaMark string → ANSI-styled text for a terminal.              |
+| `lint(src, opts?)`        | Check for common mistakes → array of `{ line, column, rule, … }`. |
 
 ### Terminal rendering
 
