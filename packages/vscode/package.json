@@ -4,6 +4,7 @@
   "description": "Syntax highlighting and live preview for ChromaMark — colored blocks, colored pills, collapsible sections, fields, meters and inline diff on top of Markdown.",
   "version": "0.1.7",
   "publisher": "chromamark",
+  "icon": "icon.png",
   "license": "SEE LICENSE IN LICENSE.md",
   "repository": {
     "type": "git",
