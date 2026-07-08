@@ -167,6 +167,15 @@ npx @chromamark/cli build report.cm        # → report.html
 npx @chromamark/cli build docs/ -o site/   # a whole tree
 ```
 
+Or render straight to a **color terminal** — tones become ANSI colors, pills
+become bracketed icon chips (`[✓ PASS]`), blocks get a colored left bar. Handy
+for CI logs and agent CLIs; honors [`NO_COLOR`](https://no-color.org):
+
+```bash
+npx @chromamark/cli render report.cm       # ANSI to your terminal
+cat report.cm | npx @chromamark/cli render # from stdin
+```
+
 ## Python & Jupyter
 
 The [`chromamark`](./packages/python) Python package renders ChromaMark to the

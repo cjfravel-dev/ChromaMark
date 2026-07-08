@@ -8,24 +8,30 @@ import {
 } from 'node:fs';
 import { join, basename, extname, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { compile } from './index.js';
+import { compile, renderAnsi } from './index.js';
 
-const HELP = `chromamark — compile ChromaMark (.cm) to self-contained HTML
+const HELP = `chromamark — compile ChromaMark (.cm) to HTML or render it to a terminal
 
 Usage:
-  chromamark [build] <input.cm> [-o <output.html>]   compile one file
+  chromamark [build] <input.cm> [-o <output.html>]   compile one file to HTML
   chromamark [build] <dir> -o <outdir>               compile every .cm in a tree
+  chromamark render <input.cm>                       render to ANSI on stdout
+  cat file.cm | chromamark render                    render stdin to ANSI
   chromamark <input.cm> --stdout                     write HTML to stdout
-  cat file.cm | chromamark -                          read from stdin
+  cat file.cm | chromamark -                          read HTML from stdin
 
 Options:
-  -o, --output <path>   output file or directory
+  -o, --output <path>   output file or directory (build)
   --stdout              write HTML to stdout instead of a file
   --title <text>        page title (default: derived from the file name)
+  --color <when>        colorize render output: auto (default), always, never
+  --no-color            disable color (same as --color never)
   --watch               rebuild when inputs change
   -h, --help            show this help
   -v, --version         print the version
 `;
+
+const COMMANDS = new Set(['build', 'render']);
 
 function version() {
   const url = new URL('../package.json', import.meta.url);
@@ -33,8 +39,14 @@ function version() {
 }
 
 function parseArgs(argv) {
-  const opts = { input: null, output: null, stdout: false, title: null, watch: false };
-  const rest = argv[0] === 'build' ? argv.slice(1) : argv.slice(0);
+  const opts = {
+    command: 'build', input: null, output: null, stdout: false, title: null, watch: false, color: 'auto',
+  };
+  let rest = argv;
+  if (argv.length && COMMANDS.has(argv[0])) {
+    opts.command = argv[0];
+    rest = argv.slice(1);
+  }
   for (let i = 0; i < rest.length; i++) {
     const a = rest[i];
     const takeValue = (flag) => {
@@ -49,7 +61,12 @@ function parseArgs(argv) {
     else if (a === '-v' || a === '--version') opts.version = true;
     else if (a === '--stdout') opts.stdout = true;
     else if (a === '--watch') opts.watch = true;
-    else if (a === '-o' || a === '--output') opts.output = takeValue(a);
+    else if (a === '--no-color') opts.color = 'never';
+    else if (a === '--color') {
+      const v = takeValue(a);
+      if (!['auto', 'always', 'never'].includes(v)) throw new Error('--color must be auto, always, or never');
+      opts.color = v;
+    } else if (a === '-o' || a === '--output') opts.output = takeValue(a);
     else if (a === '--title') opts.title = takeValue(a);
     else if (a === '-') opts.input = '-';
     else if (a.startsWith('-')) throw new Error(`unknown option: ${a}`);
@@ -60,6 +77,30 @@ function parseArgs(argv) {
 
 function titleFor(file) {
   return basename(file, extname(file));
+}
+
+/** Render ChromaMark to ANSI on stdout, from a file, `-`, or piped stdin. */
+function runRender(opts) {
+  let src;
+  try {
+    if (opts.input === '-' || (opts.input == null && !process.stdin.isTTY)) {
+      src = readFileSync(0, 'utf8');
+      if (opts.input !== '-' && !src.trim()) {
+        process.stderr.write(`error: no input file given and stdin was empty\n\n${HELP}`);
+        return 1;
+      }
+    } else if (opts.input == null) {
+      process.stderr.write(`error: render needs an input file or piped stdin\n\n${HELP}`);
+      return 1;
+    } else {
+      src = readFileSync(opts.input, 'utf8');
+    }
+  } catch (err) {
+    process.stderr.write(`error: ${err.message}\n`);
+    return 1;
+  }
+  process.stdout.write(renderAnsi(src, { color: opts.color }));
+  return 0;
 }
 
 function listCmFiles(dir) {
@@ -108,6 +149,10 @@ export function run(argv = process.argv.slice(2)) {
 
   if (opts.help) { process.stdout.write(HELP); return 0; }
   if (opts.version) { process.stdout.write(`${version()}\n`); return 0; }
+
+  if (opts.command === 'render') {
+    return runRender(opts);
+  }
 
   if (opts.input === '-' || (opts.input == null && !process.stdin.isTTY)) {
     const src = readFileSync(0, 'utf8');

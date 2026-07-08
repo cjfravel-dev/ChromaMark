@@ -24,6 +24,24 @@ import chromamark, { render, createRenderer } from '@chromamark/renderer';
 | `default` (`chromamark`)  | markdown-it plugin: `new MarkdownIt().use(chromamark, options?)`. |
 | `render(src, options?)`   | Convenience: ChromaMark string → HTML fragment.                   |
 | `createRenderer(options?)`| A `markdown-it` instance preconfigured with ChromaMark.           |
+| `renderAnsi(src, opts?)`  | ChromaMark string → ANSI-styled text for a terminal.              |
+
+### Terminal rendering
+
+`renderAnsi` walks the same parse into a TTY: tones become ANSI colors, pills
+become bracketed icon chips (`[✓ PASS]`), blocks get a colored left bar, and
+meters draw a unicode bar. It degrades to plain, icon-annotated text when color
+is off.
+
+```js
+import { renderAnsi } from '@chromamark/renderer';
+
+process.stdout.write(renderAnsi('::: success\nAll good [!ok healthy]\n:::'));
+// options: { color: 'auto' | 'always' | 'never', width?: number }
+```
+
+Color defaults to `'auto'` — on when stdout is a TTY and [`NO_COLOR`](https://no-color.org)
+is unset. The `colorEnabled(option, env?, isTTY?)` helper is exported too.
 
 ### Options
 

@@ -5,12 +5,15 @@
 
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { render as renderFragment } from '@chromamark/renderer';
+import { render as renderFragment, renderAnsi } from '@chromamark/renderer';
 
 const require = createRequire(import.meta.url);
 
 /** Render ChromaMark to an HTML fragment (no page chrome). */
 export const render = renderFragment;
+
+/** Render ChromaMark to ANSI-styled text for a terminal. */
+export { renderAnsi };
 
 let cachedTheme;
 
