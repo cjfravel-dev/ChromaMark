@@ -1,11 +1,12 @@
 name: Pages
 
-# Builds the ChromaMark site (playground + rendered docs) and deploys it to
-# GitHub Pages. Manual-only: run it from the Actions tab (or `gh workflow run
-# Pages`) after enabling Pages (Settings → Pages → Source: GitHub Actions).
-# CI validates that the site builds on every push (see ci.yml).
+# Builds the ChromaMark site (playground + rendered docs) with build-site.mjs and
+# deploys it to GitHub Pages. Requires Pages Source = "GitHub Actions"
+# (Settings → Pages). CI also validates that the site builds on every push.
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
