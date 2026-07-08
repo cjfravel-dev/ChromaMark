@@ -1,9 +1,10 @@
 name: Publish
 
-# Publishes ChromaMark packages when a GitHub Release is published:
-#   - @chromamark/renderer and @chromamark/cli to npm (needs NPM_TOKEN)
-#   - chromamark to PyPI via Trusted Publishing (OIDC — no token/secret needed)
-# npm provenance and PyPI OIDC both use the id-token permission below.
+# Publishes the chromamark Python package to PyPI when a GitHub Release is
+# published, using Trusted Publishing (OIDC — no API token or secret needed).
+#
+# npm publishing (@chromamark/renderer and @chromamark/cli) is intentionally
+# omitted for now; it will be re-added with npm Trusted Publishing.
 
 on:
   release:
@@ -11,33 +12,8 @@ on:
 
 permissions:
   contents: read
-  id-token: write
 
 jobs:
-  npm:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          registry-url: https://registry.npmjs.org
-      - run: npm install --no-audit --no-fund
-      - run: npm test --workspace @chromamark/renderer
-      - name: Publish npm packages (skips versions already on the registry)
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          for pkg in @chromamark/renderer @chromamark/cli; do
-            dir="packages/${pkg#@chromamark/}"
-            ver=$(node -p "require('./$dir/package.json').version")
-            if npm view "$pkg@$ver" version >/dev/null 2>&1; then
-              echo "$pkg@$ver already on npm — skipping."
-            else
-              npm publish --provenance --workspace "$pkg"
-            fi
-          done
-
   pypi:
     name: PyPI
     runs-on: ubuntu-latest
