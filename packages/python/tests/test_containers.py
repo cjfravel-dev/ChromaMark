@@ -139,3 +139,22 @@ def test_title_escapes_raw_html():
 def test_plain_title_unchanged():
     h = render("::: success Deploy succeeded in 3m12s\nx\n:::")
     assert '<div class="cm-title">Deploy succeeded in 3m12s</div>' in h
+
+
+def test_code_fence_inside_container_not_closed_early():
+    h = render("::: success\n```\n:::\n```\n:::")
+    assert '<div class="cm-body"><pre><code>:::\n</code></pre>' in h
+    assert "</div></div>\n<pre>" not in h
+
+
+def test_chromamark_example_in_code_fence_stays_in_container():
+    h = render("::: info Example\n```\n::: success\nhi\n:::\n```\n:::")
+    assert 'data-tone="info"' in h
+    assert 'data-tone="success"' not in h
+    assert "<pre><code>::: success\nhi\n:::\n</code></pre>" in h
+
+
+def test_tilde_fence_inside_container_is_fence_aware():
+    h = render("::: success\n~~~\n:::\n~~~\n:::")
+    assert '<div class="cm-body"><pre><code>:::\n</code></pre>' in h
+    assert "</div></div>\n<pre>" not in h

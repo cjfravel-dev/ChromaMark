@@ -116,3 +116,22 @@ test('a plain title still renders unchanged', () => {
   const html = render('::: success Deploy succeeded in 3m12s\nx\n:::');
   assert.match(html, /<div class="cm-title">Deploy succeeded in 3m12s<\/div>/);
 });
+
+test('a code fence inside a container is not closed early by a ::: line within it', () => {
+  const html = render('::: success\n```\n:::\n```\n:::');
+  assert.match(html, /<div class="cm-body"><pre><code>:::\n<\/code><\/pre>/);
+  assert.doesNotMatch(html, /<\/div><\/div>\s*<pre>/);
+});
+
+test('a ChromaMark example shown in a fenced code block stays inside the container', () => {
+  const html = render('::: info Example\n```\n::: success\nhi\n:::\n```\n:::');
+  assert.match(html, /data-tone="info"/);
+  assert.doesNotMatch(html, /data-tone="success"/);
+  assert.match(html, /<pre><code>::: success\nhi\n:::\n<\/code><\/pre>/);
+});
+
+test('a ~~~ fence inside a container is also fence-aware', () => {
+  const html = render('::: success\n~~~\n:::\n~~~\n:::');
+  assert.match(html, /<div class="cm-body"><pre><code>:::\n<\/code><\/pre>/);
+  assert.doesNotMatch(html, /<\/div><\/div>\s*<pre>/);
+});

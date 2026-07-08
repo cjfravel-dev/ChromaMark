@@ -90,15 +90,54 @@ def _make_rule(enabled):
 
         next_line = startLine
         auto_closed = False
+        fence_ch = ""
+        fence_len = 0
         while True:
             next_line += 1
             if next_line >= endLine:
                 break
             lstart = state.bMarks[next_line] + state.tShift[next_line]
             lmax = state.eMarks[next_line]
-            if lstart >= len(state.src) or state.src[lstart] != ":":
+            indent = state.sCount[next_line] - state.blkIndent
+
+            # Skip over fenced code blocks so a ::: (or fence) line inside one
+            # counts as content, not as the container's closing fence.
+            if fence_ch:
+                if indent < 4 and lstart < len(state.src) and state.src[lstart] == fence_ch:
+                    q = lstart
+                    while q < lmax and state.src[q] == fence_ch:
+                        q += 1
+                    if q - lstart >= fence_len:
+                        r = q
+                        while r < lmax and state.src[r] in (" ", "\t"):
+                            r += 1
+                        if r >= lmax:
+                            fence_ch = ""
+                            fence_len = 0
                 continue
-            if state.sCount[next_line] - state.blkIndent >= 4:
+
+            open_ch = state.src[lstart] if lstart < len(state.src) else ""
+            if indent < 4 and open_ch in ("`", "~"):
+                q = lstart
+                while q < lmax and state.src[q] == open_ch:
+                    q += 1
+                if q - lstart >= 3:
+                    ok = True
+                    if open_ch == "`":
+                        r = q
+                        while r < lmax:
+                            if state.src[r] == "`":
+                                ok = False
+                                break
+                            r += 1
+                    if ok:
+                        fence_ch = open_ch
+                        fence_len = q - lstart
+                        continue
+
+            if open_ch != ":":
+                continue
+            if indent >= 4:
                 continue
             close_len = _fence_len(state.src, lstart, lmax)
             if close_len < open_len:
