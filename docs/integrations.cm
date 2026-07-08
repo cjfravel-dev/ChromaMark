@@ -19,8 +19,8 @@ Everything here is a proposal — nothing is built yet.
 ::: fields
 Phase 0 · npm publish prep: [!success Done — dry-run OK, not published]
 Phase 0 · LLM quick reference: [!success Done]
-VS Code · left-side TOC (new): [!warning In progress]
-Phase 2 · Python renderer 4b: [!muted Todo]
+VS Code · left-side TOC (new): [!success Done]
+Phase 2 · Python renderer 4b: [!warning In progress]
 Phase 2 · ChromaDoc builder 4a: [!muted Todo]
 Phase 2 · Jupyter integration: [!muted Todo]
 Phase 1 · CLI (static HTML): [!muted Todo]
