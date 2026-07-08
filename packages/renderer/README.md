@@ -63,13 +63,32 @@ ChromaMark.autoRender();
 | `autoRender(options?)`         | Inject the theme, then render every target on the page.                |
 | `renderElement(target, opts?)` | Render one element (selector or node) in place / as a sibling.         |
 | `renderAll(selector?, opts?)`  | Render all matching elements.                                          |
+| `renderSrc(target, opts?)`     | Fetch the element's `data-chromamark-src` file and render it in place. |
 | `injectTheme(doc?)`            | Add the theme `<style>` once (idempotent).                             |
 | `render(src, opts?)`           | ChromaMark string → HTML.                                              |
 | `theme`                        | The theme CSS as a string.                                             |
 
 Targets default to `<script type="text/chromamark">`, `template.chromamark`,
-`.chromamark`, and `[data-chromamark]`. Adding `data-chromamark-auto` to the
-loading `<script>` runs `autoRender()` automatically once the DOM is ready.
+`.chromamark`, `[data-chromamark]`, and `[data-chromamark-src]`. Adding
+`data-chromamark-auto` to the loading `<script>` runs `autoRender()`
+automatically once the DOM is ready.
+
+### Load ChromaMark from an external file
+
+Point an element at a `.cm` file with `data-chromamark-src` and the bundle
+fetches and renders it — the same idea as an external script or stylesheet, so
+the page itself stays lean:
+
+```html
+<div data-chromamark-src="report.cm"></div>
+<script src="https://cdn.jsdelivr.net/npm/@chromamark/renderer/dist/chromamark.min.js"
+        data-chromamark-auto></script>
+```
+
+The file is fetched with `fetch()`, so the page must be served over `http(s)`
+(not opened as `file://`) and same-origin/CORS rules apply. If the file can't be
+loaded the element keeps its existing content and gets a `data-chromamark-error`
+attribute, so a missing file degrades gracefully instead of throwing.
 
 ## Theme
 

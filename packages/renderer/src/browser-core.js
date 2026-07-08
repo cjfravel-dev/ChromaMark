@@ -8,8 +8,10 @@ import { createRenderer, render as renderString } from './index.js';
 
 const STYLE_ID = 'chromamark-theme';
 const DONE_ATTR = 'data-chromamark-done';
+const SRC_ATTR = 'data-chromamark-src';
+const ERR_ATTR = 'data-chromamark-error';
 const DEFAULT_SELECTOR =
-  'script[type="text/chromamark"], template.chromamark, [data-chromamark], .chromamark';
+  'script[type="text/chromamark"], template.chromamark, [data-chromamark], [data-chromamark-src], .chromamark';
 
 /** The theme stylesheet (populated by the bundle via configureTheme). */
 export let theme = '';
@@ -67,6 +69,7 @@ function sourceOf(el, tag) {
 export function renderElement(target, options) {
   const el = resolve(target);
   if (!el || el.hasAttribute(DONE_ATTR)) return null;
+  if (el.hasAttribute && el.hasAttribute(SRC_ATTR)) return renderSrc(el, options);
 
   const doc = el.ownerDocument || (typeof document !== 'undefined' ? document : null);
   const tag = (el.tagName || '').toLowerCase();
@@ -87,6 +90,43 @@ export function renderElement(target, options) {
   return el;
 }
 
+/**
+ * Fetch the external ChromaMark file named by an element's data-chromamark-src
+ * and render it into that element, the way a browser loads an external script or
+ * stylesheet. Resolves to the element on success, or null when skipped/failed;
+ * it never rejects, so a missing file degrades gracefully (the element keeps its
+ * existing content and gains a data-chromamark-error marker). Requires a DOM
+ * with fetch — i.e. the page must be served over http(s), not opened as file://.
+ */
+export function renderSrc(target, options) {
+  const el = resolve(target);
+  if (!el || el.hasAttribute(DONE_ATTR)) return Promise.resolve(null);
+  const url = el.getAttribute(SRC_ATTR);
+  if (!url) return Promise.resolve(null);
+  el.setAttribute(DONE_ATTR, '');
+
+  const view = el.ownerDocument && el.ownerDocument.defaultView;
+  const doFetch = (view && view.fetch) || (typeof fetch !== 'undefined' ? fetch : null);
+  const fail = (message) => {
+    el.setAttribute(ERR_ATTR, message);
+    return null;
+  };
+  if (!doFetch) return Promise.resolve(fail('ChromaMark: fetch is unavailable'));
+
+  return Promise.resolve()
+    .then(() => doFetch(url))
+    .then((res) => {
+      if (!res || !res.ok) throw new Error(`HTTP ${res ? res.status : '?'}`);
+      return res.text();
+    })
+    .then((text) => {
+      el.innerHTML = renderString(text, options);
+      el.classList.add('chromamark-output');
+      return el;
+    })
+    .catch((err) => fail(`ChromaMark: failed to load ${url} (${(err && err.message) || err})`));
+}
+
 /** Render every element matching the selector (defaults to the standard targets). */
 export function renderAll(selector, options) {
   const nodes = document.querySelectorAll(selector || DEFAULT_SELECTOR);
@@ -103,6 +143,7 @@ export const ChromaMark = {
   render,
   renderElement,
   renderAll,
+  renderSrc,
   injectTheme,
   autoRender,
   createRenderer,

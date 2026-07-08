@@ -6059,7 +6059,9 @@ function render(src, options = {}) {
 // src/browser-core.js
 var STYLE_ID = "chromamark-theme";
 var DONE_ATTR = "data-chromamark-done";
-var DEFAULT_SELECTOR = 'script[type="text/chromamark"], template.chromamark, [data-chromamark], .chromamark';
+var SRC_ATTR = "data-chromamark-src";
+var ERR_ATTR = "data-chromamark-error";
+var DEFAULT_SELECTOR = 'script[type="text/chromamark"], template.chromamark, [data-chromamark], [data-chromamark-src], .chromamark';
 var theme = "";
 function configureTheme(css) {
   theme = css || "";
@@ -6097,6 +6099,7 @@ function sourceOf(el, tag) {
 function renderElement(target, options) {
   const el = resolve(target);
   if (!el || el.hasAttribute(DONE_ATTR)) return null;
+  if (el.hasAttribute && el.hasAttribute(SRC_ATTR)) return renderSrc(el, options);
   const doc = el.ownerDocument || (typeof document !== "undefined" ? document : null);
   const tag = (el.tagName || "").toLowerCase();
   const html = render(dedent(sourceOf(el, tag)), options);
@@ -6112,6 +6115,28 @@ function renderElement(target, options) {
   el.classList.add("chromamark-output");
   return el;
 }
+function renderSrc(target, options) {
+  const el = resolve(target);
+  if (!el || el.hasAttribute(DONE_ATTR)) return Promise.resolve(null);
+  const url = el.getAttribute(SRC_ATTR);
+  if (!url) return Promise.resolve(null);
+  el.setAttribute(DONE_ATTR, "");
+  const view = el.ownerDocument && el.ownerDocument.defaultView;
+  const doFetch = view && view.fetch || (typeof fetch !== "undefined" ? fetch : null);
+  const fail = (message) => {
+    el.setAttribute(ERR_ATTR, message);
+    return null;
+  };
+  if (!doFetch) return Promise.resolve(fail("ChromaMark: fetch is unavailable"));
+  return Promise.resolve().then(() => doFetch(url)).then((res) => {
+    if (!res || !res.ok) throw new Error(`HTTP ${res ? res.status : "?"}`);
+    return res.text();
+  }).then((text2) => {
+    el.innerHTML = render(text2, options);
+    el.classList.add("chromamark-output");
+    return el;
+  }).catch((err) => fail(`ChromaMark: failed to load ${url} (${err && err.message || err})`));
+}
 function renderAll(selector, options) {
   const nodes = document.querySelectorAll(selector || DEFAULT_SELECTOR);
   return Array.from(nodes).map((el) => renderElement(el, options));
@@ -6124,6 +6149,7 @@ var ChromaMark = {
   render: render2,
   renderElement,
   renderAll,
+  renderSrc,
   injectTheme,
   autoRender,
   createRenderer,
@@ -6155,5 +6181,6 @@ export {
   render2 as render,
   renderAll,
   renderElement,
+  renderSrc,
   theme
 };
