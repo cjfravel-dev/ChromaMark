@@ -2,7 +2,7 @@
  * Assembles the GitHub Pages site into an output directory (default: _site):
  *   - playground/index.html  (the editor, with the browser bundle inlined so it
  *     is fully self-contained)
- *   - spec.html, gallery.html, integrations.html  (rendered via the CLI)
+ *   - spec.html, gallery.html  (rendered via the CLI)
  *   - index.html             (a small landing page)
  *
  * Used by the Pages workflow and runnable locally:  node scripts/build-site.mjs
