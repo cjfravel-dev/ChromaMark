@@ -1,6 +1,6 @@
 # ChromaMark Specification
 
-> **Base dialect:** CommonMark + GFM (tables, strikethrough, task lists, autolinks)
+> **Base dialect:** CommonMark + GFM (tables, strikethrough, autolinks)
 > **File extensions:** `.cm` · **Info-string / fence tag:** `chromamark`
 >
 > _This document is written **in ChromaMark**. On a plain markdown viewer (e.g._
@@ -35,7 +35,9 @@ syntax we could find.
 ## 2 · Design principles
 
 1. **Superset of CommonMark + GFM.** Every valid GFM document is valid
-   ChromaMark and renders identically. We only add; we never redefine.
+   ChromaMark and renders identically, with one deliberate exception: raw HTML
+   is escaped rather than passed through (§3), preserving principle 5's safety.
+   We only add; we never redefine.
 2. **Token-lean.** Each construct is measured against its HTML equivalent; if it
    isn't meaningfully cheaper, it doesn't earn a place.
 3. **Graceful degradation.** Under a plain markdown engine — or read as raw text
@@ -53,9 +55,10 @@ syntax we could find.
 
 ChromaMark **is** CommonMark + GFM. Everything in the
 [CommonMark spec](https://spec.commonmark.org/) and the
-[GFM extensions](https://github.github.com/gfm/) (tables, task lists,
-strikethrough, autolinks) works unchanged. ChromaMark reserves three previously
-inert lexical niches:
+[GFM extensions](https://github.github.com/gfm/) (tables, strikethrough,
+autolinks) works unchanged — **except that raw HTML is disabled for safety**:
+inline and block HTML are escaped and shown as literal text, never injected
+(principle 5). ChromaMark reserves three previously inert lexical niches:
 
 | Sigil            | ChromaMark meaning        | In plain CommonMark it was… |
 | ---------------- | ------------------------- | --------------------------- |
