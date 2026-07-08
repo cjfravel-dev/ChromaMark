@@ -31,7 +31,7 @@ A colored callout shows the same ratio — `::: success` / body / `:::` is 10 to
 versus 22 for the `<div class="callout…">…</div>` equivalent — and it compounds
 across a status-heavy report.
 
-📄 **[Read the spec](./SPEC.md)** · 🎨 **[Playground](https://cjfravel-dev.github.io/ChromaMark/playground/)** · 🖼️ **[Gallery](https://cjfravel-dev.github.io/ChromaMark/gallery.html)**
+📄 **[Read the spec](./SPEC.md)** · 📐 **[Grammar](./docs/grammar.ebnf)** · 🎨 **[Playground](https://cjfravel-dev.github.io/ChromaMark/playground/)** · 🖼️ **[Gallery](https://cjfravel-dev.github.io/ChromaMark/gallery.html)**
 
 ## What it looks like
 
@@ -199,7 +199,7 @@ display_chromamark("::: success\nRun complete [=success 100%]\n:::")
 ```
 ChromaMark/
 ├── SPEC.md                     the specification (written in ChromaMark)
-├── docs/                       llms.txt, integrations roadmap, logo assets
+├── docs/                       llms.txt, grammar.ebnf, integrations roadmap, logo assets
 ├── examples/demo.cm            a sample document exercising every construct
 ├── packages/
 │   ├── renderer/               @chromamark/renderer — parser, theme, browser bundle

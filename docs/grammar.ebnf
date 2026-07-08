@@ -1,0 +1,161 @@
+(* ============================================================================
+   ChromaMark grammar — the extension layer over CommonMark + GFM
+   ----------------------------------------------------------------------------
+   Notation: W3C-style EBNF (https://www.w3.org/TR/xml/#sec-notation).
+     A ::= B          production
+     A B              sequence
+     A | B            alternatives
+     ( A )            grouping
+     A?               zero or one
+     A*               zero or more
+     A+               one or more
+     A - B            A but not B
+     "lit"            literal string
+     [a-z]            character range
+     #xHH             a character by hex code point
+     (* … *)          comment
+
+   Scope. This file specifies ONLY the constructs ChromaMark adds. The base
+   language is CommonMark (https://spec.commonmark.org/) plus the GFM tables,
+   strikethrough, and autolink extensions (https://github.github.com/gfm/), with
+   one change: raw HTML is escaped and shown as literal text, never parsed.
+   Every extension below is designed to degrade to readable CommonMark text, so
+   a plain Markdown engine renders the literal source without loss.
+
+   Case. Kinds, tones, and aliases are matched case-insensitively.
+
+   Authoritative implementations: packages/renderer/src/{containers,inline,
+   critic,tones}.js (JS) and packages/python/src/chromamark/ (Python). Where this
+   grammar and those parsers disagree, the parsers win — please file an issue.
+   ========================================================================== *)
+
+
+(* ---------------------------------------------------------------------------
+   Document
+   --------------------------------------------------------------------------- *)
+
+document        ::= block*
+block           ::= container
+                  | fields
+                  | commonmark-block      (* headings, paragraphs, lists,
+                                             blockquotes, fenced code, GFM
+                                             tables, thematic breaks, … *)
+
+
+(* ---------------------------------------------------------------------------
+   Block extension: containers  (colored callouts, collapsibles)
+   ---------------------------------------------------------------------------
+   A container is fenced by a run of three or more colons. It closes at the
+   first fence line whose colon run is at least as long as the opener's and
+   which carries no trailing text. To NEST containers, the OUTER fence must use
+   MORE colons than the inner one.
+
+   Streaming / degradation: if the closing fence never arrives, the container
+   auto-closes at end of input and still renders in full.
+   --------------------------------------------------------------------------- *)
+
+container       ::= callout | details
+callout         ::= callout-open newline container-body? fence-close?
+details         ::= details-open newline container-body? fence-close?
+container-body  ::= block*                 (* parsed as CommonMark + ChromaMark *)
+
+callout-open    ::= indent colons S+ callout-kind ( S+ "color=" colorval )* ( S+ title )?
+details-open    ::= indent colons S+ "details" ( S+ details-attr )* ( S+ summary )?
+fence-close     ::= indent colons S*       (* colon count >= its opener's *)
+
+callout-kind    ::= tone | alias | "block"
+details-attr    ::= "open" | "color=" colorval | tone | alias
+                    (* attrs may appear in any order before the summary;
+                       "open" starts the section expanded *)
+
+title           ::= inline-run             (* rendered inline; raw HTML escaped *)
+summary         ::= inline-run             (* rendered inline; raw HTML escaped *)
+
+
+(* ---------------------------------------------------------------------------
+   Block extension: fields  (key / value definition list)
+   --------------------------------------------------------------------------- *)
+
+fields          ::= fields-open newline field-line* fence-close?
+fields-open     ::= indent colons S+ "fields" S*
+field-line      ::= ( key ( ":" value )? )? newline
+key             ::= ( char - ( ":" | #x0A ) )*      (* text up to the first ":" *)
+value           ::= inline-run                       (* raw HTML escaped *)
+
+
+(* ---------------------------------------------------------------------------
+   Inline extensions: pills, colored text, meters
+   ---------------------------------------------------------------------------
+   Each is self-delimiting on a single line: the closing "]" must appear before
+   the next newline. An unrecognized spec makes the whole token stay literal.
+   --------------------------------------------------------------------------- *)
+
+pill            ::= "[" "!" spec ( S+ label )? "]"    (* no label ⇒ SPEC uppercased *)
+colored-text    ::= "[" "." spec S+ label "]"
+meter           ::= "[" "=" spec S+ meter-value "]"
+
+spec            ::= tone | alias | "color=" colorval | hexcolor
+label           ::= ( char - ( "]" | #x0A ) )+
+meter-value     ::= number "%" | number "/" number   (* the divisor must be != 0 *)
+
+
+(* ---------------------------------------------------------------------------
+   Inline extension: change tracking  (CriticMarkup)
+   --------------------------------------------------------------------------- *)
+
+critic          ::= insertion | deletion | substitution | highlight | comment
+insertion       ::= "{++" ctext "++}"
+deletion        ::= "{--" ctext "--}"
+substitution    ::= "{~~" ctext "~>" ctext "~~}"
+highlight       ::= "{==" ctext "==}"
+comment         ::= "{>>" ctext "<<}"
+ctext           ::= char*                              (* treated as plain text *)
+
+
+(* ---------------------------------------------------------------------------
+   Color vocabulary
+   ---------------------------------------------------------------------------
+   Prefer the six semantic tones — they adapt to the reader's light/dark theme.
+   The color= / #hex escape hatch is for the rare case a tone will not do.
+   --------------------------------------------------------------------------- *)
+
+tone            ::= "success" | "danger" | "warning" | "info" | "tip" | "muted"
+alias           ::= "ok" | "pass" | "error" | "fail" | "warn" | "note" | "hint" | "skip"
+                    (* ok, pass   -> success
+                       error, fail -> danger
+                       warn        -> warning
+                       note        -> info
+                       hint        -> tip
+                       skip        -> muted *)
+
+colorval        ::= hexcolor | css-name        (* functional forms are rejected *)
+hexcolor        ::= "#" ( hexdig hexdig hexdig
+                        | hexdig hexdig hexdig hexdig hexdig hexdig
+                        | hexdig hexdig hexdig hexdig hexdig hexdig hexdig hexdig )
+css-name        ::= letter ( letter | digit )*
+
+
+(* ---------------------------------------------------------------------------
+   Escaping
+   ---------------------------------------------------------------------------
+   A backslash before an opener makes it literal, e.g. "\:::", "\[!", "\[.",
+   "\[=". Inside a fenced code block or an inline code span, no ChromaMark
+   construct is interpreted. Standard CommonMark backslash escapes also apply.
+   --------------------------------------------------------------------------- *)
+
+
+(* ---------------------------------------------------------------------------
+   Terminals
+   --------------------------------------------------------------------------- *)
+
+colons          ::= ":" ":" ":" ":"*           (* three or more colons *)
+indent          ::= ( " " | tab )*             (* up to 3 columns; 4+ is code *)
+inline-run      ::= ( char - #x0A )*           (* one line of inline content *)
+number          ::= digit+ ( "." digit+ )?
+digit           ::= [0-9]
+hexdig          ::= [0-9] | [a-f] | [A-F]
+letter          ::= [a-zA-Z]
+S               ::= " " | tab
+tab             ::= #x09
+newline         ::= #x0A
+char            ::= (* any Unicode scalar value *)
