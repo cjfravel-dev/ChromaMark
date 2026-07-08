@@ -60,3 +60,37 @@ def test_nested_block_uses_more_colons():
     # outer fence must be longer than the inner ::: fields
     assert "::::" in cm
     assert "::: fields" in cm
+
+
+def test_builder_fields_value_newline_does_not_inject_rows():
+    from chromamark import render
+    cm = ChromaDoc().fields(k="val\nkey2: val2").to_cm()
+    assert render(cm).count("<dt>") == 1
+
+
+def test_builder_title_newline_colon_does_not_break_container():
+    from chromamark import render
+    h = ChromaDoc().success("t\n:::\ninjected").to_html()
+    assert h.count('class="cm-block"') == 1
+    assert '<div class="cm-title">t ::: injected</div>' in h
+
+
+def test_builder_pill_label_with_bracket_is_escaped():
+    from chromamark import render
+    h = render("x " + ChromaDoc().pill("success", "a]b") + " y")
+    assert '<span class="cm-pill" data-tone="success">a]b</span>' in h
+
+
+def test_builder_tint_label_with_bracket_is_escaped():
+    from chromamark import render
+    h = render("x " + ChromaDoc().tint("danger", "a]b") + " y")
+    assert "a]b" in h
+    assert '<span class="cm-text" data-tone="danger">a]b</span>' in h
+
+
+def test_builder_table_cell_with_pipe_is_escaped():
+    from chromamark import render
+    cm = ChromaDoc().table(["A", "B"], [["c|d", "e"]]).to_cm()
+    h = render(cm)
+    assert "c|d" in h
+    assert h.count("<td>") == 2

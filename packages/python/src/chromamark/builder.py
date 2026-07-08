@@ -5,6 +5,24 @@ import re
 _FENCE_RUN = re.compile(r"(?m)^\s*(:{3,})")
 
 
+def _line(text):
+    """Collapse newlines so a value stays within its single-line context
+    (titles, summaries, field keys/values) instead of injecting new lines."""
+    return str(text).replace("\r\n", " ").replace("\r", " ").replace("\n", " ")
+
+
+def _inline_label(text):
+    """Escape a value used as an inline-construct label so a ``]`` can't
+    truncate the construct (and a stray backslash can't mis-escape); newlines
+    are collapsed."""
+    return _line(text).replace("\\", "\\\\").replace("]", "\\]")
+
+
+def _cell(text):
+    """Escape a table cell so a ``|`` can't break the column layout."""
+    return _line(text).replace("\\", "\\\\").replace("|", "\\|")
+
+
 class ChromaDoc:
     """Assemble a ChromaMark document programmatically.
 
@@ -18,13 +36,13 @@ class ChromaDoc:
 
     # ---- inline helpers (return strings) ----
     def pill(self, tone, label=None):
-        return f"[!{tone}]" if label is None else f"[!{tone} {label}]"
+        return f"[!{tone}]" if label is None else f"[!{tone} {_inline_label(label)}]"
 
     def tint(self, tone, label):
-        return f"[.{tone} {label}]"
+        return f"[.{tone} {_inline_label(label)}]"
 
     def meter(self, tone, value):
-        return f"[={tone} {value}]"
+        return f"[={tone} {_inline_label(value)}]"
 
     # ---- block builders (append, return self) ----
     def _add(self, chunk):
@@ -62,7 +80,7 @@ class ChromaDoc:
         return f"{head}\n{fence}"
 
     def block(self, tone, title=None, body=None):
-        opener = tone if not title else f"{tone} {title}"
+        opener = tone if not title else f"{tone} {_line(title)}"
         return self._add(self._container(opener, body))
 
     def success(self, title=None, body=None):
@@ -89,7 +107,7 @@ class ChromaDoc:
             parts.append("open")
         if tone:
             parts.append(tone)
-        parts.append(summary)
+        parts.append(_line(summary))
         return self._add(self._container(" ".join(parts), body))
 
     def fields(self, _map=None, **kwargs):
@@ -97,14 +115,14 @@ class ChromaDoc:
         if _map:
             rows.update(_map)
         rows.update(kwargs)
-        lines = "\n".join(f"{k}: {v}" for k, v in rows.items())
+        lines = "\n".join(f"{_line(k)}: {_line(v)}" for k, v in rows.items())
         fence = self._fence_for(lines)
         return self._add(f"{fence} fields\n{lines}\n{fence}")
 
     def table(self, headers, rows):
-        head = "| " + " | ".join(str(h) for h in headers) + " |"
+        head = "| " + " | ".join(_cell(h) for h in headers) + " |"
         sep = "| " + " | ".join("---" for _ in headers) + " |"
-        body = "\n".join("| " + " | ".join(str(c) for c in row) + " |" for row in rows)
+        body = "\n".join("| " + " | ".join(_cell(c) for c in row) + " |" for row in rows)
         return self._add("\n".join([head, sep, body]))
 
     # ---- output ----
