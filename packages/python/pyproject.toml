@@ -16,7 +16,7 @@ classifiers = [
   "Topic :: Text Processing :: Markup :: Markdown",
   "Framework :: Jupyter",
 ]
-dependencies = ["markdown-it-py>=3.0"]
+dependencies = ["markdown-it-py[linkify]>=3.0"]
 
 [project.optional-dependencies]
 test = ["pytest"]

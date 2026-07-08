@@ -18,7 +18,7 @@ __version__ = "0.1.0"
 
 def create_renderer(**options):
     """Return a markdown-it-py instance configured for ChromaMark (CommonMark + GFM)."""
-    md = MarkdownIt("js-default", {"html": False})
+    md = MarkdownIt("js-default", {"html": False, "linkify": True}).enable("linkify")
     md.use(chromamark_plugin, **options)
     return md
 

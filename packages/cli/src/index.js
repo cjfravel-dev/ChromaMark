@@ -4,8 +4,10 @@
  */
 
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
 import { render as renderFragment } from '@chromamark/renderer';
+
+const require = createRequire(import.meta.url);
 
 /** Render ChromaMark to an HTML fragment (no page chrome). */
 export const render = renderFragment;
@@ -15,8 +17,7 @@ let cachedTheme;
 /** The ChromaMark theme stylesheet, read from @chromamark/renderer. */
 export function theme() {
   if (cachedTheme === undefined) {
-    const url = import.meta.resolve('@chromamark/renderer/theme.css');
-    cachedTheme = readFileSync(fileURLToPath(url), 'utf8');
+    cachedTheme = readFileSync(require.resolve('@chromamark/renderer/theme.css'), 'utf8');
   }
   return cachedTheme;
 }

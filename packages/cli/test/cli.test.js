@@ -6,8 +6,19 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { compile, render, theme } from '../src/index.js';
+import { run } from '../src/cli.js';
 
 const BIN = fileURLToPath(new URL('../bin/chromamark.js', import.meta.url));
+
+test('run() returns 1 for a missing input without throwing', () => {
+  const err = process.stderr.write;
+  process.stderr.write = () => true; // silence expected error output
+  try {
+    assert.equal(run(['/no/such/file-xyz.cm']), 1);
+  } finally {
+    process.stderr.write = err;
+  }
+});
 
 test('compile produces a self-contained HTML page', () => {
   const html = compile('::: success\nAll good [!pass]\n:::', { title: 'Report' });

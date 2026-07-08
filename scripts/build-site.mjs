@@ -10,11 +10,11 @@
 
 import { readFileSync, writeFileSync, mkdirSync, copyFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { compile } from '../packages/cli/src/index.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const out = join(root, process.argv[2] || '_site');
+const out = resolve(root, process.argv[2] || '_site');
 mkdirSync(join(out, 'playground'), { recursive: true });
 mkdirSync(join(out, 'assets'), { recursive: true });
 

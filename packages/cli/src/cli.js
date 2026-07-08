@@ -107,13 +107,14 @@ export function run(argv = process.argv.slice(2)) {
   }
   if (opts.input == null) { process.stderr.write(HELP); return 1; }
 
-  const info = statSync(opts.input);
+  let info;
   const rebuild = () => {
     if (info.isDirectory()) buildDir(opts.input, opts.output);
     else buildFile(opts.input, opts.output, opts, true);
   };
 
   try {
+    info = statSync(opts.input);
     rebuild();
   } catch (err) {
     process.stderr.write(`error: ${err.message}\n`);
@@ -122,9 +123,14 @@ export function run(argv = process.argv.slice(2)) {
 
   if (opts.watch && !opts.stdout) {
     process.stderr.write('watching for changes… (Ctrl+C to stop)\n');
-    watch(opts.input, { recursive: info.isDirectory() }, () => {
+    const onChange = () => {
       try { rebuild(); } catch (err) { process.stderr.write(`error: ${err.message}\n`); }
-    });
+    };
+    try {
+      watch(opts.input, { recursive: info.isDirectory() }, onChange);
+    } catch {
+      watch(opts.input, onChange); // non-recursive fallback (older Node / platforms)
+    }
     return 0;
   }
   return 0;
