@@ -1,21 +1,16 @@
-'use strict';
-
 /**
  * ChromaMark VS Code extension. Contributes the ChromaMark renderer to the
- * built-in Markdown preview (via extendMarkdownIt) so `:::` blocks, pills,
- * meters, fields and inline diff render live. Syntax highlighting is provided
- * separately by the injection grammar in syntaxes/.
+ * built-in Markdown preview so `:::` blocks, pills, meters, fields and inline
+ * diff render live. Syntax highlighting is provided by the injection grammar in
+ * syntaxes/.
  *
- * The renderer is an ES module; it is imported dynamically during activation so
- * the CommonJS extension host can await it before extendMarkdownIt is called.
+ * Bundled with esbuild (renderer + markdown-it inlined) so the VSIX is
+ * self-contained and `extendMarkdownIt` can apply the plugin synchronously.
  */
 
-let chromamark;
+import chromamark from '@chromamark/renderer';
 
-async function activate() {
-  const mod = await import('@chromamark/renderer');
-  chromamark = mod.default;
-
+export function activate() {
   return {
     extendMarkdownIt(md) {
       return md.use(chromamark);
@@ -23,6 +18,4 @@ async function activate() {
   };
 }
 
-function deactivate() {}
-
-module.exports = { activate, deactivate };
+export function deactivate() {}

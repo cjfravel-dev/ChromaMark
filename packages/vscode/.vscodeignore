@@ -1,6 +1,9 @@
-.vscode/**
-.vscode-test/**
-**/*.map
-**/.eslintrc.json
+# Sources & build tooling (the shipped code is the bundled dist/extension.js)
+src/**
+build.mjs
+.vscodeignore
 .gitignore
-node_modules/.bin/**
+node_modules/**
+**/*.map
+
+# Keep in the VSIX: dist/, media/, syntaxes/, package.json, README.md, LICENSE

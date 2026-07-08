@@ -42,12 +42,25 @@ From the repository root:
 
 ```bash
 npm install
-npm run build --workspace @chromamark/renderer
+npm run build --workspace @chromamark/renderer   # build the renderer
+npm run build --workspace chromamark-vscode       # bundle the extension
 ```
 
 Then press <kbd>F5</kbd> in VS Code to launch an Extension Development Host and
 open any `.md` / `.cm` file with the preview.
 
+## Build & install the VSIX
+
+```bash
+npm run package --workspace chromamark-vscode      # → chromamark-vscode-0.1.0.vsix
+code --install-extension packages/vscode/chromamark-vscode-0.1.0.vsix --force
+```
+
+The extension is bundled with esbuild (the renderer and markdown-it are inlined),
+so the VSIX is self-contained. After installing, open a `.cm`/`.md` file and run
+**Markdown: Open Preview** (`Ctrl+Shift+V` / `Cmd+Shift+V`).
+
 ## License
 
 MIT
+
