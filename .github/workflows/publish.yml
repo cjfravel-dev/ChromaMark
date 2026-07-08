@@ -1,11 +1,9 @@
 name: Publish
 
-# Publishes ChromaMark artifacts when a GitHub Release is published:
-#   - @chromamark/renderer and @chromamark/cli to npm       (needs NPM_TOKEN)
-#   - the chromamark-vscode extension to the VS Code Marketplace (needs VSCE_PAT),
-#     and attaches the packaged .vsix to the release.
-# npm provenance is attached via the id-token permission below — no need to set
-# it in package.json.
+# Publishes @chromamark/renderer and @chromamark/cli to npm when a GitHub
+# Release is published. Requires an NPM_TOKEN secret (automation token).
+# Provenance is attached via the id-token permission below — no need to set it
+# in package.json.
 
 on:
   release:
@@ -32,37 +30,3 @@ jobs:
       - run: npm publish --provenance --workspace @chromamark/cli
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-  vscode:
-    name: VS Code extension
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write # attach the packaged .vsix to the release
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - run: npm install --no-audit --no-fund
-      - name: Package the extension
-        run: npm run package --workspace chromamark-vscode
-      - name: Publish to the VS Code Marketplace
-        working-directory: packages/vscode
-        env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
-        run: |
-          version=$(node -p "require('./package.json').version")
-          published=$(npx --yes @vscode/vsce show chromamark.chromamark-vscode --json 2>/dev/null \
-            | node -e "let s='';process.stdin.on('data',c=>s+=c);process.stdin.on('end',()=>{try{const j=JSON.parse(s);console.log((j.versions&&j.versions[0]&&j.versions[0].version)||'')}catch{console.log('')}})")
-          if [ "$version" = "$published" ]; then
-            echo "chromamark-vscode@$version is already on the Marketplace — skipping publish."
-          else
-            npx --yes @vscode/vsce publish --packagePath "chromamark-vscode-$version.vsix"
-          fi
-      - name: Attach the .vsix to the release
-        working-directory: packages/vscode
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          version=$(node -p "require('./package.json').version")
-          gh release upload "${{ github.event.release.tag_name }}" "chromamark-vscode-$version.vsix" --clobber
