@@ -240,3 +240,26 @@ def container_plugin(md, enabled):
     md.add_render_rule("cm_container_open", render_open)
     md.add_render_rule("cm_container_close", render_close)
     md.add_render_rule("cm_fields", render_fields)
+
+    def sanitize_bodies(state):
+        # Container bodies are always safe: escape any raw HTML inside a
+        # container so ChromaMark stays consistent with its force-escaped
+        # titles/fields even on a host MarkdownIt with html=True. Raw HTML
+        # outside a container still honors the host setting. Under the default
+        # html=False there are no html_block/html_inline tokens, so this is a
+        # no-op.
+        depth = 0
+        for token in state.tokens:
+            if token.type == "cm_container_open":
+                depth += 1
+            elif token.type == "cm_container_close":
+                depth -= 1
+            elif depth > 0:
+                if token.type == "html_block":
+                    token.content = escapeHtml(token.content)
+                elif token.type == "inline" and token.children:
+                    for child in token.children:
+                        if child.type == "html_inline":
+                            child.content = escapeHtml(child.content)
+
+    md.core.ruler.push("cm_sanitize_bodies", sanitize_bodies)

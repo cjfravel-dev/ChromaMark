@@ -1,4 +1,13 @@
 from chromamark import render
+from markdown_it import MarkdownIt
+
+from chromamark.plugin import chromamark_plugin
+
+
+def _html_true():
+    md = MarkdownIt("js-default", {"html": True, "linkify": True}).enable("linkify")
+    md.use(chromamark_plugin)
+    return md
 
 
 def test_bare_tone_block():
@@ -158,3 +167,27 @@ def test_tilde_fence_inside_container_is_fence_aware():
     h = render("::: success\n~~~\n:::\n~~~\n:::")
     assert '<div class="cm-body"><pre><code>:::\n</code></pre>' in h
     assert "</div></div>\n<pre>" not in h
+
+
+def test_container_body_escapes_raw_block_html_on_html_true_host():
+    h = _html_true().render("::: success\n<img src=x onerror=alert(1)>\n:::")
+    assert "<img" not in h
+    assert "&lt;img" in h
+
+
+def test_container_body_escapes_inline_html_on_html_true_host():
+    h = _html_true().render("::: info\ntext <b>bold</b> more\n:::")
+    assert "<b>bold</b>" not in h
+    assert "&lt;b&gt;bold&lt;/b&gt;" in h
+
+
+def test_details_body_escapes_raw_html_on_html_true_host():
+    h = _html_true().render("::: details Summary\n<script>alert(1)</script>\n:::")
+    assert "<script>" not in h
+    assert "&lt;script&gt;" in h
+
+
+def test_html_outside_container_passes_through_on_html_true_host():
+    h = _html_true().render("<div>outside</div>\n\n::: success\n<b>in</b>\n:::")
+    assert "<div>outside</div>" in h
+    assert "&lt;b&gt;in&lt;/b&gt;" in h

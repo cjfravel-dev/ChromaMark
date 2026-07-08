@@ -1,6 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import MarkdownIt from 'markdown-it';
 import { render } from '../src/index.js';
+import chromamark from '../src/index.js';
+
+const htmlTrue = () => new MarkdownIt({ html: true, linkify: true }).use(chromamark);
 
 test('a bare tone container renders a colored block with a default title', () => {
   const html = render('::: success\nAll 247 tests passed.\n:::');
@@ -134,4 +138,28 @@ test('a ~~~ fence inside a container is also fence-aware', () => {
   const html = render('::: success\n~~~\n:::\n~~~\n:::');
   assert.match(html, /<div class="cm-body"><pre><code>:::\n<\/code><\/pre>/);
   assert.doesNotMatch(html, /<\/div><\/div>\s*<pre>/);
+});
+
+test('container bodies escape raw block HTML even on an html:true host', () => {
+  const html = htmlTrue().render('::: success\n<img src=x onerror=alert(1)>\n:::');
+  assert.doesNotMatch(html, /<img/);
+  assert.match(html, /&lt;img/);
+});
+
+test('inline raw HTML in a container body is escaped on an html:true host', () => {
+  const html = htmlTrue().render('::: info\ntext <b>bold</b> more\n:::');
+  assert.doesNotMatch(html, /<b>bold<\/b>/);
+  assert.match(html, /&lt;b&gt;bold&lt;\/b&gt;/);
+});
+
+test('details bodies also escape raw HTML on an html:true host', () => {
+  const html = htmlTrue().render('::: details Summary\n<script>alert(1)</script>\n:::');
+  assert.doesNotMatch(html, /<script>/);
+  assert.match(html, /&lt;script&gt;/);
+});
+
+test('raw HTML outside a container still passes through on an html:true host', () => {
+  const html = htmlTrue().render('<div>outside</div>\n\n::: success\n<b>in</b>\n:::');
+  assert.match(html, /<div>outside<\/div>/);
+  assert.match(html, /&lt;b&gt;in&lt;\/b&gt;/);
 });
