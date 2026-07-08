@@ -46,9 +46,8 @@ Review locally: open any `.cm` in VS Code (renders as preview with the new left 
 :::
 
 ::: success Shipped & live
-- npm: `@chromamark/renderer@0.1.0` **published** (verified from the registry).
-- npm: `@chromamark/cli` — pending a re-publish (first attempt's 2FA expired).
-- GitHub Pages **live** via Actions: https://cjfravel-dev.github.io/ChromaMark/ (landing + playground + spec/gallery/roadmap).
+- npm: `@chromamark/renderer@0.1.0` and `@chromamark/cli@0.1.0` **published** (both verified from the registry; `npx @chromamark/cli` works).
+- GitHub Pages **live** via Actions: https://cjfravel-dev.github.io/ChromaMark/ (landing + playground + spec + gallery).
 - Repo is public; CI + Pages workflows green.
 :::
 
