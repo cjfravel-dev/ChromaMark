@@ -16,3 +16,12 @@ out/
 
 # Rendered artifacts
 scripts/*.out.html
+
+# Python
+packages/python/.venv/
+packages/python/dist/
+packages/python/build/
+packages/python/*.egg-info/
+packages/python/src/*.egg-info/
+__pycache__/
+.pytest_cache/
