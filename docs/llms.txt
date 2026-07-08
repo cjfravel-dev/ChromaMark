@@ -45,6 +45,7 @@ syntax beyond normal Markdown; if in doubt, plain Markdown always works.
 - Strict superset: tables, lists, code fences, **bold**, etc. all work.
 - ⚠️ Do NOT wrap pills in backticks — `` `[!pass]` `` renders as literal code, not a pill.
 - Pills work inside table cells and headings.
+- Block titles and details summaries render inline too — pills, colored text, meters, and markdown all work there (raw HTML is escaped).
 - Prefer the 6 semantic tones (they adapt to light/dark) over `color=#hex`.
 - Unknown/unsupported constructs degrade to readable literal text.
 - File extension `.cm`; fenced-code info tag is `chromamark`.

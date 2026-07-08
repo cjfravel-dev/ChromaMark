@@ -102,12 +102,15 @@ Fenced containers, aligned with the widely-used `:::` admonition convention
 - **attrs** — optional `key=value` tokens or flags _immediately_ after the kind.
   Recognized: `color=…` (override hue) and `open` (details only). Attribute
   parsing stops at the first token that is neither `key=value` nor a known flag.
-- **title** — the remainder of the opener line; free text, optional.
+- **title** — the remainder of the opener line; optional. Rendered as **inline
+  content**, so it may contain pills, colored text, meters, inline diff, and
+  ordinary markdown (`**bold**`, `` `code` ``, links). Raw HTML in a title is
+  escaped, not injected.
 
 **Live examples** (these render as real callouts above/below):
 
 ```chromamark
-::: success
+::: success Deploy [!ok healthy] · 3/3 replicas
 All 247 tests passed.
 :::
 
@@ -167,6 +170,14 @@ on the opener line, before the hidden body).
 
 - Collapsed by default; add the `open` flag to start expanded.
 - An optional semantic token colors the header, e.g. `::: details danger …`.
+- The **summary** renders as inline content (pills, colored text, meters, and
+  markdown all work), the same as a block title.
+
+```chromamark
+::: details danger Integration failures [!fail 3 of 88]
+FAILED test_recon_merge_precedence — expected config to win
+:::
+```
 
 ::: details A real collapsible — click to expand
 This body is hidden until you expand it. It may contain **any** markdown,

@@ -163,6 +163,18 @@ def container_plugin(md, enabled):
         tone = f' data-tone="{meta["tone"]}"' if (not meta.get("color") and meta.get("tone")) else ""
         return custom, style, tone
 
+    def render_inline_safe(text, options, env):
+        # Render a title/summary/field value as inline content (pills, colored
+        # text, meters, markdown) while escaping any raw HTML. Force escaping by
+        # rewriting html_inline tokens to text rather than mutating md.options,
+        # so a shared instance stays thread-safe.
+        inline_tokens = md.parseInline(text, env)
+        for tok in inline_tokens:
+            for child in tok.children or ():
+                if child.type == "html_inline":
+                    child.type = "text"
+        return md.renderer.render(inline_tokens, options, env)
+
     def render_open(self, tokens, idx, options, env):
         meta = tokens[idx].meta
         custom, style, tone = decorate(meta)
@@ -170,30 +182,20 @@ def container_plugin(md, enabled):
             open_attr = " open" if meta.get("open") else ""
             return (
                 f'<details class="cm-details{custom}"{tone}{style}{open_attr}>'
-                f'<summary>{escapeHtml(meta["summary"])}</summary><div class="cm-body">'
+                f'<summary>{render_inline_safe(meta["summary"], options, env)}</summary><div class="cm-body">'
             )
         html = f'<div class="cm-block{custom}"{tone}{style}>'
         if meta.get("title"):
-            html += f'<div class="cm-title">{escapeHtml(meta["title"])}</div>'
+            html += f'<div class="cm-title">{render_inline_safe(meta["title"], options, env)}</div>'
         return html + '<div class="cm-body">'
 
     def render_close(self, tokens, idx, options, env):
         return "</div></details>" if tokens[idx].meta["structure"] == "details" else "</div></div>"
 
     def render_fields(self, tokens, idx, options, env):
-        # Field values are inline-rendered with raw HTML escaped (defense in
-        # depth). Force escaping by rewriting any html_inline tokens to text
-        # rather than toggling md.options, so a shared instance stays
-        # thread-safe.
         html = '<dl class="cm-fields">'
         for key, value in tokens[idx].meta["rows"]:
-            inline_tokens = md.parseInline(value, env)
-            for tok in inline_tokens:
-                for child in tok.children or ():
-                    if child.type == "html_inline":
-                        child.type = "text"
-            rendered = md.renderer.render(inline_tokens, options, env)
-            html += f'<dt>{escapeHtml(key)}</dt><dd>{rendered}</dd>'
+            html += f'<dt>{escapeHtml(key)}</dt><dd>{render_inline_safe(value, options, env)}</dd>'
         return html + "</dl>"
 
     md.add_render_rule("cm_container_open", render_open)

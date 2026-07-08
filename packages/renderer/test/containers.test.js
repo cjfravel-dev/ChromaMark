@@ -82,3 +82,37 @@ test('an unknown container kind is left as literal text (graceful degradation)',
   assert.match(html, /::: bogus/);
   assert.doesNotMatch(html, /cm-block/);
 });
+
+// ---- Inline constructs in titles & summaries ----
+
+test('a container title renders inline ChromaMark pills', () => {
+  const html = render('::: success Deploy [!ok healthy]\nbody\n:::');
+  assert.match(
+    html,
+    /<div class="cm-title">Deploy <span class="cm-pill" data-tone="success">healthy<\/span><\/div>/,
+  );
+});
+
+test('a details summary renders inline pills', () => {
+  const html = render('::: details Failures [!fail 3]\nx\n:::');
+  assert.match(
+    html,
+    /<summary>Failures <span class="cm-pill" data-tone="danger">3<\/span><\/summary>/,
+  );
+});
+
+test('titles render standard markdown inline (bold, code)', () => {
+  const html = render('::: info **Bold** and `code`\nx\n:::');
+  assert.match(html, /<div class="cm-title"><strong>Bold<\/strong> and <code>code<\/code><\/div>/);
+});
+
+test('raw HTML in a title is escaped, not injected', () => {
+  const html = render('::: warning <img src=x onerror=alert(1)> danger\nx\n:::');
+  assert.doesNotMatch(html, /<img/);
+  assert.match(html, /&lt;img/);
+});
+
+test('a plain title still renders unchanged', () => {
+  const html = render('::: success Deploy succeeded in 3m12s\nx\n:::');
+  assert.match(html, /<div class="cm-title">Deploy succeeded in 3m12s<\/div>/);
+});

@@ -5981,6 +5981,15 @@ function containerPlugin(md, enabled) {
     alt: ["paragraph", "reference", "blockquote", "list"]
   });
   const esc = md.utils.escapeHtml;
+  const renderInlineSafe = (text2) => {
+    const prevHtml = md.options.html;
+    md.options.html = false;
+    try {
+      return md.renderInline(text2);
+    } finally {
+      md.options.html = prevHtml;
+    }
+  };
   function decorate(meta) {
     const custom = meta.color ? " cm-custom" : "";
     const style = meta.color ? ` style="--fg:${esc(meta.color)}"` : "";
@@ -5992,25 +6001,19 @@ function containerPlugin(md, enabled) {
     const { custom, style, tone } = decorate(meta);
     if (meta.structure === "details") {
       const open = meta.open ? " open" : "";
-      return `<details class="cm-details${custom}"${tone}${style}${open}><summary>${esc(meta.summary)}</summary><div class="cm-body">`;
+      return `<details class="cm-details${custom}"${tone}${style}${open}><summary>${renderInlineSafe(meta.summary)}</summary><div class="cm-body">`;
     }
     let html = `<div class="cm-block${custom}"${tone}${style}>`;
-    if (meta.title) html += `<div class="cm-title">${esc(meta.title)}</div>`;
+    if (meta.title) html += `<div class="cm-title">${renderInlineSafe(meta.title)}</div>`;
     return html + '<div class="cm-body">';
   };
   md.renderer.rules.cm_container_close = (tokens, idx) => tokens[idx].meta.structure === "details" ? "</div></details>" : "</div></div>";
   md.renderer.rules.cm_fields = (tokens, idx) => {
-    const prevHtml = md.options.html;
-    md.options.html = false;
-    try {
-      let html = '<dl class="cm-fields">';
-      for (const [key, value] of tokens[idx].meta.rows) {
-        html += `<dt>${esc(key)}</dt><dd>${md.renderInline(value)}</dd>`;
-      }
-      return html + "</dl>";
-    } finally {
-      md.options.html = prevHtml;
+    let html = '<dl class="cm-fields">';
+    for (const [key, value] of tokens[idx].meta.rows) {
+      html += `<dt>${esc(key)}</dt><dd>${renderInlineSafe(value)}</dd>`;
     }
+    return html + "</dl>";
   };
 }
 
