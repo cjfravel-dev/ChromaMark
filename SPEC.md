@@ -1,12 +1,12 @@
 # ChromaMark Specification
 
-> **Version:** 0.1 (locked draft) · **Status:** stable core, extensions marked _v0.2_
 > **Base dialect:** CommonMark + GFM (tables, strikethrough, task lists, autolinks)
 > **File extensions:** `.cm` · **Info-string / fence tag:** `chromamark`
 >
 > _This document is written **in ChromaMark**. On a plain markdown viewer (e.g._
 > _GitHub) the ChromaMark constructs degrade to readable text; for the full_
-> _experience render it with `@chromamark/renderer` or open `examples/index.html`._
+> _experience render it with `@chromamark/renderer` or try the_
+> _[playground](https://cjfravel-dev.github.io/ChromaMark/playground/)._
 
 ---
 
@@ -178,7 +178,7 @@ markdown engine it degrades to its literal `:::` lines — the summary and body
 remain readable, and content is **never** hidden in a non-supporting renderer
 (principle 3).
 
-## 8 · Extensions (v0.2)
+## 8 · Extensions
 
 The inline sigil family is deliberately uniform — one rule to learn:
 
@@ -330,7 +330,7 @@ Level 2 — Interactive: adds real collapse/expand and streaming styling.
 ::: fields
 Renderer: `@chromamark/renderer` — a markdown-it plugin (`packages/renderer`). Works in any webpage; ships the CSS theme.
 VS Code: `chromamark-vscode` — reuses the renderer in the built-in markdown preview and adds syntax highlighting (`packages/vscode`).
-Demo: `examples/index.html` — a rendered reference of every construct with a light/dark toggle.
+Demo: the [playground](https://cjfravel-dev.github.io/ChromaMark/playground/) and [gallery](https://cjfravel-dev.github.io/ChromaMark/gallery.html) — a rendered reference of every construct with a light/dark toggle.
 :::
 
 ---

@@ -15,7 +15,7 @@ isn't natively rendered.
 > `<span class="pill pill--ok">PASS</span>` burns ~9 tokens per badge and reads
 > terribly when unrendered. ChromaMark gets you both — cheap and legible.
 
-📄 **[Read the spec](./SPEC.md)** · 🎨 **[Live demo](./examples/index.html)** (open in a browser)
+📄 **[Read the spec](./SPEC.md)** · 🎨 **[Playground](https://cjfravel-dev.github.io/ChromaMark/playground/)** · 🖼️ **[Gallery](https://cjfravel-dev.github.io/ChromaMark/gallery.html)**
 
 ## What it looks like
 
@@ -130,13 +130,13 @@ display_chromamark("::: success\nRun complete [=success 100%]\n:::")
 ChromaMark/
 ├── SPEC.md                     the specification (written in ChromaMark)
 ├── docs/                       llms.txt, integrations roadmap, logo assets
-├── examples/                   demo.cm + generated client-side pages
+├── examples/demo.cm            a sample document exercising every construct
 ├── packages/
 │   ├── renderer/               @chromamark/renderer — parser, theme, browser bundle
 │   ├── cli/                    @chromamark/cli — .cm → self-contained HTML
 │   ├── python/                 chromamark (pip) — renderer, builder, Jupyter
 │   └── vscode/                 chromamark-vscode — preview + highlighting
-└── scripts/build-examples.mjs  regenerates the example pages
+└── scripts/build-site.mjs      builds the GitHub Pages site
 ```
 
 ## Development
@@ -145,7 +145,7 @@ ChromaMark/
 npm install
 npm test                                     # renderer test suite (node:test)
 npm run build --workspace @chromamark/renderer   # bundle dist/ for the browser/CDN
-npm run build:examples                       # regenerate examples/*.html
+npm run build:site                           # build the Pages site into _site/
 ```
 
 ## License
