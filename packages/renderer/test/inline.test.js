@@ -64,3 +64,15 @@ test('an escaped opener is literal', () => {
 test('HTML in a pill label is escaped', () => {
   assert.match(inline('[!info <b>x</b>]'), /&lt;b&gt;x&lt;\/b&gt;/);
 });
+
+test('U+0085 (NEL) is not a sigil separator (stays literal)', () => {
+  assert.doesNotMatch(render('[!success\u0085pass]'), /cm-pill/);
+});
+
+test('U+001C (FS) is not a sigil separator (stays literal)', () => {
+  assert.doesNotMatch(render('[!success\u001cpass]'), /cm-pill/);
+});
+
+test('U+FEFF (BOM) is a sigil separator (renders a pill)', () => {
+  assert.match(render('[!success\ufeffpass]'), /<span class="cm-pill" data-tone="success">pass<\/span>/);
+});

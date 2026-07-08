@@ -163,3 +163,9 @@ test('raw HTML outside a container still passes through on an html:true host', (
   assert.match(html, /<div>outside<\/div>/);
   assert.match(html, /&lt;b&gt;in&lt;\/b&gt;/);
 });
+
+test('U+FEFF (BOM) separates a container kind from its title', () => {
+  const html = render('::: success\ufeffDeploy\nbody\n:::');
+  assert.match(html, /data-tone="success"/);
+  assert.match(html, /<div class="cm-title">Deploy<\/div>/);
+});

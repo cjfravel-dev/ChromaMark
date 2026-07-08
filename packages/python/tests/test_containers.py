@@ -191,3 +191,9 @@ def test_html_outside_container_passes_through_on_html_true_host():
     h = _html_true().render("<div>outside</div>\n\n::: success\n<b>in</b>\n:::")
     assert "<div>outside</div>" in h
     assert "&lt;b&gt;in&lt;/b&gt;" in h
+
+
+def test_ws_bom_separates_container_kind_from_title():
+    h = render("::: success\ufeffDeploy\nbody\n:::")
+    assert 'data-tone="success"' in h
+    assert '<div class="cm-title">Deploy</div>' in h

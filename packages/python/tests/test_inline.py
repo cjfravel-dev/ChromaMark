@@ -63,3 +63,23 @@ def test_escaped_opener_literal():
 
 def test_html_escaped_in_label():
     assert "&lt;b&gt;" in inline("[!info <b>x</b>]")
+
+
+def test_ws_nel_u0085_is_not_a_pill_separator():
+    # U+0085 (NEL) is NOT ChromaMark whitespace (mirrors JS \s), so it does not
+    # split the spec from the label; the construct stays literal.
+    assert "cm-pill" not in render("[!success\u0085pass]")
+
+
+def test_ws_fs_u001c_is_not_a_pill_separator():
+    assert "cm-pill" not in render("[!success\u001cpass]")
+
+
+def test_ws_bom_ufeff_separates_pill_spec_from_label():
+    # U+FEFF (BOM/ZWNBSP) IS ChromaMark whitespace (mirrors JS \s).
+    assert '<span class="cm-pill" data-tone="success">pass</span>' in render("[!success\ufeffpass]")
+
+
+def test_ws_nbsp_still_separates_pill():
+    # NBSP (U+00A0) is whitespace in both — regression guard.
+    assert '<span class="cm-pill" data-tone="success">pass</span>' in render("[!success\u00a0pass]")

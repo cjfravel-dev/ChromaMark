@@ -3,6 +3,8 @@
 from markdown_it.common.utils import escapeHtml
 
 from .tones import parse_spec, resolve_tone
+from .whitespace import WS
+from .whitespace import split as _ws_split
 
 MIN_FENCE = 3
 
@@ -14,7 +16,7 @@ def _cap(s):
 def _parse_opener(info):
     if not info:
         return None
-    tokens = info.split()
+    tokens = _ws_split(info)
     kind = tokens.pop(0).lower()
 
     tone = None
@@ -54,7 +56,7 @@ def _parse_opener(info):
             continue
         break
 
-    rest = " ".join(tokens).strip()
+    rest = " ".join(tokens).strip(WS)
     if structure == "details":
         return {"structure": "details", "tone": tone, "color": color,
                 "open": is_open, "summary": rest or "Details"}
@@ -82,7 +84,7 @@ def _make_rule(enabled):
         if open_len < MIN_FENCE:
             return False
 
-        parsed = _parse_opener(state.src[start + open_len:maximum].strip())
+        parsed = _parse_opener(state.src[start + open_len:maximum].strip(WS))
         if not parsed or not enabled.get(parsed["structure"]):
             return False
         if silent:
@@ -160,12 +162,12 @@ def _make_rule(enabled):
             ln = startLine + 1
             while ln < next_line:
                 line = state.src[state.bMarks[ln] + state.tShift[ln]:state.eMarks[ln]]
-                if line.strip():
+                if line.strip(WS):
                     ci = line.find(":")
                     if ci == -1:
-                        rows.append((line.strip(), ""))
+                        rows.append((line.strip(WS), ""))
                     else:
-                        rows.append((line[:ci].strip(), line[ci + 1:].strip()))
+                        rows.append((line[:ci].strip(WS), line[ci + 1:].strip(WS)))
                 ln += 1
             token = state.push("cm_fields", "", 0)
             token.meta = {"rows": rows}
