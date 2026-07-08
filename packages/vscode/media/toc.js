@@ -14,6 +14,18 @@
   var observer;
   var rebuildTimer;
 
+  function slugify(text, used) {
+    var base = String(text).toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .trim()
+      .replace(/\s+/g, '-') || 'section';
+    var slug = base;
+    var n = 2;
+    while (used[slug]) slug = base + '-' + n++;
+    used[slug] = true;
+    return slug;
+  }
+
   function headings() {
     var nodes = document.body.querySelectorAll('h1, h2, h3, h4, h5, h6');
     var out = [];
@@ -98,18 +110,26 @@
     list.className = 'cm-toc-list';
     var minLevel = items.reduce(function (m, h) { return Math.min(m, h.level); }, 6);
     var links = [];
+    var usedIds = {};
 
     items.forEach(function (item, i) {
+      var id = item.el.id;
+      if (id) usedIds[id] = true;
+      else { id = slugify(item.text, usedIds); item.el.id = id; }
+
       var li = document.createElement('li');
       li.className = 'cm-toc-item cm-toc-l' + Math.min(item.level - minLevel, 5);
       var a = document.createElement('a');
       a.className = 'cm-toc-link';
-      a.href = '#';
+      a.href = '#' + id;
       a.textContent = item.text;
       a.title = item.text;
       a.addEventListener('click', function (e) {
         e.preventDefault();
-        if (item.el.scrollIntoView) item.el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        e.stopPropagation();
+        var current = headings();
+        var target = (current[i] && current[i].el) || document.getElementById(id) || item.el;
+        if (target && target.scrollIntoView) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
         setActive(links, i);
       });
       li.appendChild(a);
