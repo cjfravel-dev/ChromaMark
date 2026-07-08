@@ -97,6 +97,13 @@ The [`chromamark-vscode`](./packages/vscode) extension renders ChromaMark in the
 built-in Markdown preview and highlights its syntax. `.cm` files are
 treated as Markdown. Press <kbd>F5</kbd> from the repo to try it.
 
+## For LLMs & agents
+
+ChromaMark is designed to be emitted by AI agents as plain text. Drop
+[`docs/llms.txt`](./docs/llms.txt) into a system prompt to teach a model the full
+syntax in a few hundred tokens. One gotcha worth repeating: **don't wrap pills in
+backticks** — `` `[!pass]` `` renders as literal code, not a pill.
+
 ## Repository layout
 
 ```

@@ -1,0 +1,28 @@
+name: Publish
+
+# Publishes @chromamark/renderer to npm when a GitHub Release is published.
+# Requires an NPM_TOKEN secret (automation token). Provenance is attached via
+# the id-token permission below — no need to set it in package.json.
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  npm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+      - run: npm install --no-audit --no-fund
+      - run: npm test --workspace @chromamark/renderer
+      - run: npm publish --provenance --workspace @chromamark/renderer
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

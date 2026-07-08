@@ -1,0 +1,73 @@
+# ChromaMark — LLM quick reference
+
+ChromaMark is Markdown (CommonMark + GFM) plus a handful of constructs for rich
+agent→human reports. Emit it as plain text. Everything below is the ENTIRE extra
+syntax beyond normal Markdown; if in doubt, plain Markdown always works.
+
+## Colored blocks (callouts)
+
+    ::: <tone> [title]
+    body (Markdown, may nest)
+    :::
+
+- tones: `success` `info` `tip` `warning` `danger` `muted`
+- aliases: `ok`/`pass`→success, `error`/`fail`→danger, `warn`→warning, `note`→info, `hint`→tip, `skip`→muted
+- color-only block: `::: block color=#6f42c1 Title`
+- NEST with MORE colons on the outer fence: `:::: … ::: … ::: … ::::`
+
+## Collapsible section
+
+    ::: details [open] [tone] Summary
+    hidden body
+    :::
+
+## Key/value fields
+
+    ::: fields
+    Region: eastus
+    Status: [!ok healthy]
+    :::
+
+## Inline: pills, colored text, meters
+
+- pill/badge: `[!success PASS]` `[!fail 3 of 88]` `[!warn 12]` `[!info 87%]` `[!muted SKIP]`
+  - no label ⇒ token name, uppercased: `[!pass]` → PASS
+- colored text (tint, no badge): `[.danger critical]`
+- meter/progress bar: `[=success 87%]` `[=info 3/10]`  (value is `NN%` or `A/B`)
+- custom color: `[!color=#6f42c1 beta]` or bare hex `[!#6f42c1 beta]`
+
+## Inline diff (CriticMarkup)
+
+`{++added++}` `{--removed--}` `{~~old~>new~~}` `{==highlight==}` `{>>comment<<}`
+
+## Rules & gotchas
+
+- Strict superset: tables, lists, code fences, **bold**, etc. all work.
+- ⚠️ Do NOT wrap pills in backticks — `` `[!pass]` `` renders as literal code, not a pill.
+- Pills work inside table cells and headings.
+- Prefer the 6 semantic tones (they adapt to light/dark) over `color=#hex`.
+- Unknown/unsupported constructs degrade to readable literal text.
+- File extension `.cm`; fenced-code info tag is `chromamark`.
+
+## Example report
+
+    ## Deploy — service-recon @ 25d7426
+
+    :::: success Deploy succeeded in 3m12s
+    ::: fields
+    Region: eastus
+    Replicas: 3/3 [!ok healthy]
+    Coverage: [=success 87%]
+    :::
+    ::::
+
+    | Stage | Result          |
+    | ----- | --------------- |
+    | unit  | [!pass 247]     |
+    | integ | [!fail 3 of 88] |
+
+    ::: details danger Integration failures (3)
+    FAILED test_recon_merge_precedence
+    :::
+
+    Overall: [!warn SHIP WITH CAUTION]

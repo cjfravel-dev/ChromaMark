@@ -4,6 +4,21 @@
   "description": "ChromaMark renderer — a markdown-it plugin adding colored blocks, colored pills, collapsible sections, fields, meters and inline diff on top of CommonMark + GFM.",
   "license": "SEE LICENSE IN LICENSE.md",
   "author": "cjfravel-dev",
+  "homepage": "https://github.com/cjfravel-dev/ChromaMark#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cjfravel-dev/ChromaMark.git",
+    "directory": "packages/renderer"
+  },
+  "bugs": {
+    "url": "https://github.com/cjfravel-dev/ChromaMark/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18"
+  },
   "type": "module",
   "main": "./src/index.js",
   "browser": "./dist/chromamark.esm.js",

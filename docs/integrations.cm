@@ -1,0 +1,356 @@
+# ChromaMark — integrations & ecosystem review
+
+::: info Purpose
+An honest feasibility pass over the 11 wishlist ideas: what's genuinely
+possible, what's constrained, rough effort/impact, and a suggested order. Written
+in ChromaMark so you can review it in the VS Code preview or the playground.
+Everything here is a proposal — nothing is built yet.
+:::
+
+## Status — build in progress
+
+::: success Decisions locked (your call)
+- npm: **scoped** packages (`@chromamark/*`).
+- GitHub sanitized surfaces (README / PR / issues / Actions transpile): **deferred** — push for wider adoption first.
+- Python **4b (full markdown-it-py renderer)**: **go all in** — Jupyter is a headline win; data scientists live in notebooks and this beats plain Markdown for capturing results.
+- Building **Phases 0, 1, 2** now, autonomously.
+:::
+
+::: fields
+Phase 0 · npm publish prep: [!success Done — dry-run OK, not published]
+Phase 0 · LLM quick reference: [!success Done]
+VS Code · left-side TOC (new): [!warning In progress]
+Phase 2 · Python renderer 4b: [!muted Todo]
+Phase 2 · ChromaDoc builder 4a: [!muted Todo]
+Phase 2 · Jupyter integration: [!muted Todo]
+Phase 1 · CLI (static HTML): [!muted Todo]
+Phase 1 · Playground: [!muted Todo]
+Phase 1 · Pages deploy: [!muted Todo]
+:::
+
+::: warning Environment caveats
+- npm isn't authenticated here, so packages are **prepped + `--dry-run` validated**, not published — run `npm publish` when ready.
+- The repo isn't public yet, so the playground + Pages are built and locally verified (headless Chrome) but not reviewable online until it's published.
+:::
+
+## TL;DR
+
+::: success Recommended first moves
+1. **Publish to npm** — unblocks the CDN, CLI, and playground. [!success Low effort]
+2. **LLM quick reference** — a token-lean cheat sheet for system prompts; cheapest win, straight to the mission. [!success Low effort]
+3. **CLI** that precompiles `.cm` → self-contained HTML **and** → GitHub-flavored Markdown. This one enabler powers GitHub, Jekyll, and static output.
+:::
+
+| # | Idea | Verdict | Fidelity | Effort | Impact |
+| - | ---- | ------- | -------- | ------ | ------ |
+| 1 | GitHub — Pages | [!success Feasible] | [!success Full] | [!warning Med] | [!success High] |
+| 1 | GitHub — README / PR / issues / Actions summary | [!warning Partial] | [!warning Degraded] | [!warning Med] | [!success High] |
+| 2 | npm package | [!success Feasible] | [!success Full] | [!success Low] | [!success High] |
+| 3 | CLI (static HTML, no CDN) | [!success Feasible] | [!success Full] | [!warning Med] | [!success High] |
+| 4 | Python builder / SDK | [!success Feasible] | [!success Full] | [!warning Med] | [!success High] |
+| 5 | MCP angle | [!info Niche] | [!muted N/A] | [!success Low] | [!muted Low] |
+| 6 | LLM quick reference | [!success Feasible] | [!muted N/A] | [!success Low] | [!success High] |
+| 7 | JetBrains / Sublime / Zed | [!warning Mixed] | [!warning Varies] | [!danger High] | [!info Med] |
+| 8 | Playground demo site | [!success Feasible] | [!success Full] | [!warning Med] | [!success High] |
+| 9 | Syntax highlighting | [!success Feasible] | [!success Full] | [!success Low] | [!info Med] |
+| 10 | Jupyter / notebooks | [!success Feasible] | [!success Full] | [!warning Med] | [!info Med] |
+| 11 | Jekyll integration | [!warning Partial] | [!warning Varies] | [!warning Med] | [!info Med] |
+
+## The five reusable building blocks
+
+Most wishlist items reduce to a handful of shared pieces. Build these once; reuse
+everywhere.
+
+::: fields
+E1 — npm publish: `@chromamark/renderer` public on npm. Unblocks CDN, CLI, playground, editors.
+E2 — CLI / static compiler: `.cm` → one self-contained HTML file (theme inlined, no CDN).
+E3 — GFM transpiler: `.cm` → GitHub-flavored Markdown (Alerts + badge images + `<details>`). The key to every sanitized GitHub surface.
+E4 — Python port: re-implement the plugin on `markdown-it-py` (same API). Unblocks Python SDK + Jupyter.
+E5 — LLM quick reference: a compact prompt-ready cheat sheet.
+:::
+
+::: tip Why E3 matters most
+GitHub strips CSS on its "prose" surfaces, so our real theme can't render there.
+But `.cm` maps cleanly onto things GitHub _does_ support natively — that's what
+makes items 1, 9, and 11 possible at all.
+:::
+
+---
+
+## 1 · GitHub integration
+
+The single most important finding: **GitHub has two rendering tiers**, and they
+demand different strategies.
+
+### Tier A — GitHub Pages (full fidelity)
+
+::: fields
+Verdict: [!success Feasible]
+Fidelity: [!success Full CSS/JS]
+Effort: [!warning Medium]
+Needs: E1 (CDN) or E2 (prerender)
+:::
+
+Pages is a plain static host — all HTML/CSS/JS allowed. Our browser bundle already
+works here (`<script data-chromamark-auto>` + `.chromamark` blocks), or precompile
+with the CLI. This is the best GitHub surface for ChromaMark and needs nothing new
+beyond publishing.
+
+### Tier B — README, PR comments, issues, Actions job summaries (sanitized)
+
+::: fields
+Verdict: [!warning Partial — via transpile]
+Fidelity: [!warning Degraded but styled]
+Effort: [!warning Medium]
+Needs: E3
+:::
+
+These surfaces run GitHub's Markdown sanitizer: **no `<style>`, no `class`/`id`,
+no `<script>`, inline `<svg>` stripped.** Our exact theme cannot render. But a
+transpiler (E3) maps ChromaMark onto GitHub-native equivalents:
+
+| ChromaMark | GitHub-flavored Markdown target |
+| ---------- | ------------------------------- |
+| `::: warning` / `info` / `tip` / `danger` blocks | **GitHub Alerts** `> [!WARNING]` / `[!NOTE]` / `[!TIP]` / `[!CAUTION]` (GA; render on README/issues/PRs/comments) |
+| `[!pass]` / `[!fail]` pills | **badge images** (shields.io or self-hosted SVG) — `<img>` is allowed on every surface |
+| `::: details` | native `<details><summary>` (allowed) |
+| `::: fields` | a two-column table |
+| `[.tint]` colored text | bold + an emoji marker (no color) |
+| `[=87%]` meter | a progress badge image or a unicode bar |
+
+::: details danger Hard limits — what is NOT possible on Tier B
+- Our CSS-based colors/pills cannot render; the closest is Alerts (5 fixed colors) + badge images.
+- Only the six semantic tones map to Alerts; custom `color=#hex` has no equivalent.
+- Inline `<svg>`, `<script>`, `<style>`, `class`, and `id` are all stripped.
+- Badge images add network round-trips (camo-proxied) — fine for a report, not for hundreds of inline pills.
+- "Colorized tags" become monochrome-ish shields; acceptable, not pixel-perfect.
+:::
+
+::: details info The four GitHub "pieces" you asked about
+- **Actions rendering** — two modes: (a) an Action runs the CLI to build Pages/artifacts (full fidelity); (b) write transpiled GFM to `$GITHUB_STEP_SUMMARY` (Alerts + badges) for per-run reports.
+- **README rendering** — commit a transpiled `README.md` (Alerts + badges + `<details>`) generated by the CLI in CI; keep the `.cm` source alongside.
+- **Pages rendering** — Tier A, full fidelity (above).
+- **PR comment rendering** — a GitHub Action/App posts a transpiled-GFM comment on each PR. No custom CSS, but Alerts + status badges read well.
+:::
+
+## 2 · npm package
+
+::: fields
+Verdict: [!success Feasible — do first]
+Effort: [!success Low]
+Impact: [!success High]
+Needs: nothing (already structured for it)
+:::
+
+Publish `@chromamark/renderer` (public scoped) — the package already has `exports`,
+`files`, a `prepublishOnly` build, and the browser bundle. Add npm provenance and
+an `@chromamark` org. A thin `chromamark` CLI package (item 3) can ship beside it.
+
+## 3 · CLI tooling
+
+::: fields
+Verdict: [!success Feasible — high leverage]
+Effort: [!warning Medium]
+Impact: [!success High]
+Needs: E1
+:::
+
+Exactly your instinct: **precompile to static HTML, no CDN required.**
+
+```
+chromamark build report.cm -o report.html   # self-contained, theme inlined
+chromamark build docs/ -o out/               # whole directory
+cat report.cm | chromamark - --format html   # stdin → stdout
+chromamark build report.cm --format md       # → GitHub-flavored Markdown (E3)
+chromamark watch report.cm -o report.html    # live rebuild
+```
+
+One binary delivers static output **and** the GFM transpile — so it also powers
+items 1 (README/PR/Actions) and 11 (Jekyll prerender).
+
+## 4 · Python builder / output SDK
+
+::: fields
+Verdict: [!success Feasible — strong fit for the mission]
+Effort: [!warning Medium]
+Impact: [!success High]
+Needs: E4 (for rendering only)
+:::
+
+Agents reach for Python to assemble reports, so a Python surface is well-aligned.
+Two layers:
+
+::: details open success 4a · Builder / emitter (pure Python, ship first)
+A fluent API that emits `.cm` text — no renderer needed:
+
+```python
+doc = ChromaDoc()
+doc.success("Deploy succeeded", body="3/3 replicas healthy")
+doc.fields(region="eastus", coverage=doc.meter("info", "87%"))
+doc.table(["Stage","Result"], [["unit", doc.pill("pass","247")]])
+print(doc.render())   # -> ChromaMark string
+```
+Low effort, immediately useful for agent-generated reports.
+:::
+
+::: details info 4b · Full renderer via markdown-it-py (later)
+`markdown-it-py` exposes the **same** `md.block.ruler.before(...)` /
+`md.inline.ruler.before(...)` / token / render-rule API as our JS plugin, so the
+containers/inline/critic rules port almost 1:1. Gives Python-native `.cm → HTML`
+and unblocks Jupyter (item 10) with no Node dependency. Medium effort.
+:::
+
+## 5 · MCP angle
+
+::: fields
+Verdict: [!info Niche — small, optional]
+Effort: [!success Low]
+Impact: [!muted Low]
+:::
+
+Honest take: agents **emit ChromaMark as plain text**, so they don't need a tool to
+_write_ it. The only worthwhile MCP surfaces:
+
+- Expose the **quick reference + spec as an MCP resource/prompt**, so any MCP client can self-teach the format. [!info Mild value]
+- A `render_chromamark` **tool** (cm → HTML) so an agent can preview/validate its own output. [!muted Marginal]
+
+Recommendation: fold the quick-ref into an MCP resource _if_ we build a server for
+another reason; don't build one just for this.
+
+## 6 · LLM quick reference
+
+::: fields
+Verdict: [!success Do this now — best ROI]
+Effort: [!success Low]
+Impact: [!success High]
+:::
+
+A compact, example-first cheat sheet (a few hundred tokens) to drop into a system
+prompt so any model emits valid ChromaMark. This is the most direct investment in
+the "agents → humans" mission and costs almost nothing.
+
+::: details tip Sketch of the reference
+Ship as `docs/llms.txt` + a README section:
+```
+ChromaMark = Markdown + these:
+  ::: success|info|tip|warning|danger|muted  Title … :::   (colored block)
+  [!success PASS] [!fail 3] [!warn 12]                     (pill/badge)
+  ::: details open  Summary … :::                          (collapsible)
+  ::: fields \n Key: Value \n :::                          (key/value)
+  [.danger text]   [=info 87%]   {++add++}{--del--}        (tint, meter, diff)
+```
+:::
+
+## 7 · Other editor plugins (JetBrains / Sublime / Zed)
+
+::: fields
+Verdict: [!warning Mixed — highlighting cheap, previews expensive]
+Effort: [!danger High for full plugins]
+Impact: [!info Medium]
+:::
+
+Syntax highlighting is portable; live preview is the costly part per editor.
+
+::: details warning Per-editor breakdown
+- **Sublime Text** — reuse our TextMate grammar as a `.sublime-syntax`/`tmLanguage`. Highlighting only. [!success Low]
+- **Zed** — needs a tree-sitter grammar + a small Rust/WASM extension; can inject into Markdown. [!warning Medium]
+- **JetBrains** — a full IntelliJ-platform plugin (Kotlin) for file type + highlighting + a JCEF webview preview running our JS bundle. [!danger High]
+- Recommendation: ship the Sublime grammar cheaply; defer Zed/JetBrains until there's demand.
+:::
+
+## 8 · Playground / demo site
+
+::: fields
+Verdict: [!success Feasible — great for adoption]
+Effort: [!warning Medium]
+Impact: [!success High]
+Needs: E1
+:::
+
+Split-pane live editor → preview using the browser bundle, with a theme toggle,
+an examples menu, and shareable URLs (source encoded in the `#hash`). Hosts on
+GitHub Pages for free and doubles as marketing + the reference renderer.
+
+## 9 · Syntax highlighting
+
+::: fields
+Verdict: [!success Feasible]
+Effort: [!success Low–Medium]
+Impact: [!info Medium]
+:::
+
+Two distinct things, both worth doing:
+
+- **Editor highlighting** of ChromaMark syntax — we already have a VS Code injection grammar; generalize it (ties to item 7).
+- **Code-fence highlighting inside rendered output** — wire markdown-it's `highlight` option to highlight.js/Prism so ` ```lang ` blocks inside `.cm` are colorized. Small optional add to the renderer.
+
+## 10 · Jupyter / notebook integration
+
+::: fields
+Verdict: [!success Feasible]
+Effort: [!warning Medium]
+Impact: [!info Medium]
+Needs: E4 (cleanest) or Node bridge
+:::
+
+Notebooks render HTML/CSS fully, so fidelity is excellent. Provide
+`display_chromamark(src)` → `IPython.display.HTML(rendered + theme)`. The only
+requirement is a renderer callable from Python — best via the markdown-it-py port
+(4b); an interim version can shell out to the Node CLI.
+
+## 11 · Jekyll integration
+
+::: fields
+Verdict: [!warning Partial — caveat on GitHub Pages]
+Effort: [!warning Medium]
+Impact: [!info Medium]
+:::
+
+::: details danger The GitHub Pages catch
+GitHub Pages builds Jekyll in **safe mode**, which **disallows custom plugins**.
+So a native Ruby `{% chromamark %}` tag only works if you build the site yourself
+(e.g., in **GitHub Actions**) and deploy the output.
+:::
+
+Two paths that _do_ work on default Pages:
+- **Client-side include** — drop our JS bundle into the theme; `.chromamark` blocks render in the browser. Zero build, works on stock Pages. [!success Recommended]
+- **CI prerender** — run the CLI (E2) in Actions to emit static HTML, deploy that. Full fidelity, any plugin allowed. [!success Recommended]
+
+A native Ruby plugin is extra work for little gain over these two.
+
+---
+
+## Suggested roadmap
+
+::: success Phase 0 — Foundations (days)
+- [!success #2] Publish `@chromamark/renderer` to npm.
+- [!success #6] LLM quick reference (`docs/llms.txt` + README section).
+:::
+
+::: info Phase 1 — Reach (1–2 weeks)
+- [!info #3] CLI: static-HTML build + GFM transpile (E2 + E3).
+- [!info #8] Playground on GitHub Pages.
+- [!info #1] GitHub: Pages full-fidelity + README/PR/Actions via transpile.
+:::
+
+::: info Phase 2 — Python & notebooks
+- [!info #4] Python builder (4a) then markdown-it-py renderer (4b).
+- [!info #10] Jupyter `display_chromamark`.
+:::
+
+::: muted Phase 3 — Editors & polish / on-demand
+- [!muted #9] Code-fence highlighting + Sublime grammar.
+- [!muted #11] Jekyll JS-include + Actions prerender.
+- [!muted #7] Zed, then JetBrains (only if demand).
+- [!muted #5] MCP quick-ref resource (only if we build a server anyway).
+:::
+
+## Open questions for you
+
+::: warning Decisions I need
+1. **npm scope** — `@chromamark/*` org, or unscoped `chromamark`?
+2. **GitHub priority** — is the sanitized-surface transpile (README/PR/Actions) worth building, given it can't match the real theme? Or focus fidelity on Pages + playground?
+3. **Python depth** — emitter-only (4a) for now, or commit to the full markdown-it-py renderer (4b) to unlock Jupyter?
+4. **Pill badges on GitHub** — shields.io (easy, external dependency) vs. self-hosted SVG badges (control, more work)?
+5. **Scope for v1** — which phases are in scope now vs. later?
+:::
