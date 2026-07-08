@@ -113,3 +113,29 @@ def test_fields_escape_even_when_host_enables_html():
     assert "&lt;img src=x onerror=alert(1)&gt;" in out
     assert "<strong>hi</strong>" in out
     assert 'class="cm-pill"' in out
+
+
+def test_title_renders_inline_pills():
+    h = render("::: success Deploy [!ok healthy]\nbody\n:::")
+    assert '<div class="cm-title">Deploy <span class="cm-pill" data-tone="success">healthy</span></div>' in h
+
+
+def test_summary_renders_inline_pills():
+    h = render("::: details Failures [!fail 3]\nx\n:::")
+    assert '<summary>Failures <span class="cm-pill" data-tone="danger">3</span></summary>' in h
+
+
+def test_title_renders_markdown_inline():
+    h = render("::: info **Bold** and `code`\nx\n:::")
+    assert '<div class="cm-title"><strong>Bold</strong> and <code>code</code></div>' in h
+
+
+def test_title_escapes_raw_html():
+    h = render("::: warning <img src=x onerror=alert(1)> danger\nx\n:::")
+    assert "<img" not in h
+    assert "&lt;img" in h
+
+
+def test_plain_title_unchanged():
+    h = render("::: success Deploy succeeded in 3m12s\nx\n:::")
+    assert '<div class="cm-title">Deploy succeeded in 3m12s</div>' in h
