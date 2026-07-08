@@ -30,7 +30,6 @@ writeFileSync(join(out, 'playground/index.html'), playground);
 const docs = [
   { src: 'SPEC.md', out: 'spec.html', title: 'ChromaMark Specification' },
   { src: 'examples/demo.cm', out: 'gallery.html', title: 'ChromaMark — feature gallery' },
-  { src: 'docs/integrations.cm', out: 'integrations.html', title: 'ChromaMark — integrations' },
 ];
 for (const d of docs) {
   writeFileSync(join(out, d.out), compile(readFileSync(join(root, d.src), 'utf8'), { title: d.title }));
@@ -62,7 +61,6 @@ const landing = `<!DOCTYPE html>
     <a class="btn primary" href="playground/">Playground</a>
     <a class="btn" href="spec.html">Spec</a>
     <a class="btn" href="gallery.html">Gallery</a>
-    <a class="btn" href="integrations.html">Roadmap</a>
     <a class="btn" href="https://github.com/cjfravel-dev/ChromaMark">GitHub</a>
   </nav>
 </body></html>
