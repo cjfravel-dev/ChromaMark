@@ -37,12 +37,20 @@ function parseArgs(argv) {
   const rest = argv[0] === 'build' ? argv.slice(1) : argv.slice(0);
   for (let i = 0; i < rest.length; i++) {
     const a = rest[i];
+    const takeValue = (flag) => {
+      const next = rest[i + 1];
+      if (next === undefined || next.startsWith('-')) {
+        throw new Error(`option ${flag} requires a value`);
+      }
+      i += 1;
+      return next;
+    };
     if (a === '-h' || a === '--help') opts.help = true;
     else if (a === '-v' || a === '--version') opts.version = true;
     else if (a === '--stdout') opts.stdout = true;
     else if (a === '--watch') opts.watch = true;
-    else if (a === '-o' || a === '--output') opts.output = rest[++i];
-    else if (a === '--title') opts.title = rest[++i];
+    else if (a === '-o' || a === '--output') opts.output = takeValue(a);
+    else if (a === '--title') opts.title = takeValue(a);
     else if (a === '-') opts.input = '-';
     else if (a.startsWith('-')) throw new Error(`unknown option: ${a}`);
     else if (opts.input == null) opts.input = a;
@@ -102,7 +110,12 @@ export function run(argv = process.argv.slice(2)) {
   if (opts.version) { process.stdout.write(`${version()}\n`); return 0; }
 
   if (opts.input === '-' || (opts.input == null && !process.stdin.isTTY)) {
-    process.stdout.write(compile(readFileSync(0, 'utf8'), { title: opts.title || 'ChromaMark' }));
+    const src = readFileSync(0, 'utf8');
+    if (opts.input !== '-' && !src.trim()) {
+      process.stderr.write(`error: no input file given and stdin was empty\n\n${HELP}`);
+      return 1;
+    }
+    process.stdout.write(compile(src, { title: opts.title || 'ChromaMark' }));
     return 0;
   }
   if (opts.input == null) { process.stderr.write(HELP); return 1; }

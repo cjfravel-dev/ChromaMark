@@ -104,3 +104,30 @@ test('CLI --watch rebuilds on change', async () => {
     child.kill();
   }
 });
+
+test('parseArgs rejects -o/--title that would swallow the next flag', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'cm-cli-'));
+  const cm = join(dir, 'a.cm');
+  writeFileSync(cm, '::: success\nhi\n:::\n');
+  const err = process.stderr.write;
+  const cwd = process.cwd();
+  process.stderr.write = () => true;
+  process.chdir(dir);
+  try {
+    assert.equal(run([cm, '-o', '--watch']), 1, '-o must reject a following flag');
+    assert.equal(run([cm, '--title', '--stdout']), 1, '--title must reject a following flag');
+    assert.equal(run([cm, '-o']), 1, 'trailing -o with no value must error');
+  } finally {
+    process.chdir(cwd);
+    process.stderr.write = err;
+  }
+});
+
+test('CLI errors (exit 1) on empty stdin with no input arg and no explicit -', () => {
+  assert.throws(() => execFileSync(BIN, [], { input: '' }));
+});
+
+test('CLI still reads explicit - from stdin', () => {
+  const out = execFileSync(BIN, ['-'], { input: '::: success\nhi\n:::\n', encoding: 'utf8' });
+  assert.match(out, /<div class="cm-block" data-tone="success">/);
+});
