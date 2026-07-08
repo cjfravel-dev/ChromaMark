@@ -224,7 +224,7 @@ The label is the displayed value; a trailing `NN%` or `A/B` sets the fill.
 
 Block-level diffs use the existing GFM fenced ` ```diff ` convention. For inline
 change-tracking, ChromaMark adopts **[CriticMarkup](http://criticmarkup.com/)**
-rather than inventing syntax:
+(© 2013 Gabe Weatherhead & Erik Hess) rather than inventing syntax:
 
 | CriticMarkup      | Meaning   |
 | ----------------- | --------- |

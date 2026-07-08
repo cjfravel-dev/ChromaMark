@@ -66,6 +66,13 @@ non-BMP characters; none affect typical agent-generated reports:
 - **Astral-plane (emoji) domain labels** in bare links (e.g. `🎉.com`): auto-linked
   by JS linkify-it but not linkify-it-py. BMP and IDN letter hosts match.
 
+## Credits
+
+Inline change-tracking syntax is adopted from **[CriticMarkup](http://criticmarkup.com/)**
+(© 2013 Gabe Weatherhead & Erik Hess, Apache-2.0); ChromaMark's parser is an original,
+independent implementation. See the
+[main README](https://github.com/cjfravel-dev/ChromaMark#prior-art--credits) for full credits.
+
 ## License
 
 Modified MIT License with a SaaS source-availability provision — see LICENSE.md.

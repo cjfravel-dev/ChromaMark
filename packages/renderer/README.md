@@ -96,6 +96,13 @@ npm test    # node:test suite
 npm run build   # esbuild → dist/chromamark.esm.js, dist/chromamark.min.js, dist/chromamark.css
 ```
 
+## Credits
+
+Inline change-tracking syntax is adopted from **[CriticMarkup](http://criticmarkup.com/)**
+(© 2013 Gabe Weatherhead & Erik Hess, Apache-2.0); ChromaMark's parser is an original,
+independent implementation. See the
+[main README](https://github.com/cjfravel-dev/ChromaMark#prior-art--credits) for full credits.
+
 ## License
 
 Modified MIT License with a SaaS source-availability provision — see [LICENSE.md](./LICENSE.md).

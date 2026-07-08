@@ -148,6 +148,14 @@ npm run build --workspace @chromamark/renderer   # bundle dist/ for the browser/
 npm run build:site                           # build the Pages site into _site/
 ```
 
+## Prior art & credits
+
+ChromaMark builds on well-designed standards rather than reinventing them:
+
+- **[CommonMark](https://commonmark.org/) + [GitHub Flavored Markdown](https://github.github.com/gfm/)** — the base syntax ChromaMark is a strict superset of.
+- **[CriticMarkup](http://criticmarkup.com/)** (© 2013 Gabe Weatherhead & Erik Hess, Apache-2.0) — the inline change-tracking syntax (`{++add++}`, `{--del--}`, `{~~a~>b~~}`) ChromaMark adopts for diffs. Our parser is an original, independent implementation.
+- **[markdown-it](https://github.com/markdown-it/markdown-it)** and **[markdown-it-py](https://github.com/executablebooks/markdown-it-py)** — the pluggable Markdown engines the JS and Python renderers extend.
+
 ## License
 
 Modified MIT License with a SaaS source-availability provision — see [LICENSE.md](./LICENSE.md).
