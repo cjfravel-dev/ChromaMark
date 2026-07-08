@@ -4,8 +4,10 @@
  * - Contributes the ChromaMark renderer to the built-in Markdown preview via
  *   extendMarkdownIt, so `:::` blocks, pills, meters, fields and inline diff
  *   render live.
- * - Optionally opens a preview to the side automatically when a ChromaMark file
- *   is opened, controlled by the `chromamark.autoPreview` setting.
+ * - Opens ChromaMark files (.cm/.cmd) directly as the rendered preview by
+ *   reopening the just-opened source editor as the Markdown preview in place.
+ *   To edit, use the editor's "Reopen as Source" action — a document is only
+ *   auto-converted once per session, so reopening as source is never undone.
  *
  * Bundled with esbuild (renderer + markdown-it inlined); `vscode` stays external.
  */
@@ -15,43 +17,34 @@ import chromamark from '@chromamark/renderer';
 
 const CM_FILE = /\.(cm|cmd)$/i;
 
-/** Decide whether a document should trigger an automatic preview. */
-function shouldAutoPreview(doc) {
-  if (!doc || doc.languageId !== 'markdown' || doc.uri.scheme !== 'file') return false;
-  const mode = vscode.workspace.getConfiguration('chromamark').get('autoPreview', 'cm');
-  if (mode === 'all') return true;
-  if (mode === 'cm') return CM_FILE.test(doc.fileName || doc.uri.path || '');
-  return false; // 'off'
+function isChromaMarkFile(doc) {
+  return (
+    !!doc &&
+    doc.languageId === 'markdown' &&
+    doc.uri.scheme === 'file' &&
+    CM_FILE.test(doc.fileName || doc.uri.path || '')
+  );
 }
 
 export function activate(context) {
-  // Track documents we've already auto-previewed so switching back to an editor
-  // doesn't reopen its preview.
-  const previewed = new Set();
+  // Session-persistent so that reopening a document as source is not reverted.
+  const converted = new Set();
 
-  const maybePreview = async (editor) => {
+  const openAsPreview = async (editor) => {
     const doc = editor && editor.document;
-    if (!shouldAutoPreview(doc)) return;
+    if (!isChromaMarkFile(doc)) return;
     const key = doc.uri.toString();
-    if (previewed.has(key)) return;
-    previewed.add(key);
-    const column = editor.viewColumn;
+    if (converted.has(key)) return;
+    converted.add(key);
     try {
-      await vscode.commands.executeCommand('markdown.showPreviewToSide', doc.uri);
-      // Return focus to the source editor so typing continues uninterrupted.
-      await vscode.window.showTextDocument(doc, { viewColumn: column, preserveFocus: false });
+      await vscode.commands.executeCommand('markdown.reopenAsPreview');
     } catch {
-      previewed.delete(key);
+      converted.delete(key);
     }
   };
 
-  context.subscriptions.push(
-    vscode.window.onDidChangeActiveTextEditor((editor) => maybePreview(editor)),
-    vscode.workspace.onDidCloseTextDocument((doc) => previewed.delete(doc.uri.toString())),
-  );
-
-  // Handle the editor that is already active when the extension activates.
-  maybePreview(vscode.window.activeTextEditor);
+  context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor(openAsPreview));
+  openAsPreview(vscode.window.activeTextEditor);
 
   return {
     extendMarkdownIt(md) {

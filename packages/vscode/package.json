@@ -2,7 +2,7 @@
   "name": "chromamark-vscode",
   "displayName": "ChromaMark",
   "description": "Syntax highlighting and live preview for ChromaMark — colored blocks, colored pills, collapsible sections, fields, meters and inline diff on top of Markdown.",
-  "version": "0.1.1",
+  "version": "0.1.3",
   "publisher": "cjfravel-dev",
   "license": "MIT",
   "repository": {
@@ -55,27 +55,7 @@
     "markdown.markdownItPlugins": true,
     "markdown.previewStyles": [
       "./media/chromamark.css"
-    ],
-    "configuration": {
-      "title": "ChromaMark",
-      "properties": {
-        "chromamark.autoPreview": {
-          "type": "string",
-          "enum": [
-            "off",
-            "cm",
-            "all"
-          ],
-          "enumDescriptions": [
-            "Never open a preview automatically.",
-            "Open a preview to the side for ChromaMark files (.cm, .cmd).",
-            "Open a preview to the side for all Markdown files."
-          ],
-          "default": "cm",
-          "markdownDescription": "Automatically open a Markdown preview to the side when a matching file is opened."
-        }
-      }
-    }
+    ]
   },
   "dependencies": {
     "@chromamark/renderer": "^0.1.0"
