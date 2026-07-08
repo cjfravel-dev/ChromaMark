@@ -45,6 +45,13 @@ VS Code Marketplace: `vsce publish` needs a publisher + PAT; say the word and I'
 Review locally: open any `.cm` in VS Code (renders as preview with the new left outline), or open `packages/cli` output / the playground.
 :::
 
+::: success Shipped & live
+- npm: `@chromamark/renderer@0.1.0` **published** (verified from the registry).
+- npm: `@chromamark/cli` — pending a re-publish (first attempt's 2FA expired).
+- GitHub Pages **live** via Actions: https://cjfravel-dev.github.io/ChromaMark/ (landing + playground + spec/gallery/roadmap).
+- Repo is public; CI + Pages workflows green.
+:::
+
 ## TL;DR
 
 ::: success Recommended first moves
