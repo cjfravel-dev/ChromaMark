@@ -5929,13 +5929,52 @@ function makeRule2(enabled) {
     if (silent) return true;
     let nextLine = startLine;
     let autoClosed = false;
+    let fenceCh = 0;
+    let fenceLen = 0;
     for (; ; ) {
       nextLine++;
       if (nextLine >= endLine) break;
       const lstart = state.bMarks[nextLine] + state.tShift[nextLine];
       const lmax = state.eMarks[nextLine];
-      if (state.src.charCodeAt(lstart) !== MARKER) continue;
-      if (state.sCount[nextLine] - state.blkIndent >= 4) continue;
+      const indent = state.sCount[nextLine] - state.blkIndent;
+      if (fenceCh) {
+        if (indent < 4 && state.src.charCodeAt(lstart) === fenceCh) {
+          let q = lstart;
+          while (q < lmax && state.src.charCodeAt(q) === fenceCh) q++;
+          if (q - lstart >= fenceLen) {
+            let r = q;
+            while (r < lmax && (state.src.charCodeAt(r) === 32 || state.src.charCodeAt(r) === 9)) r++;
+            if (r >= lmax) {
+              fenceCh = 0;
+              fenceLen = 0;
+            }
+          }
+        }
+        continue;
+      }
+      const openCh = state.src.charCodeAt(lstart);
+      if (indent < 4 && (openCh === 96 || openCh === 126)) {
+        let q = lstart;
+        while (q < lmax && state.src.charCodeAt(q) === openCh) q++;
+        if (q - lstart >= 3) {
+          let ok = true;
+          if (openCh === 96) {
+            for (let r = q; r < lmax; r++) {
+              if (state.src.charCodeAt(r) === 96) {
+                ok = false;
+                break;
+              }
+            }
+          }
+          if (ok) {
+            fenceCh = openCh;
+            fenceLen = q - lstart;
+            continue;
+          }
+        }
+      }
+      if (openCh !== MARKER) continue;
+      if (indent >= 4) continue;
       const closeLen = fenceLength(state.src, lstart, lmax);
       if (closeLen < openLen) continue;
       let p = lstart + closeLen;
@@ -6015,6 +6054,24 @@ function containerPlugin(md, enabled) {
     }
     return html + "</dl>";
   };
+  md.core.ruler.push("cm_sanitize_bodies", (state) => {
+    let depth = 0;
+    for (const token of state.tokens) {
+      if (token.type === "cm_container_open") {
+        depth++;
+      } else if (token.type === "cm_container_close") {
+        depth--;
+      } else if (depth > 0) {
+        if (token.type === "html_block") {
+          token.content = esc(token.content);
+        } else if (token.type === "inline" && token.children) {
+          for (const child of token.children) {
+            if (child.type === "html_inline") child.content = esc(child.content);
+          }
+        }
+      }
+    }
+  });
 }
 
 // src/index.js
@@ -6081,16 +6138,25 @@ function injectTheme(doc) {
   (d.head || d.documentElement).appendChild(style);
 }
 function dedent(text2) {
-  const lines = text2.replace(/\t/g, "  ").replace(/\r/g, "").split("\n");
+  const lines = text2.replace(/\r/g, "").split("\n");
   while (lines.length && lines[0].trim() === "") lines.shift();
   while (lines.length && lines[lines.length - 1].trim() === "") lines.pop();
-  let min = Infinity;
+  let prefix = null;
   for (const line of lines) {
     if (!line.trim()) continue;
-    min = Math.min(min, line.match(/^ */)[0].length);
+    const lead = line.match(/^[ \t]*/)[0];
+    if (prefix === null) {
+      prefix = lead;
+      continue;
+    }
+    let i = 0;
+    const lim = Math.min(prefix.length, lead.length);
+    while (i < lim && prefix[i] === lead[i]) i++;
+    prefix = prefix.slice(0, i);
+    if (prefix === "") break;
   }
-  if (!Number.isFinite(min)) min = 0;
-  return lines.map((line) => line.slice(min)).join("\n");
+  const cut = prefix ? prefix.length : 0;
+  return lines.map((line) => line.slice(cut)).join("\n");
 }
 function resolve(target) {
   return typeof target === "string" ? document.querySelector(target) : target;
