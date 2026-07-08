@@ -49,6 +49,11 @@ display_chromamark("::: success\nRun complete [=success 100%]\n:::")
 
 `ChromaDoc` also renders itself in notebooks via `_repr_html_`.
 
+A runnable, pre-executed example notebook lives at
+[`examples/chromamark_report.ipynb`](./examples/chromamark_report.ipynb) — it
+builds a model-evaluation report (colored block, pills, meters, fields, a table,
+and a collapsible) from computed results.
+
 ## Parity with the JavaScript renderer
 
 `chromamark` produces byte-identical HTML to `@chromamark/renderer` for normal
