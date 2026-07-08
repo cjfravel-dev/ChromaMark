@@ -1,0 +1,20 @@
+{
+  "name": "chromamark",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ChromaMark — a lean rich-markup for agent-to-human communication. CommonMark + GFM plus colored blocks, colored pills, and collapsible sections.",
+  "license": "MIT",
+  "author": "cjfravel-dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cjfravel-dev/ChromaMark.git"
+  },
+  "workspaces": [
+    "packages/renderer",
+    "packages/vscode"
+  ],
+  "scripts": {
+    "test": "npm test --workspace @chromamark/renderer",
+    "build:examples": "node scripts/build-examples.mjs"
+  }
+}

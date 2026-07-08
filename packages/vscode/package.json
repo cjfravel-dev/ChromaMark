@@ -1,0 +1,58 @@
+{
+  "name": "chromamark-vscode",
+  "displayName": "ChromaMark",
+  "description": "Syntax highlighting and live preview for ChromaMark — colored blocks, colored pills, collapsible sections, fields, meters and inline diff on top of Markdown.",
+  "version": "0.1.0",
+  "publisher": "cjfravel-dev",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cjfravel-dev/ChromaMark.git",
+    "directory": "packages/vscode"
+  },
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Formatters"
+  ],
+  "keywords": [
+    "chromamark",
+    "markdown",
+    "callout",
+    "admonition",
+    "preview"
+  ],
+  "activationEvents": [
+    "onLanguage:markdown"
+  ],
+  "main": "./src/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "markdown",
+        "extensions": [
+          ".cm",
+          ".cmd"
+        ]
+      }
+    ],
+    "grammars": [
+      {
+        "scopeName": "markup.chromamark.injection",
+        "path": "./syntaxes/chromamark.injection.tmLanguage.json",
+        "injectTo": [
+          "text.html.markdown"
+        ]
+      }
+    ],
+    "markdown.markdownItPlugins": true,
+    "markdown.previewStyles": [
+      "./media/chromamark.css"
+    ]
+  },
+  "dependencies": {
+    "@chromamark/renderer": "^0.1.0"
+  }
+}
