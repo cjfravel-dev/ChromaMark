@@ -1,9 +1,11 @@
 # Sources & build tooling (the shipped code is the bundled dist/extension.js)
 src/**
+test/**
 build.mjs
 .vscodeignore
 .gitignore
 node_modules/**
 **/*.map
+*.vsix
 
 # Keep in the VSIX: dist/, media/, syntaxes/, package.json, README.md, LICENSE
