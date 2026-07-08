@@ -39,8 +39,9 @@ def _meter_width(value):
     else:
         return None
     pct = max(0.0, min(100.0, pct))
-    # Match JS String(+n.toFixed(2)): round half away from zero, strip trailing zeros.
-    quantized = Decimal(str(pct)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    # Match JS String(+n.toFixed(2)): round the double half away from zero
+    # (Decimal(pct) captures the exact double), then strip trailing zeros.
+    quantized = Decimal(pct).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
     return format(quantized.normalize(), "f")
 
 

@@ -17,11 +17,15 @@ def test_linkify_email():
 
 
 def test_meter_rounding_matches_js_half_up():
-    # JS uses toFixed(2) (round half away from zero); these boundary cases must match.
+    # JS uses toFixed(2) on the double value; match it exactly, including
+    # non-exactly-representable decimals (49.995 -> 49.99, not 50).
     assert 'style="width:3.13%"' in inline("[=info 1/32]")
     assert 'style="width:0.63%"' in inline("[=info 1/160]")
     assert 'style="width:0.13%"' in inline("[=info 0.125%]")
     assert 'style="width:2.13%"' in inline("[=info 2.125%]")
+    assert 'style="width:49.99%"' in inline("[=info 49.995%]")
+    assert 'style="width:2.67%"' in inline("[=info 2.675%]")
+    assert 'style="width:1%"' in inline("[=info 1.005%]")
 
 
 def test_meter_common_values_unchanged():
