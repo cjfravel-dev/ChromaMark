@@ -2,6 +2,10 @@
   <img src="docs/assets/chromamark-black.png" alt="ChromaMark" width="320">
 </p>
 
+[![npm renderer](https://img.shields.io/npm/v/@chromamark/renderer?label=npm%20renderer)](https://www.npmjs.com/package/@chromamark/renderer)
+[![npm cli](https://img.shields.io/npm/v/@chromamark/cli?label=npm%20cli)](https://www.npmjs.com/package/@chromamark/cli)
+[![PyPI](https://img.shields.io/pypi/v/chromamark?label=pypi)](https://pypi.org/project/chromamark/)
+[![VS Code Marketplace](https://vsmarketplacebadges.dev/version-short/chromamark.chromamark-vscode.svg)](https://marketplace.visualstudio.com/items?itemName=chromamark.chromamark-vscode)
 [![License](https://img.shields.io/badge/license-MIT%20%2B%20SaaS-blue)](LICENSE.md)
 
 **A lean rich-markup for agent-to-human communication.** ChromaMark is a strict
