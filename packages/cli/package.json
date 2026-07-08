@@ -1,6 +1,6 @@
 {
   "name": "@chromamark/cli",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "ChromaMark command-line compiler — turn .cm files into self-contained HTML (theme inlined, no CDN).",
   "license": "SEE LICENSE IN LICENSE.md",
   "author": "cjfravel-dev",
@@ -42,6 +42,6 @@
     "html"
   ],
   "dependencies": {
-    "@chromamark/renderer": "^0.2.1"
+    "@chromamark/renderer": "^0.2.2"
   }
 }
