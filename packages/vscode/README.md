@@ -57,8 +57,8 @@ open any `.md` / `.cm` file with the preview.
 ## Build & install the VSIX
 
 ```bash
-npm run package --workspace chromamark-vscode      # → chromamark-vscode-0.1.0.vsix
-code --install-extension packages/vscode/chromamark-vscode-0.1.0.vsix --force
+npm run package --workspace chromamark-vscode      # → chromamark-vscode-<version>.vsix
+code --install-extension packages/vscode/*.vsix --force
 ```
 
 The extension is bundled with esbuild (the renderer and markdown-it are inlined),

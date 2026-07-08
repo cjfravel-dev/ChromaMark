@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import { mkdtempSync, writeFileSync, readFileSync, existsSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -9,6 +9,15 @@ import { compile, render, theme } from '../src/index.js';
 import { run } from '../src/cli.js';
 
 const BIN = fileURLToPath(new URL('../bin/chromamark.js', import.meta.url));
+
+async function waitFor(predicate, timeoutMs) {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    if (predicate()) return true;
+    await new Promise((r) => setTimeout(r, 50));
+  }
+  return false;
+}
 
 test('run() returns 1 for a missing input without throwing', () => {
   const err = process.stderr.write;
@@ -77,4 +86,21 @@ test('CLI builds a directory of .cm files', () => {
   execFileSync(process.execPath, [BIN, 'build', dir, '-o', outdir]);
   assert.ok(existsSync(join(outdir, 'one.html')));
   assert.ok(existsSync(join(outdir, 'two.html')));
+});
+
+test('CLI --watch rebuilds on change', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'cm-cli-watch-'));
+  const input = join(dir, 'w.cm');
+  const output = join(dir, 'w.html');
+  writeFileSync(input, '::: info\nfirst version\n:::\n');
+  const child = spawn(process.execPath, [BIN, input, '--watch', '-o', output], { stdio: 'ignore' });
+  try {
+    const built = await waitFor(() => existsSync(output) && readFileSync(output, 'utf8').includes('first version'), 4000);
+    assert.ok(built, 'initial build did not happen');
+    writeFileSync(input, '::: success\nsecond version\n:::\n');
+    const rebuilt = await waitFor(() => readFileSync(output, 'utf8').includes('second version'), 4000);
+    assert.ok(rebuilt, 'watch did not rebuild on change');
+  } finally {
+    child.kill();
+  }
 });
