@@ -1,4 +1,8 @@
-# ChromaMark
+<p align="center">
+  <img src="docs/assets/chromamark-black.png" alt="ChromaMark" width="320">
+</p>
+
+[![License](https://img.shields.io/badge/license-MIT%20%2B%20SaaS-blue)](LICENSE.md)
 
 **A lean rich-markup for agent-to-human communication.** ChromaMark is a strict
 superset of Markdown (CommonMark + GFM) that adds the three things agents
