@@ -16,6 +16,7 @@
   ],
   "scripts": {
     "test": "npm test --workspace @chromamark/renderer",
-    "build:examples": "node scripts/build-examples.mjs"
+    "build:examples": "node scripts/build-examples.mjs",
+    "build:site": "node scripts/build-site.mjs"
   }
 }

@@ -25,3 +25,6 @@ packages/python/*.egg-info/
 packages/python/src/*.egg-info/
 __pycache__/
 .pytest_cache/
+
+# Built Pages site
+_site/

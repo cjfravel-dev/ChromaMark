@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ChromaMark Playground</title>
+<style>
+  :root { --bg:#fff; --fg:#1f2328; --panel:#f6f8fa; --line:#d0d7de; --accent:#0969da; }
+  [data-theme="dark"] { --bg:#0d1117; --fg:#e6edf3; --panel:#161b22; --line:#30363d; --accent:#58a6ff; }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+    --bg:#0d1117; --fg:#e6edf3; --panel:#161b22; --line:#30363d; --accent:#58a6ff; } }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { display: flex; flex-direction: column; background: var(--bg); color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+  header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    padding: 10px 16px; border-bottom: 1px solid var(--line); background: var(--panel); }
+  header h1 { font-size: 16px; margin: 0; }
+  header .spacer { flex: 1; }
+  select, button { font: inherit; font-size: 13px; color: var(--fg); background: var(--bg);
+    border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; cursor: pointer; }
+  main { flex: 1; display: grid; grid-template-columns: 1fr 1fr; min-height: 0; }
+  @media (max-width: 760px){ main { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; } }
+  #src { border: none; outline: none; resize: none; padding: 16px; width: 100%; height: 100%;
+    background: var(--bg); color: var(--fg); border-right: 1px solid var(--line);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13.5px; line-height: 1.5; }
+  #out { overflow: auto; padding: 16px 22px; }
+  /* base markdown styling for the preview (ChromaMark theme is injected by the library) */
+  #out h1, #out h2 { border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+  #out code { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: .1em .35em; font-size: .9em; }
+  #out pre { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px; overflow: auto; }
+  #out pre code { border: none; background: none; padding: 0; }
+  #out table { border-collapse: collapse; } #out th, #out td { border: 1px solid var(--line); padding: 6px 10px; }
+  #out thead th { background: var(--panel); }
+  #out blockquote { border-left: 3px solid var(--line); margin: 12px 0; padding: 0 14px; color: #8b949e; }
+  .hint { color: #8b949e; font-size: 12px; }
+</style>
+<!-- Loaded from the repo bundle so this page works when opened locally.
+     scripts/build-site.mjs inlines the bundle for the deployed Pages site. -->
+<script src="../../packages/renderer/dist/chromamark.min.js"></script>
+</head>
+<body>
+<header>
+  <h1>ChromaMark Playground</h1>
+  <span class="hint">live preview · shareable link</span>
+  <span class="spacer"></span>
+  <select id="examples" title="Load an example"></select>
+  <button id="share" type="button" title="Copy a shareable link">Copy link</button>
+  <button id="theme" type="button" title="Toggle theme">&#9680; Theme</button>
+</header>
+<main>
+  <textarea id="src" spellcheck="false" aria-label="ChromaMark source"></textarea>
+  <div id="out" class="chromamark-output" aria-label="Preview"></div>
+</main>
+
+<script>
+(function () {
+  var CM = window.ChromaMark;
+  if (CM && CM.injectTheme) CM.injectTheme();
+
+  var src = document.getElementById('src');
+  var out = document.getElementById('out');
+  var examples = document.getElementById('examples');
+
+  var SAMPLES = {
+    'Deploy report': '## Deploy \u2014 service-recon @ 25d7426\n\n:::: success Deploy succeeded in 3m12s\n::: fields\nRegion: eastus\nReplicas: 3/3 [!ok healthy]\nCoverage: [=success 87%]\n:::\n::::\n\n| Stage | Result          |\n| ----- | --------------- |\n| unit  | [!pass 247]     |\n| integ | [!fail 3 of 88] |\n| lint  | [!warn 12]      |\n\n::: details danger Integration failures (3)\nFAILED test_recon_merge_precedence\nFAILED test_query_parameters_map\n:::\n\nOverall: [!warn SHIP WITH CAUTION]\n',
+    'Gallery': '::: success\nAll 247 tests passed.\n:::\n\n::: warning Deprecation\n`recon.flights` is removed in v3.\n:::\n\nBuild [!pass] \u00b7 lint [!warn 12] \u00b7 coverage [=success 87%]\n\nThe gate is [.success green] but the [.danger critical] path is [.warning slow].\n\nThe field was {--flights--}{++query_parameters++} and is {==worth reviewing==}.\n',
+    'Minimal': '::: info Hello\nEdit this text and watch it render.\n\nTry a pill: [!ok it works]\n:::\n'
+  };
+
+  function encode(text) {
+    return btoa(unescape(encodeURIComponent(text)));
+  }
+  function decode(hash) {
+    try { return decodeURIComponent(escape(atob(hash))); } catch (e) { return null; }
+  }
+
+  var timer;
+  function renderNow() {
+    out.innerHTML = CM && CM.render ? CM.render(src.value) : '(renderer failed to load)';
+  }
+  function onInput() {
+    clearTimeout(timer);
+    timer = setTimeout(function () {
+      renderNow();
+      try { history.replaceState(null, '', '#' + encode(src.value)); } catch (e) {}
+    }, 150);
+  }
+
+  Object.keys(SAMPLES).forEach(function (name) {
+    var o = document.createElement('option');
+    o.value = name; o.textContent = name; examples.appendChild(o);
+  });
+  examples.addEventListener('change', function () {
+    src.value = SAMPLES[examples.value] || '';
+    onInput();
+  });
+
+  document.getElementById('theme').addEventListener('click', function () {
+    var r = document.documentElement;
+    r.setAttribute('data-theme', r.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+  });
+  document.getElementById('share').addEventListener('click', function () {
+    var url = location.href;
+    if (navigator.clipboard) navigator.clipboard.writeText(url);
+    var btn = document.getElementById('share');
+    var old = btn.textContent; btn.textContent = 'Copied!';
+    setTimeout(function () { btn.textContent = old; }, 1200);
+  });
+
+  var initial = location.hash ? decode(location.hash.slice(1)) : null;
+  src.value = initial != null ? initial : SAMPLES['Deploy report'];
+  src.addEventListener('input', onInput);
+  renderNow();
+})();
+</script>
+</body>
+</html>

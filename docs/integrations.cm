@@ -24,8 +24,8 @@ Phase 2 · Python renderer 4b: [!success Done — 56 tests, HTML parity]
 Phase 2 · ChromaDoc builder 4a: [!success Done]
 Phase 2 · Jupyter integration: [!success Done]
 Phase 1 · CLI (static HTML): [!success Done — 7 tests]
-Phase 1 · Playground: [!warning In progress]
-Phase 1 · Pages deploy: [!muted Todo]
+Phase 1 · Playground: [!success Done — self-contained, examples, share links]
+Phase 1 · Pages deploy: [!success Done — workflow ready (needs public repo + Pages enabled)]
 :::
 
 ::: warning Environment caveats
