@@ -24,12 +24,19 @@ jobs:
           registry-url: https://registry.npmjs.org
       - run: npm install --no-audit --no-fund
       - run: npm test --workspace @chromamark/renderer
-      - run: npm publish --provenance --workspace @chromamark/renderer
+      - name: Publish npm packages (skips versions already on the registry)
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - run: npm publish --provenance --workspace @chromamark/cli
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          for pkg in @chromamark/renderer @chromamark/cli; do
+            dir="packages/${pkg#@chromamark/}"
+            ver=$(node -p "require('./$dir/package.json').version")
+            if npm view "$pkg@$ver" version >/dev/null 2>&1; then
+              echo "$pkg@$ver already on npm — skipping."
+            else
+              npm publish --provenance --workspace "$pkg"
+            fi
+          done
 
   pypi:
     name: PyPI
