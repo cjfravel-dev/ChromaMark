@@ -35,23 +35,33 @@
       "patterns": [
         {
           "name": "markup.inserted.chromamark",
-          "match": "(\\{\\+\\+)([^]*?)(\\+\\+\\})"
+          "begin": "\\{\\+\\+",
+          "end": "\\+\\+\\}",
+          "contentName": "markup.inserted.chromamark"
         },
         {
           "name": "markup.deleted.chromamark",
-          "match": "(\\{--)([^]*?)(--\\})"
+          "begin": "\\{--",
+          "end": "--\\}",
+          "contentName": "markup.deleted.chromamark"
         },
         {
           "name": "markup.changed.chromamark",
-          "match": "(\\{~~)([^]*?)(~~\\})"
+          "begin": "\\{~~",
+          "end": "~~\\}",
+          "contentName": "markup.changed.chromamark"
         },
         {
           "name": "markup.highlight.chromamark",
-          "match": "(\\{==)([^]*?)(==\\})"
+          "begin": "\\{==",
+          "end": "==\\}",
+          "contentName": "markup.highlight.chromamark"
         },
         {
           "name": "comment.block.chromamark",
-          "match": "(\\{>>)([^]*?)(<<\\})"
+          "begin": "\\{>>",
+          "end": "<<\\}",
+          "contentName": "comment.block.chromamark"
         }
       ]
     }
