@@ -66,5 +66,5 @@ so the VSIX is self-contained. After installing, open a `.cm`/`.md` file and run
 
 ## License
 
-MIT
+Modified MIT License with a SaaS source-availability provision — see [LICENSE.md](./LICENSE.md).
 

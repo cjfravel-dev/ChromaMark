@@ -2,7 +2,7 @@
   "name": "@chromamark/renderer",
   "version": "0.1.0",
   "description": "ChromaMark renderer — a markdown-it plugin adding colored blocks, colored pills, collapsible sections, fields, meters and inline diff on top of CommonMark + GFM.",
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE.md",
   "author": "cjfravel-dev",
   "type": "module",
   "main": "./src/index.js",

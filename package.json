@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "ChromaMark — a lean rich-markup for agent-to-human communication. CommonMark + GFM plus colored blocks, colored pills, and collapsible sections.",
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE.md",
   "author": "cjfravel-dev",
   "repository": {
     "type": "git",

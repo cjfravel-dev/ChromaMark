@@ -98,4 +98,4 @@ npm run build   # esbuild → dist/chromamark.esm.js, dist/chromamark.min.js, di
 
 ## License
 
-MIT
+Modified MIT License with a SaaS source-availability provision — see [LICENSE.md](./LICENSE.md).

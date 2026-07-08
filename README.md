@@ -116,4 +116,4 @@ npm run build:examples                       # regenerate examples/*.html
 
 ## License
 
-[MIT](./LICENSE)
+Modified MIT License with a SaaS source-availability provision — see [LICENSE.md](./LICENSE.md).
