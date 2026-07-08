@@ -90,7 +90,7 @@ const md = new MarkdownIt().use(chromamark);
 ## VS Code
 
 The [`chromamark-vscode`](./packages/vscode) extension renders ChromaMark in the
-built-in Markdown preview and highlights its syntax. `.cm` / `.cmd` files are
+built-in Markdown preview and highlights its syntax. `.cm` files are
 treated as Markdown. Press <kbd>F5</kbd> from the repo to try it.
 
 ## Repository layout

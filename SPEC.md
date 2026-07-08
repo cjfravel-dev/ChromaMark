@@ -2,7 +2,7 @@
 
 > **Version:** 0.1 (locked draft) · **Status:** stable core, extensions marked _v0.2_
 > **Base dialect:** CommonMark + GFM (tables, strikethrough, task lists, autolinks)
-> **File extensions:** `.cm`, `.cmd` · **Info-string / fence tag:** `chromamark`
+> **File extensions:** `.cm` · **Info-string / fence tag:** `chromamark`
 >
 > _This document is written **in ChromaMark**. On a plain markdown viewer (e.g._
 > _GitHub) the ChromaMark constructs degrade to readable text; for the full_

@@ -4,7 +4,7 @@
  * - Contributes the ChromaMark renderer to the built-in Markdown preview via
  *   extendMarkdownIt, so `:::` blocks, pills, meters, fields and inline diff
  *   render live.
- * - Opens ChromaMark files (.cm/.cmd) directly as the rendered preview by
+ * - Opens ChromaMark files (.cm) directly as the rendered preview by
  *   reopening the just-opened source editor as the Markdown preview in place.
  *   To edit, use the editor's "Reopen as Source" action — a document is only
  *   auto-converted once per session, so reopening as source is never undone.
@@ -15,7 +15,7 @@
 import * as vscode from 'vscode';
 import chromamark from '@chromamark/renderer';
 
-const CM_FILE = /\.(cm|cmd)$/i;
+const CM_FILE = /\.cm$/i;
 
 function isChromaMarkFile(doc) {
   return (

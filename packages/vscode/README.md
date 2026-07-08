@@ -10,13 +10,13 @@ Live preview and syntax highlighting for [ChromaMark](https://github.com/cjfrave
   Markdown preview, so `:::` blocks, `[!pills]`, `[=meters]`, `::: fields`, and
   CriticMarkup render as you write. Open with **Markdown: Open Preview**
   (`Ctrl+Shift+V` / `Cmd+Shift+V`).
-- **Opens as preview.** ChromaMark files (`.cm`/`.cmd`) open directly as the
+- **Opens as preview.** ChromaMark files (`.cm`) open directly as the
   rendered Markdown preview. To edit, use the editor's **Reopen as Source**
   action (or `Markdown: Open Source`); a file is only auto-converted once per
   session, so switching to source is never undone.
 - **Syntax highlighting.** An injection grammar highlights ChromaMark constructs
   inside any Markdown document.
-- **`.cm` / `.cmd` files.** These extensions are treated as Markdown, so they get
+- **`.cm` files.** This extension is treated as Markdown, so it gets
   full editing and preview support.
 
 ## Example
