@@ -16,6 +16,37 @@ export function mockProvider(fixtures = {}, name = 'mock') {
   };
 }
 
+const defaultSleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * POST with retry on 429 / 5xx / thrown network errors, honoring Retry-After and
+ * aborting a stalled request after `timeoutMs`. Non-429 client errors pass through.
+ */
+async function requestWithRetry(fetchImpl, url, init, options = {}) {
+  const { retries = 4, baseMs = 1000, sleep = defaultSleep, timeoutMs = 120000 } = options;
+  const backoff = (attempt) => Math.min(baseMs * 2 ** attempt, 20000);
+  for (let attempt = 0; ; attempt++) {
+    let res;
+    try {
+      const ctrl = timeoutMs ? new AbortController() : null;
+      const timer = ctrl ? setTimeout(() => ctrl.abort(), timeoutMs) : null;
+      try {
+        res = await fetchImpl(url, ctrl ? { ...init, signal: ctrl.signal } : init);
+      } finally {
+        if (timer) clearTimeout(timer);
+      }
+    } catch (err) {
+      if (attempt >= retries) throw err;
+      await sleep(backoff(attempt));
+      continue;
+    }
+    if (res.ok || attempt >= retries) return res;
+    if (res.status !== 429 && res.status < 500) return res;
+    const retryAfter = Number(res.headers.get && res.headers.get('retry-after'));
+    await sleep(Number.isFinite(retryAfter) ? retryAfter * 1000 : backoff(attempt));
+  }
+}
+
 /**
  * OpenAI-compatible chat-completions provider. Works with OpenAI, Azure OpenAI,
  * GitHub Models, or any local server that speaks the same API — set OPENAI_BASE_URL.
@@ -26,20 +57,31 @@ export function openaiProvider(options = {}) {
     baseURL = process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1',
     model = 'gpt-4o-mini',
     name = `openai:${model}`,
+    temperature = 0,
+    fetchImpl = globalThis.fetch,
+    retries = 4,
+    retryBaseMs = 1000,
   } = options;
   return {
     name,
     async complete(system, user) {
       if (!apiKey) throw new Error('OPENAI_API_KEY is not set');
-      const res = await fetch(`${baseURL.replace(/\/$/, '')}/chat/completions`, {
+      const url = `${baseURL.replace(/\/$/, '')}/chat/completions`;
+      const messages = [{ role: 'system', content: system }, { role: 'user', content: user }];
+      const send = (withTemp) => requestWithRetry(fetchImpl, url, {
         method: 'POST',
         headers: { 'content-type': 'application/json', authorization: `Bearer ${apiKey}` },
-        body: JSON.stringify({
-          model,
-          temperature: 0,
-          messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
-        }),
-      });
+        body: JSON.stringify(withTemp ? { model, temperature, messages } : { model, messages }),
+      }, { retries, baseMs: retryBaseMs });
+
+      let res = await send(temperature != null);
+      // Some models (e.g. the GPT-5 / o-series) reject a non-default temperature;
+      // fall back to omitting it rather than counting that as a failure.
+      if (!res.ok && res.status === 400 && temperature != null) {
+        const text = await res.text();
+        if (/temperature/i.test(text)) res = await send(false);
+        else throw new Error(`OpenAI 400: ${text}`);
+      }
       if (!res.ok) throw new Error(`OpenAI ${res.status}: ${await res.text()}`);
       const data = await res.json();
       return data.choices?.[0]?.message?.content ?? '';
@@ -55,12 +97,15 @@ export function anthropicProvider(options = {}) {
     model = 'claude-3-5-sonnet-latest',
     maxTokens = 1024,
     name = `anthropic:${model}`,
+    fetchImpl = globalThis.fetch,
+    retries = 4,
+    retryBaseMs = 1000,
   } = options;
   return {
     name,
     async complete(system, user) {
       if (!apiKey) throw new Error('ANTHROPIC_API_KEY is not set');
-      const res = await fetch(`${baseURL.replace(/\/$/, '')}/messages`, {
+      const res = await requestWithRetry(fetchImpl, `${baseURL.replace(/\/$/, '')}/messages`, {
         method: 'POST',
         headers: {
           'content-type': 'application/json',
@@ -68,7 +113,7 @@ export function anthropicProvider(options = {}) {
           'anthropic-version': '2023-06-01',
         },
         body: JSON.stringify({ model, max_tokens: maxTokens, system, messages: [{ role: 'user', content: user }] }),
-      });
+      }, { retries, baseMs: retryBaseMs });
       if (!res.ok) throw new Error(`Anthropic ${res.status}: ${await res.text()}`);
       const data = await res.json();
       return (data.content || []).map((b) => b.text || '').join('');
