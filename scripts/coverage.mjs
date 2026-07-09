@@ -28,19 +28,26 @@ const NODE_REPORTERS = [
     '--test-reporter-destination=coverage/lcov.info',
 ];
 
+// Performance tests assert wall-clock budgets that coverage instrumentation
+// inflates, so they are skipped here (matched by name); they still run
+// un-instrumented in the dedicated Renderer/Python CI jobs. Correctness tests
+// living in the same files continue to run and count toward coverage.
+const NODE_SKIP_PERF = '--test-skip-pattern=linear time';
+const PYTEST_SKIP_PERF = ['-k', 'not linear'];
+
 /** Package definitions in the order they appear in the report. */
 const packages = [
     {
         name: 'renderer',
         dir: 'packages/renderer',
         command: process.execPath,
-        args: ['--test', '--experimental-test-coverage', ...NODE_REPORTERS],
+        args: ['--test', '--experimental-test-coverage', NODE_SKIP_PERF, ...NODE_REPORTERS],
     },
     {
         name: 'cli',
         dir: 'packages/cli',
         command: process.execPath,
-        args: ['--test', '--experimental-test-coverage', ...NODE_REPORTERS],
+        args: ['--test', '--experimental-test-coverage', NODE_SKIP_PERF, ...NODE_REPORTERS],
     },
     {
         name: 'python',
@@ -50,6 +57,7 @@ const packages = [
             '-m',
             'pytest',
             '-q',
+            ...PYTEST_SKIP_PERF,
             '--cov=chromamark',
             '--cov-branch',
             '--cov-report=lcov:coverage/lcov.info',
