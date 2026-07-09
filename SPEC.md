@@ -307,6 +307,13 @@ No construct requires seeing its end before it can begin styling.
 
 ## 13 · Grammar sketch (EBNF-ish)
 
+::: info Full grammar
+The sketch below is a quick overview. The complete, normative EBNF for the
+extension layer — kept in sync with the parser by a test — lives in
+[`docs/grammar.ebnf`](./docs/grammar.ebnf). Use it to build third-party tooling
+(editors, validators, tree-sitter grammars) without reimplementing the parser.
+:::
+
 ```
 document     = { gfm-block | container } ;
 container    = fence-open , newline , { line } , fence-close ;

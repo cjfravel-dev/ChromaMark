@@ -36,14 +36,22 @@ syntax beyond normal Markdown; if in doubt, plain Markdown always works.
 - meter/progress bar: `[=success 87%]` `[=info 3/10]`  (value is `NN%` or `A/B`)
 - custom color: `[!color=#6f42c1 beta]` or bare hex `[!#6f42c1 beta]`
 
-## Inline diff (CriticMarkup)
+## Inline change tracking (CriticMarkup)
 
-`{++added++}` `{--removed--}` `{~~old~>new~~}` `{==highlight==}` `{>>comment<<}`
+Use these to SHOW an edit, suggestion, or before→after — mark the change, don't
+just describe it in prose:
+
+- `{++added++}` insert · `{--removed--}` delete · `{~~old~>new~~}` replace
+- `{==highlight==}` · `{>>comment<<}`
+
+Emit change-tracking BARE, in the sentence — never inside backticks:
+- ✅  Rename {~~expected~>actual~~} in the assertion.
+- ❌  Rename `{~~expected~>actual~~}` in the assertion.  ← backticks = literal code
 
 ## Rules & gotchas
 
 - Strict superset: tables, lists, code fences, **bold**, etc. all work.
-- ⚠️ Do NOT wrap pills in backticks — `` `[!pass]` `` renders as literal code, not a pill.
+- ⚠️ NEVER put a ChromaMark construct inside backticks or a code span — this includes pills, meters, colored text, AND change-tracking. `` `[!pass]` `` and `` `{~~a~>b~~}` `` render as literal code. Emit them bare: `[!pass]`, `{~~a~>b~~}`. Backticks are only for real code/filenames.
 - Pills work inside table cells and headings.
 - Block titles and details summaries render inline too — pills, colored text, meters, and markdown all work there (raw HTML is escaped).
 - Prefer the 6 semantic tones (they adapt to light/dark) over `color=#hex`.
@@ -70,5 +78,7 @@ syntax beyond normal Markdown; if in doubt, plain Markdown always works.
     ::: details danger Integration failures (3)
     FAILED test_recon_merge_precedence
     :::
+
+    Suggested fix: {~~expected~>actual~~} in the merge assertion.
 
     Overall: [!warn SHIP WITH CAUTION]

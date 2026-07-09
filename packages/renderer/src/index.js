@@ -9,6 +9,9 @@ import inlinePlugin from './inline.js';
 import criticPlugin from './critic.js';
 import containerPlugin from './containers.js';
 
+export { renderAnsi, colorEnabled } from './ansi.js';
+export { lint } from './lint.js';
+
 const DEFAULTS = {
   container: true, // ::: colored callouts
   details: true, // ::: details collapsibles

@@ -1,0 +1,10 @@
+{
+  "name": "@chromamark/eval",
+  "private": true,
+  "type": "module",
+  "description": "ChromaMark LLM-conformance eval harness — measures how reliably models emit valid ChromaMark.",
+  "scripts": {
+    "test": "node --test",
+    "eval": "node run.js"
+  }
+}

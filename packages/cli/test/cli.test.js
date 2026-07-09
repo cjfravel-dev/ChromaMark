@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { execFileSync, spawn } from 'node:child_process';
+import { execFileSync, spawn, spawnSync } from 'node:child_process';
 import { mkdtempSync, writeFileSync, readFileSync, existsSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -130,4 +130,93 @@ test('CLI errors (exit 1) on empty stdin with no input arg and no explicit -', (
 test('CLI still reads explicit - from stdin', () => {
   const out = execFileSync(BIN, ['-'], { input: '::: success\nhi\n:::\n', encoding: 'utf8' });
   assert.match(out, /<div class="cm-block" data-tone="success">/);
+});
+
+test('CLI render outputs ANSI-styled terminal text', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'cm-cli-'));
+  const input = join(dir, 'r.cm');
+  writeFileSync(input, '::: success Deploy\nAll good [!ok healthy]\n:::\n');
+  const out = execFileSync(process.execPath, [BIN, 'render', input, '--color', 'always'], { encoding: 'utf8' });
+  assert.match(out, /\x1b\[/, 'expected ANSI escape sequences');
+  assert.match(out, /✓ Deploy/);
+  assert.match(out, /healthy/);
+});
+
+test('CLI render --no-color emits plain, legible text', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'cm-cli-'));
+  const input = join(dir, 'r.cm');
+  writeFileSync(input, 'Build [!pass]\n');
+  const out = execFileSync(process.execPath, [BIN, 'render', input, '--no-color'], { encoding: 'utf8' });
+  assert.doesNotMatch(out, /\x1b/);
+  assert.match(out, /\[✓ PASS\]/);
+});
+
+test('CLI render reads ChromaMark from stdin', () => {
+  const out = execFileSync(process.execPath, [BIN, 'render', '--color', 'never'], {
+    input: '[!fail 3]\n', encoding: 'utf8',
+  });
+  assert.match(out, /\[✗ 3\]/);
+});
+
+test('CLI render survives a live pipe from another Node process (no EAGAIN)', () => {
+  const producer = "node -e \"setTimeout(()=>process.stdout.write('Build [!pass]\\n'),150)\"";
+  const r = spawnSync(
+    'bash',
+    ['-c', `${producer} | node ${JSON.stringify(BIN)} render --color never`],
+    { encoding: 'utf8' },
+  );
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /\[✓ PASS\]/);
+});
+
+test('CLI rejects an invalid --color value', () => {
+  const err = process.stderr.write;
+  process.stderr.write = () => true;
+  try {
+    assert.equal(run(['render', 'x.cm', '--color', 'rainbow']), 1);
+  } finally {
+    process.stderr.write = err;
+  }
+});
+
+function runCapture(args, input) {
+  try {
+    const stdout = execFileSync(process.execPath, [BIN, ...args], { input, encoding: 'utf8' });
+    return { code: 0, stdout };
+  } catch (e) {
+    return { code: e.status, stdout: (e.stdout || '').toString() };
+  }
+}
+
+test('CLI lint reports problems and exits non-zero', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'cm-cli-'));
+  const input = join(dir, 'bad.cm');
+  writeFileSync(input, 'Build [!succes 3]\n');
+  const { code, stdout } = runCapture(['lint', input]);
+  assert.equal(code, 1);
+  assert.match(stdout, /CM002/);
+  assert.match(stdout, /bad\.cm:1:/);
+});
+
+test('CLI lint exits 0 for a clean file', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'cm-cli-'));
+  const input = join(dir, 'ok.cm');
+  writeFileSync(input, '::: success\nAll good [!pass]\n:::\n');
+  const { code } = runCapture(['lint', input]);
+  assert.equal(code, 0);
+});
+
+test('CLI lint --disable suppresses a rule', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'cm-cli-'));
+  const input = join(dir, 'doc.cm');
+  writeFileSync(input, 'Use `[!pass]` in docs.\n');
+  assert.equal(runCapture(['lint', input]).code, 1);
+  assert.equal(runCapture(['lint', input, '--disable', 'CM001']).code, 0);
+});
+
+test('CLI lint reads from stdin', () => {
+  const { code, stdout } = runCapture(['lint'], '[!nope x]\n');
+  assert.equal(code, 1);
+  assert.match(stdout, /<stdin>:1:/);
+  assert.match(stdout, /CM002/);
 });
