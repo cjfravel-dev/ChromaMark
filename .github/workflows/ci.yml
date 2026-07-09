@@ -17,6 +17,7 @@ jobs:
       - run: npm install --no-audit --no-fund
       - run: npm test --workspace @chromamark/renderer
       - run: npm test --workspace @chromamark/cli
+      - run: npm run test:eval
       - run: npm run build --workspace chromamark-vscode
       - run: npm test --workspace chromamark-vscode
       - name: Validate the site builds

@@ -4,7 +4,7 @@
  */
 
 import {
-  readFileSync, writeFileSync, statSync, readdirSync, mkdirSync, watch,
+  readFileSync, readSync, writeFileSync, statSync, readdirSync, mkdirSync, watch,
 } from 'node:fs';
 import { join, basename, extname, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -34,6 +34,30 @@ Options:
 `;
 
 const COMMANDS = new Set(['build', 'render', 'lint']);
+
+/**
+ * Read all of stdin synchronously. Unlike readFileSync(0), this tolerates a
+ * non-blocking pipe from another process (which throws EAGAIN when no data is
+ * ready yet) by retrying after a short sleep until EOF.
+ */
+function readStdin() {
+  const chunks = [];
+  const buf = Buffer.alloc(65536);
+  const idle = new Int32Array(new SharedArrayBuffer(4));
+  for (;;) {
+    let bytes;
+    try {
+      bytes = readSync(0, buf, 0, buf.length, null);
+    } catch (err) {
+      if (err.code === 'EAGAIN') { Atomics.wait(idle, 0, 0, 5); continue; }
+      if (err.code === 'EOF') break; // some platforms signal EOF this way
+      throw err;
+    }
+    if (bytes === 0) break;
+    chunks.push(Buffer.from(buf.subarray(0, bytes)));
+  }
+  return Buffer.concat(chunks).toString('utf8');
+}
 
 function version() {
   const url = new URL('../package.json', import.meta.url);
@@ -87,7 +111,7 @@ function titleFor(file) {
  *  error shape ({ error } / { empty }) the command can turn into an exit code. */
 function readInput(opts) {
   if (opts.input === '-' || (opts.input == null && !process.stdin.isTTY)) {
-    const src = readFileSync(0, 'utf8');
+    const src = readStdin();
     if (opts.input !== '-' && !src.trim()) return { empty: true };
     return { src, path: '<stdin>' };
   }
@@ -192,7 +216,7 @@ export function run(argv = process.argv.slice(2)) {
   }
 
   if (opts.input === '-' || (opts.input == null && !process.stdin.isTTY)) {
-    const src = readFileSync(0, 'utf8');
+    const src = readStdin();
     if (opts.input !== '-' && !src.trim()) {
       process.stderr.write(`error: no input file given and stdin was empty\n\n${HELP}`);
       return 1;

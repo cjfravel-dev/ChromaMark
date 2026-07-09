@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { execFileSync, spawn } from 'node:child_process';
+import { execFileSync, spawn, spawnSync } from 'node:child_process';
 import { mkdtempSync, writeFileSync, readFileSync, existsSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -156,6 +156,17 @@ test('CLI render reads ChromaMark from stdin', () => {
     input: '[!fail 3]\n', encoding: 'utf8',
   });
   assert.match(out, /\[✗ 3\]/);
+});
+
+test('CLI render survives a live pipe from another Node process (no EAGAIN)', () => {
+  const producer = "node -e \"setTimeout(()=>process.stdout.write('Build [!pass]\\n'),150)\"";
+  const r = spawnSync(
+    'bash',
+    ['-c', `${producer} | node ${JSON.stringify(BIN)} render --color never`],
+    { encoding: 'utf8' },
+  );
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /\[✓ PASS\]/);
 });
 
 test('CLI rejects an invalid --color value', () => {

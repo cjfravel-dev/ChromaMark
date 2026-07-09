@@ -202,10 +202,11 @@ ChromaMark/
 ├── docs/                       llms.txt, grammar.ebnf, integrations roadmap, logo assets
 ├── examples/demo.cm            a sample document exercising every construct
 ├── packages/
-│   ├── renderer/               @chromamark/renderer — parser, theme, browser bundle
-│   ├── cli/                    @chromamark/cli — .cm → self-contained HTML
+│   ├── renderer/               @chromamark/renderer — parser, theme, ANSI, lint, browser bundle
+│   ├── cli/                    @chromamark/cli — build (HTML), render (ANSI), lint
 │   ├── python/                 chromamark (pip) — renderer, builder, Jupyter
 │   └── vscode/                 chromamark-vscode — preview + highlighting
+├── eval/                       LLM-conformance eval harness (measures llms.txt)
 └── scripts/build-site.mjs      builds the GitHub Pages site
 ```
 
@@ -214,6 +215,9 @@ ChromaMark/
 ```bash
 npm install
 npm test                                     # renderer test suite (node:test)
+npm test --workspace @chromamark/cli         # CLI tests (build, render, lint)
+npm run test:eval                            # eval harness tests
+npm run eval                                 # offline LLM-conformance demo
 npm run build --workspace @chromamark/renderer   # bundle dist/ for the browser/CDN
 npm run build:site                           # build the Pages site into _site/
 ```
