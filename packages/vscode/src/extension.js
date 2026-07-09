@@ -20,7 +20,7 @@
 
 import * as vscode from 'vscode';
 import chromamark from '@chromamark/renderer';
-import { extensionKey, isSupportedExtension, commandForMode } from './open-mode.mjs';
+import { extensionKey, isSupportedExtension, commandForMode, openModeChoices, extensionChoices } from './open-mode.mjs';
 
 function isSupportedUri(uri) {
   return !!uri && uri.scheme === 'file' && isSupportedExtension(extensionKey(uri.path));
@@ -43,6 +43,31 @@ function anyTabFor(key) {
     }
   }
   return false;
+}
+
+// Command: pick a supported file type (defaulting to the active file's) and an
+// open mode, then persist it to the user's `chromamark.<ext>.openMode` setting.
+async function setOpenMode() {
+  const active = vscode.window.activeTextEditor;
+  const activeUri = active && active.document ? active.document.uri : undefined;
+  const preferred = activeUri && activeUri.scheme === 'file' ? extensionKey(activeUri.path) : undefined;
+
+  const extPick = await vscode.window.showQuickPick(extensionChoices(preferred), {
+    title: 'ChromaMark: Set Open Mode',
+    placeHolder: 'Which file type should this apply to?',
+  });
+  if (!extPick) return;
+
+  const config = vscode.workspace.getConfiguration('chromamark');
+  const current = config.get(`${extPick.ext}.openMode`);
+  const modePick = await vscode.window.showQuickPick(openModeChoices(current), {
+    title: `ChromaMark: Open mode for ${extPick.label} files`,
+    placeHolder: 'How should these files open?',
+  });
+  if (!modePick) return;
+
+  await config.update(`${extPick.ext}.openMode`, modePick.value, vscode.ConfigurationTarget.Global);
+  vscode.window.showInformationMessage(`ChromaMark: ${extPick.label} files will open as "${modePick.label}".`);
 }
 
 export function activate(context) {
@@ -76,6 +101,7 @@ export function activate(context) {
   };
 
   context.subscriptions.push(
+    vscode.commands.registerCommand('chromamark.setOpenMode', setOpenMode),
     vscode.window.onDidChangeActiveTextEditor(applyOpenMode),
     vscode.window.tabGroups.onDidChangeTabs(forgetClosed),
   );

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { extensionKey, isSupportedExtension, commandForMode, SUPPORTED_EXTENSIONS } from '../src/open-mode.mjs';
+import { extensionKey, isSupportedExtension, commandForMode, SUPPORTED_EXTENSIONS, openModeChoices, extensionChoices } from '../src/open-mode.mjs';
 
 test('extensionKey extracts the lower-cased extension from a path', () => {
   assert.equal(extensionKey('/a/b/notes.cm'), 'cm');
@@ -29,4 +29,28 @@ test('each open mode maps to the correct VS Code command', () => {
 test('an unknown mode resolves to no command', () => {
   assert.equal(commandForMode('bogus'), null);
   assert.equal(commandForMode(undefined), null);
+});
+
+test('openModeChoices lists the three modes in order and marks the current one', () => {
+  const items = openModeChoices('sourceAndPreview');
+  assert.deepEqual(items.map((i) => i.value), ['preview', 'sourceAndPreview', 'source']);
+  for (const i of items) assert.ok(i.label && i.detail, 'each choice has a label and detail');
+  const picked = items.filter((i) => i.picked);
+  assert.equal(picked.length, 1);
+  assert.equal(picked[0].value, 'sourceAndPreview');
+  assert.equal(picked[0].description, 'current');
+});
+
+test('openModeChoices marks nothing when there is no current value', () => {
+  const items = openModeChoices(undefined);
+  assert.equal(items.filter((i) => i.picked).length, 0);
+  assert.ok(items.every((i) => i.description === undefined));
+});
+
+test('extensionChoices lists cm and md, putting the active file type first', () => {
+  assert.deepEqual(extensionChoices().map((i) => i.ext), ['cm', 'md']);
+  assert.deepEqual(extensionChoices('md').map((i) => i.ext), ['md', 'cm']);
+  assert.deepEqual(extensionChoices('cm').map((i) => i.ext), ['cm', 'md']);
+  assert.deepEqual(extensionChoices('txt').map((i) => i.ext), ['cm', 'md']);
+  for (const i of extensionChoices()) assert.ok(i.label && i.detail);
 });

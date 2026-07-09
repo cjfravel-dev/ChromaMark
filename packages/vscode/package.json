@@ -36,6 +36,13 @@
     "test": "node --test"
   },
   "contributes": {
+    "commands": [
+      {
+        "command": "chromamark.setOpenMode",
+        "title": "Set Open Mode...",
+        "category": "ChromaMark"
+      }
+    ],
     "languages": [
       {
         "id": "markdown",

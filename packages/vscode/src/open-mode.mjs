@@ -30,3 +30,30 @@ export function commandForMode(mode) {
   const command = MODE_COMMANDS[mode];
   return command == null ? null : command;
 }
+
+const OPEN_MODES = [
+  { value: 'preview', label: 'Preview only', detail: 'Reopen the source editor as the rendered preview.' },
+  { value: 'sourceAndPreview', label: 'Source with preview', detail: 'Open the source editor with the rendered preview beside it.' },
+  { value: 'source', label: 'Source only', detail: 'Open the source editor with no automatic preview.' },
+];
+
+const EXTENSIONS = [
+  { ext: 'cm', label: '.cm', detail: 'ChromaMark files' },
+  { ext: 'md', label: '.md', detail: 'Markdown files' },
+];
+
+/** Quick Pick items for the open modes, marking `current` as picked. */
+export function openModeChoices(current) {
+  return OPEN_MODES.map((mode) => ({
+    ...mode,
+    description: mode.value === current ? 'current' : undefined,
+    picked: mode.value === current,
+  }));
+}
+
+/** Quick Pick items for the supported extensions, listing `preferred` first. */
+export function extensionChoices(preferred) {
+  const items = EXTENSIONS.map((entry) => ({ ...entry }));
+  if (!isSupportedExtension(preferred)) return items;
+  return [...items.filter((i) => i.ext === preferred), ...items.filter((i) => i.ext !== preferred)];
+}

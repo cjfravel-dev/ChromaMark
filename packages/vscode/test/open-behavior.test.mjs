@@ -25,7 +25,7 @@ async function activateWith({ path, scheme = 'file', languageId = 'markdown', co
     workspace: {
       getConfiguration: (section) => ({ get: (key) => config[`${section}.${key}`] }),
     },
-    commands: { executeCommand: async (cmd) => { executed.push(cmd); } },
+    commands: { executeCommand: async (cmd) => { executed.push(cmd); }, registerCommand: () => ({ dispose() {} }) },
   };
   const origLoad = Module._load;
   Module._load = function (request, ...args) {
@@ -93,4 +93,81 @@ test('package.json contributes per-extension openMode settings with the expected
   }
   assert.equal(cm.default, 'preview', '.cm preserves the current preview-first behaviour');
   assert.equal(md.default, 'sourceAndPreview', '.md defaults to source with preview');
+});
+
+/** Activate with a stubbed vscode, then invoke the registered chromamark.setOpenMode command. */
+async function invokeSetOpenMode({ picks }) {
+  const registered = {};
+  const updates = [];
+  let info;
+  const ConfigurationTarget = { Global: 1, Workspace: 2, WorkspaceFolder: 3 };
+  const vscodeStub = {
+    ConfigurationTarget,
+    window: {
+      activeTextEditor: undefined,
+      onDidChangeActiveTextEditor: () => ({ dispose() {} }),
+      tabGroups: { all: [], onDidChangeTabs: () => ({ dispose() {} }) },
+      showQuickPick: async (items) => {
+        const first = items[0] || {};
+        if ('ext' in first) return picks.ext ? items.find((i) => i.ext === picks.ext) : undefined;
+        if ('value' in first) return picks.mode ? items.find((i) => i.value === picks.mode) : undefined;
+        return undefined;
+      },
+      showInformationMessage: (message) => { info = message; },
+    },
+    workspace: {
+      getConfiguration: (section) => ({
+        get: () => undefined,
+        update: async (key, value, target) => { updates.push({ key: `${section}.${key}`, value, target }); },
+      }),
+    },
+    commands: {
+      executeCommand: async () => {},
+      registerCommand: (id, handler) => { registered[id] = handler; return { dispose() {} }; },
+    },
+  };
+  const origLoad = Module._load;
+  Module._load = function (request, ...args) {
+    if (request === 'vscode') return vscodeStub;
+    return origLoad.call(this, request, ...args);
+  };
+  try {
+    const require = createRequire(import.meta.url);
+    delete require.cache[distPath];
+    require(distPath).activate({ subscriptions: [] });
+  } finally {
+    Module._load = origLoad;
+  }
+  const handler = registered['chromamark.setOpenMode'];
+  assert.equal(typeof handler, 'function', 'activate() must register chromamark.setOpenMode');
+  await handler();
+  return { updates, info, target: ConfigurationTarget.Global };
+}
+
+test('Set Open Mode writes the chosen .cm mode to user settings', async () => {
+  const { updates, target } = await invokeSetOpenMode({ picks: { ext: 'cm', mode: 'source' } });
+  assert.deepEqual(updates, [{ key: 'chromamark.cm.openMode', value: 'source', target }]);
+});
+
+test('Set Open Mode writes the chosen .md mode to user settings', async () => {
+  const { updates, target } = await invokeSetOpenMode({ picks: { ext: 'md', mode: 'preview' } });
+  assert.deepEqual(updates, [{ key: 'chromamark.md.openMode', value: 'preview', target }]);
+});
+
+test('Set Open Mode makes no change when the file-type pick is cancelled', async () => {
+  const { updates } = await invokeSetOpenMode({ picks: { ext: undefined, mode: 'preview' } });
+  assert.deepEqual(updates, []);
+});
+
+test('Set Open Mode makes no change when the mode pick is cancelled', async () => {
+  const { updates } = await invokeSetOpenMode({ picks: { ext: 'cm', mode: undefined } });
+  assert.deepEqual(updates, []);
+});
+
+test('package.json contributes the Set Open Mode command to the palette', () => {
+  const cmds = pkg.contributes?.commands ?? [];
+  const setCmd = cmds.find((c) => c.command === 'chromamark.setOpenMode');
+  assert.ok(setCmd, 'chromamark.setOpenMode must be contributed');
+  assert.equal(setCmd.category, 'ChromaMark');
+  assert.match(setCmd.title, /open mode/i);
 });
