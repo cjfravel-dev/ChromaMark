@@ -19,7 +19,7 @@ classifiers = [
 dependencies = ["markdown-it-py[linkify]>=3.0"]
 
 [project.optional-dependencies]
-test = ["pytest"]
+test = ["pytest", "pytest-cov"]
 
 [project.urls]
 Homepage = "https://github.com/cjfravel-dev/ChromaMark"
