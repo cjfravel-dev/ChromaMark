@@ -4,29 +4,30 @@
  * - Contributes the ChromaMark renderer to the built-in Markdown preview via
  *   extendMarkdownIt, so `:::` blocks, pills, meters, fields and inline diff
  *   render live.
- * - Opens ChromaMark files (.cm) directly as the rendered preview by reopening
- *   the just-opened source editor as the Markdown preview in place. To edit, use
- *   the editor's "Reopen as Source" action.
+ * - Applies a per-extension open mode when a supported file (`.cm`, `.md`)
+ *   becomes active, driven by the `chromamark.<ext>.openMode` setting:
+ *     - "preview": reopen the source editor as the rendered preview in place.
+ *     - "sourceAndPreview": keep the source editor and open the preview beside it.
+ *     - "source": leave the source editor as-is.
  *
- * The "converted" set is keyed by URI and cleared only when a file's last tab is
- * closed, so: reopening a previously closed .cm previews again, while an explicit
- * "Reopen as Source" is never undone (a tab for the URI still exists, so the flag
- * is retained and the source editor is left alone).
+ * A file is handled at most once per session; the "handled" set is keyed by URI
+ * and cleared only when a file's last tab is closed, so reopening a previously
+ * closed file applies its open mode again, while switching to source manually is
+ * never undone (a tab for the URI still exists, so the flag is retained).
  *
  * Bundled with esbuild (renderer + markdown-it inlined); `vscode` stays external.
  */
 
 import * as vscode from 'vscode';
 import chromamark from '@chromamark/renderer';
+import { extensionKey, isSupportedExtension, commandForMode } from './open-mode.mjs';
 
-const CM_FILE = /\.cm$/i;
-
-function isChromaMarkUri(uri) {
-  return !!uri && uri.scheme === 'file' && CM_FILE.test(uri.path);
+function isSupportedUri(uri) {
+  return !!uri && uri.scheme === 'file' && isSupportedExtension(extensionKey(uri.path));
 }
 
-function isChromaMarkDoc(doc) {
-  return !!doc && doc.languageId === 'markdown' && isChromaMarkUri(doc.uri);
+function isSupportedDoc(doc) {
+  return !!doc && doc.languageId === 'markdown' && isSupportedUri(doc.uri);
 }
 
 function tabUri(tab) {
@@ -45,36 +46,40 @@ function anyTabFor(key) {
 }
 
 export function activate(context) {
-  const converted = new Set();
+  const handled = new Set();
 
-  const openAsPreview = async (editor) => {
+  const applyOpenMode = async (editor) => {
     const doc = editor && editor.document;
-    if (!isChromaMarkDoc(doc)) return;
+    if (!isSupportedDoc(doc)) return;
     const key = doc.uri.toString();
-    if (converted.has(key)) return;
-    converted.add(key);
+    if (handled.has(key)) return;
+    const ext = extensionKey(doc.uri.path);
+    const mode = vscode.workspace.getConfiguration('chromamark').get(`${ext}.openMode`);
+    const command = commandForMode(mode);
+    handled.add(key);
+    if (!command) return;
     try {
-      await vscode.commands.executeCommand('markdown.reopenAsPreview');
+      await vscode.commands.executeCommand(command);
     } catch {
-      converted.delete(key);
+      handled.delete(key);
     }
   };
 
-  // Forget a file once its last tab is gone, so a later reopen previews again.
+  // Forget a file once its last tab is gone, so a later reopen applies its mode again.
   const forgetClosed = (event) => {
     for (const tab of event.closed) {
       const uri = tabUri(tab);
-      if (uri && isChromaMarkUri(uri) && !anyTabFor(uri.toString())) {
-        converted.delete(uri.toString());
+      if (uri && isSupportedUri(uri) && !anyTabFor(uri.toString())) {
+        handled.delete(uri.toString());
       }
     }
   };
 
   context.subscriptions.push(
-    vscode.window.onDidChangeActiveTextEditor(openAsPreview),
+    vscode.window.onDidChangeActiveTextEditor(applyOpenMode),
     vscode.window.tabGroups.onDidChangeTabs(forgetClosed),
   );
-  openAsPreview(vscode.window.activeTextEditor);
+  applyOpenMode(vscode.window.activeTextEditor);
 
   return {
     extendMarkdownIt(md) {

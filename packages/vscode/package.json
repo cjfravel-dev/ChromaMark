@@ -2,7 +2,7 @@
   "name": "chromamark-vscode",
   "displayName": "ChromaMark",
   "description": "Syntax highlighting and live preview for ChromaMark — colored blocks, colored pills, collapsible sections, fields, meters and inline diff on top of Markdown.",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "publisher": "chromamark",
   "icon": "icon.png",
   "license": "SEE LICENSE IN LICENSE.md",
@@ -60,7 +60,42 @@
     ],
     "markdown.previewScripts": [
       "./media/toc.js"
-    ]
+    ],
+    "configuration": {
+      "title": "ChromaMark",
+      "properties": {
+        "chromamark.cm.openMode": {
+          "type": "string",
+          "enum": [
+            "preview",
+            "sourceAndPreview",
+            "source"
+          ],
+          "enumDescriptions": [
+            "Open the rendered preview only (reopens the source editor as the preview).",
+            "Open the source editor with the rendered preview beside it.",
+            "Open the source editor only (no automatic preview)."
+          ],
+          "default": "preview",
+          "markdownDescription": "How ChromaMark (`.cm`) files open."
+        },
+        "chromamark.md.openMode": {
+          "type": "string",
+          "enum": [
+            "preview",
+            "sourceAndPreview",
+            "source"
+          ],
+          "enumDescriptions": [
+            "Open the rendered preview only (reopens the source editor as the preview).",
+            "Open the source editor with the rendered preview beside it.",
+            "Open the source editor only (no automatic preview)."
+          ],
+          "default": "sourceAndPreview",
+          "markdownDescription": "How Markdown (`.md`) files open."
+        }
+      }
+    }
   },
   "dependencies": {
     "@chromamark/renderer": "^0.3.0"
