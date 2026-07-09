@@ -47,14 +47,15 @@ function codeSpans(line) {
 }
 
 const INLINE = /\[([!.=])([^\s\]]+)(?:\s+([^\]]*))?\]/g;
+const CONSTRUCT_IN_CODE = /\[[!.=]|\{(?:\+\+|--|~~|==|>>)/;
 
 function scanInline(line, row, diags) {
   const spans = codeSpans(line);
   for (const s of spans) {
-    if (/\[[!.=]/.test(s.inner)) {
+    if (CONSTRUCT_IN_CODE.test(s.inner)) {
       diags.push({
         line: row, column: s.start + 1, severity: 'warning', rule: 'CM001',
-        message: 'ChromaMark construct is inside backticks; it renders as code, not a pill',
+        message: 'ChromaMark construct is inside backticks; it renders as code, not rich output',
       });
     }
   }

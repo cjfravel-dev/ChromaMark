@@ -72,3 +72,16 @@ test('provider retries on a thrown network error, then succeeds', async () => {
   assert.equal(await p.complete('s', 'u'), 'net');
   assert.equal(calls, 2);
 });
+
+test('provider does not retry a timeout (AbortError) — it fails fast', async () => {
+  let calls = 0;
+  const fetchImpl = async () => {
+    calls += 1;
+    const err = new Error('aborted');
+    err.name = 'AbortError';
+    throw err;
+  };
+  const p = openaiProvider({ apiKey: 'x', fetchImpl, retries: 4, retryBaseMs: 1 });
+  await assert.rejects(() => p.complete('s', 'u'), /aborted/);
+  assert.equal(calls, 1);
+});

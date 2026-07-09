@@ -23,7 +23,7 @@ const defaultSleep = (ms) => new Promise((r) => setTimeout(r, ms));
  * aborting a stalled request after `timeoutMs`. Non-429 client errors pass through.
  */
 async function requestWithRetry(fetchImpl, url, init, options = {}) {
-  const { retries = 4, baseMs = 1000, sleep = defaultSleep, timeoutMs = 120000 } = options;
+  const { retries = 4, baseMs = 1000, sleep = defaultSleep, timeoutMs = 60000 } = options;
   const backoff = (attempt) => Math.min(baseMs * 2 ** attempt, 20000);
   for (let attempt = 0; ; attempt++) {
     let res;
@@ -36,7 +36,9 @@ async function requestWithRetry(fetchImpl, url, init, options = {}) {
         if (timer) clearTimeout(timer);
       }
     } catch (err) {
-      if (attempt >= retries) throw err;
+      // A timeout (AbortError) already waited a long time — fail fast, don't
+      // multiply it by retries. Retry only genuinely transient network errors.
+      if (err.name === 'AbortError' || attempt >= retries) throw err;
       await sleep(backoff(attempt));
       continue;
     }

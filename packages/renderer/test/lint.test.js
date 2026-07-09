@@ -24,6 +24,15 @@ test('a pill wrapped in backticks is flagged (CM001)', () => {
   assert.equal(diags[0].column, 5);
 });
 
+test('backtick-wrapped CriticMarkup is flagged (CM001)', () => {
+  for (const s of ['Use `{~~old~>new~~}` here', 'a `{++add++}` b', 'c `{--del--}` d']) {
+    const diags = lint(s);
+    assert.deepEqual(diags.map((d) => d.rule), ['CM001'], `expected CM001 for: ${s}`);
+  }
+  // plain change tracking (not in backticks) is fine
+  assert.deepEqual(lint('Use {~~old~>new~~} here'), []);
+});
+
 // ---- CM002 unknown tone in an inline construct ----
 test('an unknown tone in a pill is flagged (CM002)', () => {
   const diags = lint('Build [!succes 3]');
