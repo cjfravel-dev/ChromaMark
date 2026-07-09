@@ -43,3 +43,49 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[test]"
           pytest -q
+
+  coverage:
+    name: Coverage
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: npm install --no-audit --no-fund
+      - name: Install Python package with coverage extras
+        working-directory: packages/python
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[test]"
+      # Runs the renderer, cli and python suites with coverage and writes the
+      # combined report to the GitHub job summary (via $GITHUB_STEP_SUMMARY).
+      - name: Run coverage
+        run: npm run coverage
+      # Publish (or update) a single sticky coverage comment on the PR. Uses the
+      # tokenless GITHUB_TOKEN; skipped for forks, whose token is read-only.
+      - name: Publish coverage comment
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          marker='<!-- chromamark-coverage -->'
+          existing=$(gh api "repos/$REPO/issues/$PR/comments" --paginate \
+            --jq ".[] | select(.body | contains(\"$marker\")) | .id" | tail -n1)
+          if [ -n "$existing" ]; then
+            gh api -X PATCH "repos/$REPO/issues/comments/$existing" \
+              -F body=@coverage/comment.md >/dev/null
+            echo "Updated coverage comment #$existing"
+          else
+            gh api -X POST "repos/$REPO/issues/$PR/comments" \
+              -F body=@coverage/comment.md >/dev/null
+            echo "Created coverage comment"
+          fi
