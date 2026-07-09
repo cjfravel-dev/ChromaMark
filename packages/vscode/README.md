@@ -10,15 +10,39 @@ Live preview and syntax highlighting for [ChromaMark](https://github.com/cjfrave
   Markdown preview, so `:::` blocks, `[!pills]`, `[=meters]`, `::: fields`, and
   CriticMarkup render as you write. Open with **Markdown: Open Preview**
   (`Ctrl+Shift+V` / `Cmd+Shift+V`).
-- **Opens as preview.** ChromaMark files (`.cm`) open directly as the rendered
-  preview. To edit, use the editor's **Reopen as Source** action; a file is only
-  auto-converted once per session, so switching to source is never undone.
+- **Configurable open mode.** Choose how ChromaMark (`.cm`) and Markdown (`.md`)
+  files open — the rendered **preview only**, **source with preview** beside it,
+  or **source only** — per extension via settings (see [Settings](#settings)). A
+  file is handled once per session, so switching to source manually is never undone.
+  Run **ChromaMark: Set Open Mode…** from the Command Palette (`F1`) to change it
+  without leaving the editor.
 - **Outline sidebar.** The preview shows a left-hand header tree — click to jump,
   with scroll-spy highlighting and a collapse toggle.
 - **Syntax highlighting.** An injection grammar highlights ChromaMark constructs
   inside any Markdown document.
 - **`.cm` files.** This extension is treated as Markdown, so it gets
   full editing and preview support.
+
+## Settings
+
+Control how files open, per file extension:
+
+| Setting | Default | Applies to |
+| --- | --- | --- |
+| `chromamark.cm.openMode` | `preview` | `.cm` files |
+| `chromamark.md.openMode` | `sourceAndPreview` | `.md` files |
+
+Each setting accepts:
+
+- **`preview`** — open the rendered preview only (reopens the source editor as
+  the preview in place).
+- **`sourceAndPreview`** — open the source editor with the rendered preview
+  beside it.
+- **`source`** — open the source editor only (no automatic preview).
+
+Prefer not to edit settings by hand? Run **ChromaMark: Set Open Mode…** from the
+Command Palette (`F1`) to pick a file type and mode; it updates the matching
+setting for you.
 
 ## Example
 

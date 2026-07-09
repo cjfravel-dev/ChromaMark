@@ -14,7 +14,7 @@ const vscodeStub = {
     onDidChangeActiveTextEditor: () => ({ dispose() {} }),
     tabGroups: { all: [], onDidChangeTabs: () => ({ dispose() {} }) },
   },
-  commands: { executeCommand: async () => {} },
+  commands: { executeCommand: async () => {}, registerCommand: () => ({ dispose() {} }) },
 };
 
 test('the built extension bundle activates and wires ChromaMark into markdown-it', () => {
