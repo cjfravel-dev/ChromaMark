@@ -1,5 +1,6 @@
 (* ============================================================================
    ChromaMark grammar — the extension layer over CommonMark + GFM
+   Licensed under CC BY-SA 4.0; see ../LICENSE-SPEC.md.
    ----------------------------------------------------------------------------
    Notation: W3C-style EBNF (https://www.w3.org/TR/xml/#sec-notation).
      A ::= B          production

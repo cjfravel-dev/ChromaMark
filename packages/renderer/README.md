@@ -182,4 +182,6 @@ independent implementation. See the
 
 ## License
 
-Modified MIT License with a SaaS source-availability provision — see [LICENSE.md](./LICENSE.md).
+This software package is licensed under the [MIT License](./LICENSE.md). The
+[ChromaMark specification](https://github.com/cjfravel-dev/ChromaMark/blob/main/LICENSE-SPEC.md)
+is licensed separately under CC BY-SA 4.0.

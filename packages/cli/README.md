@@ -64,4 +64,6 @@ TypeScript declarations ship with the package.
 
 ## License
 
-Modified MIT License with a SaaS source-availability provision — see LICENSE.md.
+This software package is licensed under the MIT License; see LICENSE.md. The
+[ChromaMark specification](https://github.com/cjfravel-dev/ChromaMark/blob/main/LICENSE-SPEC.md)
+is licensed separately under CC BY-SA 4.0.

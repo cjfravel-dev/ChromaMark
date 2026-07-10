@@ -17,6 +17,8 @@ from the [ChromaMark language version](./docs/compatibility.md).
 - Bundled TypeScript declarations for renderer, browser, and CLI entry points.
 - Live ChromaMark lint diagnostics for `.cm` files in VS Code.
 - Dependency-free fenced-code highlighting hooks in JavaScript and Python.
+- Standardized licensing: MIT for software and CC BY-SA 4.0 for the
+  specification, with explicit CommonMark and GFM attribution.
 
 ### Fixed
 

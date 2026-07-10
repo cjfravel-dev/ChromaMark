@@ -74,3 +74,10 @@ versioning rules.
 Keep each pull request focused and explain the behavior change, RED/GREEN test
 sequence, and affected public surfaces. Use Conventional Commit-style titles;
 the repository squash-merges pull requests.
+
+By submitting a contribution, you represent that you have the right to submit
+it and agree to license:
+
+- Code contributions under the MIT License.
+- Specification contributions to `SPEC.md`, `docs/grammar.ebnf`,
+  `docs/llms.txt`, or `docs/compatibility.md` under CC BY-SA 4.0.

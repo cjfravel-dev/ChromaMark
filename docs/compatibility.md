@@ -1,5 +1,7 @@
 # ChromaMark compatibility policy
 
+> Licensed under [CC BY-SA 4.0](../LICENSE-SPEC.md).
+
 Language version `0.1` is normatively defined by [`SPEC.md`](../SPEC.md).
 [`grammar.ebnf`](./grammar.ebnf) is its formal syntax companion, and the shared
 [`conformance` corpus](../conformance/) is the executable rendering contract.
