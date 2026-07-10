@@ -200,6 +200,7 @@ display_chromamark("::: success\nRun complete [=success 100%]\n:::")
 ChromaMark/
 ├── SPEC.md                     the specification (written in ChromaMark)
 ├── docs/                       llms.txt, grammar.ebnf, integrations roadmap, logo assets
+├── conformance/                shared JS/Python rendering contract
 ├── examples/demo.cm            a sample document exercising every construct
 ├── packages/
 │   ├── renderer/               @chromamark/renderer — parser, theme, ANSI, lint, browser bundle
