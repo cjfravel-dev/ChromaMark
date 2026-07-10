@@ -11,10 +11,11 @@ import * as browserApi from '../src/browser-core.js';
 test('built-in presets resolve to a complete semantic variable map', () => {
   for (const name of ['github-light', 'github-dark', 'ocean', 'sunset', 'monochrome']) {
     const variables = resolveTheme(name);
-    assert.equal(Object.keys(variables).length, 20, name);
+    assert.equal(Object.keys(variables).length, 21, name);
     assert.match(variables['--cm-success-fg'], /^#/);
     assert.match(variables['--cm-danger-bg'], /^#/);
     assert.match(variables['--cm-neutral-bd'], /^#/);
+    assert.match(variables['--cm-content-fg'], /^#/);
   }
   assert.ok(Object.isFrozen(THEME_PRESETS));
 });
@@ -47,6 +48,12 @@ test('applyTheme writes only resolved semantic variables to an element', () => {
   assert.equal(applyTheme(report, 'sunset'), report);
   assert.equal(report.style.getPropertyValue('--cm-success-fg'), THEME_PRESETS.sunset['--cm-success-fg']);
   assert.equal(report.style.getPropertyValue('--cm-neutral-bd'), THEME_PRESETS.sunset['--cm-neutral-bd']);
+  assert.equal(report.style.getPropertyValue('--cm-content-fg'), THEME_PRESETS.sunset['--cm-content-fg']);
+});
+
+test('dark preset supplies readable content text independently of the host theme', () => {
+  assert.equal(THEME_PRESETS['github-dark']['--cm-content-fg'], '#e6edf3');
+  assert.equal(THEME_PRESETS['github-light']['--cm-content-fg'], '#1f2328');
 });
 
 test('applyTheme accepts a Document and rejects non-style targets', () => {

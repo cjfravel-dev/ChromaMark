@@ -8,6 +8,7 @@ const GITHUB_LIGHT = {
   '--cm-tip-fg': '#0f7b6c', '--cm-tip-bg': '#d3f5f0', '--cm-tip-bd': '#3bc4b0',
   '--cm-muted-fg': '#656d76', '--cm-muted-bg': '#f6f8fa', '--cm-muted-bd': '#d0d7de',
   '--cm-neutral-bg': '#f6f8fa', '--cm-neutral-bd': '#d0d7de',
+  '--cm-content-fg': '#1f2328',
 };
 
 const GITHUB_DARK = {
@@ -18,6 +19,7 @@ const GITHUB_DARK = {
   '--cm-tip-fg': '#56d4c3', '--cm-tip-bg': '#0c2620', '--cm-tip-bd': '#1c6f63',
   '--cm-muted-fg': '#8b949e', '--cm-muted-bg': '#161b22', '--cm-muted-bd': '#30363d',
   '--cm-neutral-bg': '#161b22', '--cm-neutral-bd': '#30363d',
+  '--cm-content-fg': '#e6edf3',
 };
 
 const OCEAN = {
@@ -28,6 +30,7 @@ const OCEAN = {
   '--cm-tip-fg': '#0f766e', '--cm-tip-bg': '#ccfbf1', '--cm-tip-bd': '#2dd4bf',
   '--cm-muted-fg': '#475569', '--cm-muted-bg': '#f1f5f9', '--cm-muted-bd': '#cbd5e1',
   '--cm-neutral-bg': '#f8fafc', '--cm-neutral-bd': '#cbd5e1',
+  '--cm-content-fg': '#0f172a',
 };
 
 const SUNSET = {
@@ -38,6 +41,7 @@ const SUNSET = {
   '--cm-tip-fg': '#be185d', '--cm-tip-bg': '#fce7f3', '--cm-tip-bd': '#f472b6',
   '--cm-muted-fg': '#6b7280', '--cm-muted-bg': '#f9fafb', '--cm-muted-bd': '#d1d5db',
   '--cm-neutral-bg': '#fff7ed', '--cm-neutral-bd': '#fed7aa',
+  '--cm-content-fg': '#431407',
 };
 
 const MONOCHROME = {
@@ -48,6 +52,7 @@ const MONOCHROME = {
   '--cm-tip-fg': '#404040', '--cm-tip-bg': '#fafafa', '--cm-tip-bd': '#a3a3a3',
   '--cm-muted-fg': '#737373', '--cm-muted-bg': '#fafafa', '--cm-muted-bd': '#d4d4d4',
   '--cm-neutral-bg': '#fafafa', '--cm-neutral-bd': '#d4d4d4',
+  '--cm-content-fg': '#171717',
 };
 
 function freezePreset(preset) {
@@ -94,9 +99,13 @@ export function resolveTheme(input = 'github-light') {
     }
   }
   for (const [slot, value] of Object.entries(config.neutral || {})) {
-    if (slot !== 'background' && slot !== 'border') throw new Error(`unknown theme slot "${slot}"`);
-    const suffix = slot === 'background' ? 'bg' : 'bd';
-    variables[`--cm-neutral-${suffix}`] = safeColor(value, `neutral.${slot}`);
+    if (!['foreground', 'background', 'border'].includes(slot)) {
+      throw new Error(`unknown theme slot "${slot}"`);
+    }
+    const variable = slot === 'foreground'
+      ? '--cm-content-fg'
+      : `--cm-neutral-${slot === 'background' ? 'bg' : 'bd'}`;
+    variables[variable] = safeColor(value, `neutral.${slot}`);
   }
   return variables;
 }

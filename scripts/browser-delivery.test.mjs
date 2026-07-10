@@ -31,6 +31,15 @@ test('custom colors retain visible styling without color-mix support', () => {
   }
 });
 
+test('theme components use the semantic content foreground for host-independent contrast', () => {
+  const css = read('packages/renderer/theme/chromamark.css');
+  assert.match(css, /--cm-content-fg:\s*#1f2328/);
+  assert.match(css, /\[data-theme="dark"\][\s\S]*--cm-content-fg:\s*#e6edf3/);
+  for (const selector of ['\\.cm-block', '\\.cm-fields', '\\.cm-details']) {
+    assert.match(css, new RegExp(`${selector}[^}]*color:var\\(--cm-content-fg, inherit\\)`));
+  }
+});
+
 test('renderer documents its browser compatibility contract', () => {
   const readme = read('packages/renderer/README.md');
   assert.match(readme, /^## Browser support/m);
