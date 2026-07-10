@@ -18,6 +18,7 @@ test('npm packages map every public JavaScript entry to declarations', () => {
   assert.equal(renderer.types, './src/index.d.ts');
   assert.equal(renderer.exports['.'].types, './src/index.d.ts');
   assert.equal(renderer.exports['./browser'].types, './src/browser.d.ts');
+  assert.equal(renderer.exports['./browser-slim'].types, './src/browser-slim.d.ts');
   assert.equal(cli.types, './src/index.d.ts');
   assert.equal(cli.exports['.'].types, './src/index.d.ts');
   assert.equal(conformance.types, './src/index.d.ts');
@@ -26,6 +27,7 @@ test('npm packages map every public JavaScript entry to declarations', () => {
   for (const path of [
     'packages/renderer/src/index.d.ts',
     'packages/renderer/src/browser.d.ts',
+    'packages/renderer/src/browser-slim.d.ts',
     'packages/cli/src/index.d.ts',
     'packages/conformance/src/index.d.ts',
   ]) {

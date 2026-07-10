@@ -11,11 +11,15 @@ import chromamark, {
   type RenderGitHubOptions,
   type RendererOptions,
 } from '@chromamark/renderer';
+import MarkdownIt from 'markdown-it';
 import BrowserChromaMark, {
   autoRender,
   injectTheme,
   renderElement,
 } from '@chromamark/renderer/browser';
+import SlimChromaMark, {
+  configureMarkdownIt,
+} from '@chromamark/renderer/browser-slim';
 import { compile, renderGitHub as renderGitHubFromCli, theme } from '@chromamark/cli';
 import {
   loadCorpus,
@@ -63,8 +67,10 @@ injectTheme(document);
 const rendered: Element | null | Promise<Element | null> = renderElement('#report', options);
 const all = autoRender({ ...options, selector: '.chromamark' });
 const browserVersion: string = BrowserChromaMark.LANGUAGE_VERSION;
+const supplied: MarkdownIt = configureMarkdownIt(new MarkdownIt());
+const slimRender: string = SlimChromaMark.render('[!pass]');
 
 void [
   html, ansi, github, cliGithub, diagnostics, page, css, version, enabled,
-  conformance, variables, rendered, all, browserVersion,
+  conformance, variables, rendered, all, browserVersion, supplied, slimRender,
 ];

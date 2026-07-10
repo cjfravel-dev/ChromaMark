@@ -11,6 +11,8 @@ from the [ChromaMark language version](./docs/compatibility.md).
   sunset, and monochrome palettes plus constrained semantic overrides.
 - Versioned compressed playground share links with legacy base64 compatibility;
   the README demo links to its exact full ChromaMark source.
+- Parser-free `browser-slim` ESM/global entries for consumers that supply
+  MarkdownIt or another render function, with an 8 KiB gzip budget.
 - Public `@chromamark/conformance` kit with versioned fixtures, JSON Schema,
   typed validation/runner APIs, and a language-neutral runner protocol.
 - Python `lint()` parity and a lint-focused `chromamark lint` console command,

@@ -34,6 +34,11 @@
       "types": "./src/browser.d.ts",
       "default": "./dist/chromamark.esm.js"
     },
+    "./browser-slim": {
+      "types": "./src/browser-slim.d.ts",
+      "default": "./dist/chromamark.slim.esm.js"
+    },
+    "./global-slim": "./dist/chromamark.slim.min.js",
     "./global": "./dist/chromamark.min.js",
     "./theme.css": "./theme/chromamark.css"
   },

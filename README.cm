@@ -89,6 +89,10 @@ the [theme API](./docs/themes.md), without accepting arbitrary CSS.
 One CDN import and an attribute — the library injects its own theme and renders
 every target. No build step, no CSS to copy.
 
+Already shipping MarkdownIt? Use the
+[`browser-slim` entry](./packages/renderer#slim-browser-entry) to keep ChromaMark
+plugin rules, DOM hooks, and themes while excluding the parser library.
+
 ```html
 <script src="https://cdn.jsdelivr.net/gh/cjfravel-dev/ChromaMark/packages/renderer/dist/chromamark.min.js"
         data-chromamark-auto></script>
