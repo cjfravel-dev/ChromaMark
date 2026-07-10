@@ -36,5 +36,6 @@ test('the same VSIX publishes to Open VSX with a pinned CLI and environment toke
   assert.equal(extensionPackage.devDependencies.ovsx, '1.0.2');
   assert.match(workflow, /OVSX_PAT:\s*\$\{\{\s*secrets\.OVSX_PAT\s*\}\}/);
   assert.match(workflow, /npm exec --workspace chromamark-vscode -- ovsx publish/);
+  assert.match(workflow, /vsix=\$\(realpath "\$vsix"\)/);
   assert.match(workflow, /--packagePath "\$vsix" --skip-duplicate/);
 });

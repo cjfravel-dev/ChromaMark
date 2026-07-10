@@ -76,5 +76,6 @@ jobs:
         run: |
           vsix=$(find packages/vscode -maxdepth 1 -name '*.vsix' -print -quit)
           test -n "$vsix"
+          vsix=$(realpath "$vsix")
           npm exec --workspace chromamark-vscode -- ovsx publish \
             --packagePath "$vsix" --skip-duplicate
