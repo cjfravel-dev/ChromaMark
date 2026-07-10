@@ -5,6 +5,7 @@ import {
   extractPlaygroundDemo,
   encodePlaygroundHash,
   decodePlaygroundHash,
+  choosePlaygroundHash,
 } from './playground-links.mjs';
 
 test('README demo extraction returns one exact marked ChromaMark source block', () => {
@@ -28,6 +29,13 @@ test('README playground hashes are deterministic compressed links', () => {
   const first = encodePlaygroundHash(source);
   assert.match(first, /^z\./);
   assert.equal(encodePlaygroundHash(source), first);
+});
+
+test('README generation preserves any existing hash that decodes to the exact demo', () => {
+  const source = '::: info\nsame bytes\n:::\n';
+  const existing = encodePlaygroundHash(source);
+  assert.equal(choosePlaygroundHash(source, `playground/#${existing}`), existing);
+  assert.notEqual(choosePlaygroundHash(`${source}changed`, `playground/#${existing}`), existing);
 });
 
 test('README demo extraction rejects missing or duplicate markers', () => {

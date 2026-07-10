@@ -26,3 +26,13 @@ export function decodePlaygroundHash(hash) {
   if (!hash.startsWith('z.')) return null;
   return gunzipSync(Buffer.from(hash.slice(2), 'base64url')).toString('utf8');
 }
+
+export function choosePlaygroundHash(source, currentReadme = '') {
+  const match = /playground\/#(z\.[A-Za-z0-9_-]+)/.exec(currentReadme);
+  if (match) {
+    try {
+      if (decodePlaygroundHash(match[1]) === source) return match[1];
+    } catch {}
+  }
+  return encodePlaygroundHash(source);
+}
