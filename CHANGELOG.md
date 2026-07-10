@@ -7,6 +7,8 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ### Added
 
+- Safe theme preset/resolution/application APIs with GitHub light/dark, ocean,
+  sunset, and monochrome palettes plus constrained semantic overrides.
 - Public `@chromamark/conformance` kit with versioned fixtures, JSON Schema,
   typed validation/runner APIs, and a language-neutral runner protocol.
 - Python `lint()` parity and a lint-focused `chromamark lint` console command,
