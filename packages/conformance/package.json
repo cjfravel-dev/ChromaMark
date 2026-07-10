@@ -1,6 +1,6 @@
 {
   "name": "@chromamark/conformance",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Versioned ChromaMark conformance corpus, schema, validation, and runner APIs.",
   "license": "MIT",
   "author": "cjfravel-dev",

@@ -28,6 +28,8 @@ from the [ChromaMark language version](./docs/compatibility.md).
 - Added the published `@chromamark/conformance` package badge to the README.
 - Slim browser source loading now records synchronous and non-`Error` fetch
   failures instead of throwing while handling them.
+- Updated the development bundler beyond the version affected by
+  `GHSA-67mh-4wv8-2f99`.
 
 ## [0.4.0] - 2026-07-10
 
