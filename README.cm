@@ -13,6 +13,11 @@
 
 **Markdown for AI-generated reports.**
 
+**[Start with the VS Code extension](https://marketplace.visualstudio.com/items?itemName=chromamark.chromamark-vscode).**
+It is the fastest way for humans and agents to evaluate agent output together:
+open a `.cm` report, compare its compact source with the rendered result, and
+use live diagnostics and quick fixes while the work is still in context.
+
 Markdown was designed for people writing documents. Today, more and more
 reports are written by agents: deployment summaries, evaluations, code reviews,
 incident diagnostics, and CI results. The audience changed, but the format did
