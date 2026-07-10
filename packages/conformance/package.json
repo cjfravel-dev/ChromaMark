@@ -1,0 +1,50 @@
+{
+  "name": "@chromamark/conformance",
+  "version": "0.1.0",
+  "description": "Versioned ChromaMark conformance corpus, schema, validation, and runner APIs.",
+  "license": "MIT",
+  "author": "cjfravel-dev",
+  "homepage": "https://github.com/cjfravel-dev/ChromaMark/tree/main/packages/conformance#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cjfravel-dev/ChromaMark.git",
+    "directory": "packages/conformance"
+  },
+  "bugs": {
+    "url": "https://github.com/cjfravel-dev/ChromaMark/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "type": "module",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./cases.json": "./cases.json",
+    "./schema.json": "./schema.json"
+  },
+  "files": [
+    "src/",
+    "cases.json",
+    "schema.json",
+    "README.md",
+    "LICENSE.md"
+  ],
+  "scripts": {
+    "test": "node --test"
+  },
+  "keywords": [
+    "chromamark",
+    "conformance",
+    "fixtures",
+    "commonmark",
+    "gfm"
+  ]
+}

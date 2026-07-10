@@ -9,7 +9,7 @@ language version is separate and changes only under the
 Publishing a GitHub Release triggers `.github/workflows/publish.yml`. It builds
 and publishes:
 
-- `@chromamark/renderer` and `@chromamark/cli` to npm.
+- `@chromamark/conformance`, `@chromamark/renderer`, and `@chromamark/cli` to npm.
 - `chromamark` to PyPI.
 
 npm and PyPI use OIDC Trusted Publishing through the `npm` and `pypi` GitHub
@@ -21,6 +21,7 @@ skipped, which allows coordinated releases where only some packages changed.
 1. Ensure `main` is clean and CI is green.
 2. Update the release version in the root `package.json`, then each changed
    package version:
+   - `packages/conformance/package.json`
    - `packages/renderer/package.json`
    - `packages/cli/package.json`
    - `packages/python/pyproject.toml` and `chromamark.__version__`

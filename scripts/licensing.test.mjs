@@ -11,6 +11,7 @@ test('all distributed software packages declare the standard MIT license', () =>
     'package.json',
     'packages/renderer/package.json',
     'packages/cli/package.json',
+    'packages/conformance/package.json',
     'packages/vscode/package.json',
   ]) {
     assert.equal(JSON.parse(read(path)).license, 'MIT', path);
@@ -26,6 +27,7 @@ test('every distributed software license contains the same standard MIT terms', 
     'LICENSE.md',
     'packages/renderer/LICENSE.md',
     'packages/cli/LICENSE.md',
+    'packages/conformance/LICENSE.md',
     'packages/python/LICENSE.md',
     'packages/vscode/LICENSE.md',
   ];

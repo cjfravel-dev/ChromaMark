@@ -1,0 +1,152 @@
+{
+  "version": 1,
+  "languageVersion": "0.1",
+  "cases": [
+    {
+      "name": "plain CommonMark",
+      "source": "# Title\n\nA **bold** word and `code`.",
+      "html": "<h1>Title</h1>\n<p>A <strong>bold</strong> word and <code>code</code>.</p>\n"
+    },
+    {
+      "name": "GFM table and strikethrough",
+      "source": "| A | B |\n| - | - |\n| ~~old~~ | new |",
+      "html": "<table>\n<thead>\n<tr>\n<th>A</th>\n<th>B</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td><s>old</s></td>\n<td>new</td>\n</tr>\n</tbody>\n</table>\n"
+    },
+    {
+      "name": "bare URL linkify",
+      "source": "Visit https://example.com now",
+      "html": "<p>Visit <a href=\"https://example.com\">https://example.com</a> now</p>\n"
+    },
+    {
+      "name": "bare email linkify",
+      "source": "Email test@example.com please",
+      "html": "<p>Email <a href=\"mailto:test@example.com\">test@example.com</a> please</p>\n"
+    },
+    {
+      "name": "canonical pill",
+      "source": "[!success READY]",
+      "html": "<p><span class=\"cm-pill\" data-tone=\"success\">READY</span></p>\n"
+    },
+    {
+      "name": "aliased unlabeled pill",
+      "source": "[!pass]",
+      "html": "<p><span class=\"cm-pill\" data-tone=\"success\">PASS</span></p>\n"
+    },
+    {
+      "name": "custom color constructs",
+      "source": "[!color=#6f42c1 beta] [.color=navy text] [=color=orange 3/4]",
+      "html": "<p><span class=\"cm-pill cm-custom\" style=\"--fg:#6f42c1\">beta</span> <span class=\"cm-text cm-custom\" style=\"--fg:navy\">text</span> <span class=\"cm-meter cm-custom\" style=\"--fg:orange\" role=\"progressbar\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"75\" aria-valuetext=\"3/4\"><span class=\"cm-track\"><span class=\"cm-fill\" style=\"width:75%\"></span></span><span class=\"cm-val\">3/4</span></span></p>\n"
+    },
+    {
+      "name": "colored text and meter",
+      "source": "Gate [.danger critical] [=warning 87.25%]",
+      "html": "<p>Gate <span class=\"cm-text\" data-tone=\"danger\">critical</span> <span class=\"cm-meter\" data-tone=\"warning\" role=\"progressbar\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"87.25\" aria-valuetext=\"87.25%\"><span class=\"cm-track\"><span class=\"cm-fill\" style=\"width:87.25%\"></span></span><span class=\"cm-val\">87.25%</span></span></p>\n"
+    },
+    {
+      "name": "callout with inline title",
+      "source": "::: success Deploy [!ok healthy]\nBody **bold**.\n:::",
+      "html": "<div class=\"cm-block\" data-tone=\"success\"><div class=\"cm-title\">Deploy <span class=\"cm-pill\" data-tone=\"success\">healthy</span></div><div class=\"cm-body\"><p>Body <strong>bold</strong>.</p>\n</div></div>"
+    },
+    {
+      "name": "details attributes",
+      "source": "::: details open danger Failures [!fail 2]\n- one\n- two\n:::",
+      "html": "<details class=\"cm-details\" data-tone=\"danger\" open><summary>Failures <span class=\"cm-pill\" data-tone=\"danger\">2</span></summary><div class=\"cm-body\"><ul>\n<li>one</li>\n<li>two</li>\n</ul>\n</div></details>"
+    },
+    {
+      "name": "fields with inline values",
+      "source": "::: fields\nRegion: `eastus`\nStatus: [!ok healthy]\nKey only\n:::",
+      "html": "<dl class=\"cm-fields\"><dt>Region</dt><dd><code>eastus</code></dd><dt>Status</dt><dd><span class=\"cm-pill\" data-tone=\"success\">healthy</span></dd><dt>Key only</dt><dd></dd></dl>"
+    },
+    {
+      "name": "nested containers",
+      "source": ":::: warning Outer\n::: info Inner\nx\n:::\n::::",
+      "html": "<div class=\"cm-block\" data-tone=\"warning\"><div class=\"cm-title\">Outer</div><div class=\"cm-body\"><div class=\"cm-block\" data-tone=\"info\"><div class=\"cm-title\">Inner</div><div class=\"cm-body\"><p>x</p>\n</div></div></div></div>"
+    },
+    {
+      "name": "fenced code inside container",
+      "source": "::: info Example\n```chromamark\n::: danger\nnot a close\n:::\n```\n:::",
+      "html": "<div class=\"cm-block\" data-tone=\"info\"><div class=\"cm-title\">Example</div><div class=\"cm-body\"><pre><code class=\"language-chromamark\">::: danger\nnot a close\n:::\n</code></pre>\n</div></div>"
+    },
+    {
+      "name": "critic markup family",
+      "source": "{++add++} {--drop--} {~~old~>new~~} {==mark==} {>>note<<}",
+      "html": "<p><ins class=\"crit-add\">add</ins> <del class=\"crit-del\">drop</del> <del class=\"crit-del\">old</del><ins class=\"crit-add\">new</ins> <mark class=\"crit-mark\">mark</mark> <span class=\"crit-comment\">note</span></p>\n"
+    },
+    {
+      "name": "raw HTML is escaped",
+      "source": "<script>alert(1)</script>",
+      "html": "<p>&lt;script&gt;alert(1)&lt;/script&gt;</p>\n"
+    },
+    {
+      "name": "raw HTML in container is escaped",
+      "source": "::: warning <img src=x onerror=alert(1)>\n<div>body</div>\n:::",
+      "html": "<div class=\"cm-block\" data-tone=\"warning\"><div class=\"cm-title\">&lt;img src=x onerror=alert(1)&gt;</div><div class=\"cm-body\"><p>&lt;div&gt;body&lt;/div&gt;</p>\n</div></div>"
+    },
+    {
+      "name": "escaped inline opener",
+      "source": "\\[!success literal]",
+      "html": "<p>[!success literal]</p>\n"
+    },
+    {
+      "name": "unknown constructs degrade literally",
+      "source": "[!unknown label]\n\n::: unknown\nbody\n:::",
+      "html": "<p>[!unknown label]</p>\n<p>::: unknown\nbody\n:::</p>\n"
+    },
+    {
+      "name": "unclosed pill degrades literally",
+      "source": "Result [!success",
+      "html": "<p>Result [!success</p>\n"
+    },
+    {
+      "name": "unclosed container auto closes",
+      "source": "::: tip Streaming\nStill visible [!ok]",
+      "html": "<div class=\"cm-block\" data-tone=\"tip\"><div class=\"cm-title\">Streaming</div><div class=\"cm-body\"><p>Still visible <span class=\"cm-pill\" data-tone=\"success\">OK</span></p>\n</div></div>"
+    },
+    {
+      "name": "meter clamps overflow",
+      "source": "[=success 125%]",
+      "html": "<p><span class=\"cm-meter\" data-tone=\"success\" role=\"progressbar\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"100\" aria-valuetext=\"125%\"><span class=\"cm-track\"><span class=\"cm-fill\" style=\"width:100%\"></span></span><span class=\"cm-val\">125%</span></span></p>\n"
+    },
+    {
+      "name": "meter rejects zero divisor",
+      "source": "[=danger 1/0]",
+      "html": "<p>[=danger 1/0]</p>\n"
+    },
+    {
+      "name": "meter rounding parity",
+      "source": "[=info 1/32] [=info 1/160] [=info 0.125%] [=info 2.125%] [=info 49.995%] [=info 2.675%] [=info 1.005%]",
+      "html": "<p><span class=\"cm-meter\" data-tone=\"info\" role=\"progressbar\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"3.13\" aria-valuetext=\"1/32\"><span class=\"cm-track\"><span class=\"cm-fill\" style=\"width:3.13%\"></span></span><span class=\"cm-val\">1/32</span></span> <span class=\"cm-meter\" data-tone=\"info\" role=\"progressbar\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"0.63\" aria-valuetext=\"1/160\"><span class=\"cm-track\"><span class=\"cm-fill\" style=\"width:0.63%\"></span></span><span class=\"cm-val\">1/160</span></span> <span class=\"cm-meter\" data-tone=\"info\" role=\"progressbar\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"0.13\" aria-valuetext=\"0.125%\"><span class=\"cm-track\"><span class=\"cm-fill\" style=\"width:0.13%\"></span></span><span class=\"cm-val\">0.125%</span></span> <span class=\"cm-meter\" data-tone=\"info\" role=\"progressbar\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"2.13\" aria-valuetext=\"2.125%\"><span class=\"cm-track\"><span class=\"cm-fill\" style=\"width:2.13%\"></span></span><span class=\"cm-val\">2.125%</span></span> <span class=\"cm-meter\" data-tone=\"info\" role=\"progressbar\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"49.99\" aria-valuetext=\"49.995%\"><span class=\"cm-track\"><span class=\"cm-fill\" style=\"width:49.99%\"></span></span><span class=\"cm-val\">49.995%</span></span> <span class=\"cm-meter\" data-tone=\"info\" role=\"progressbar\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"2.67\" aria-valuetext=\"2.675%\"><span class=\"cm-track\"><span class=\"cm-fill\" style=\"width:2.67%\"></span></span><span class=\"cm-val\">2.675%</span></span> <span class=\"cm-meter\" data-tone=\"info\" role=\"progressbar\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"1\" aria-valuetext=\"1.005%\"><span class=\"cm-track\"><span class=\"cm-fill\" style=\"width:1%\"></span></span><span class=\"cm-val\">1.005%</span></span></p>\n"
+    },
+    {
+      "name": "meter rejects Unicode digits",
+      "source": "[=success १%] [=info १/१०] [=success ٥%]",
+      "html": "<p>[=success १%] [=info १/१०] [=success ٥%]</p>\n"
+    },
+    {
+      "name": "Unicode label content",
+      "source": "[!info café 🎨]",
+      "html": "<p><span class=\"cm-pill\" data-tone=\"info\">café 🎨</span></p>\n"
+    },
+    {
+      "name": "feature option disables pill",
+      "source": "[!pass]",
+      "options": {
+        "pill": false
+      },
+      "html": "<p>[!pass]</p>\n"
+    },
+    {
+      "name": "feature option disables containers",
+      "source": "::: success\nx\n:::",
+      "options": {
+        "container": false
+      },
+      "html": "<p>::: success\nx\n:::</p>\n"
+    },
+    {
+      "name": "empty input",
+      "source": "",
+      "html": ""
+    }
+  ]
+}

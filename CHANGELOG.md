@@ -7,6 +7,8 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ### Added
 
+- Public `@chromamark/conformance` kit with versioned fixtures, JSON Schema,
+  typed validation/runner APIs, and a language-neutral runner protocol.
 - GitHub-native GFM export through renderer/CLI `renderGitHub` APIs and the
   `chromamark github` command, including Alerts, details, tables, tone-aware
   badges, meters, and CriticMarkup degradation.

@@ -14,11 +14,13 @@ test('v0.3.1 coordinated package versions are aligned', () => {
   const root = json('package.json');
   const renderer = json('packages/renderer/package.json');
   const cli = json('packages/cli/package.json');
+  const conformance = json('packages/conformance/package.json');
   const vscode = json('packages/vscode/package.json');
 
   assert.equal(root.version, '0.3.1');
   assert.equal(renderer.version, '0.3.1');
   assert.equal(cli.version, '0.2.1');
+  assert.equal(conformance.version, '0.1.0');
   assert.equal(vscode.version, '0.1.13');
   assert.equal(cli.dependencies['@chromamark/renderer'], '^0.3.1');
   assert.equal(vscode.dependencies['@chromamark/renderer'], '^0.3.1');
@@ -34,6 +36,7 @@ test('package lock records every coordinated npm version', () => {
   assert.equal(lock.packages[''].version, '0.3.1');
   assert.equal(lock.packages['packages/renderer'].version, '0.3.1');
   assert.equal(lock.packages['packages/cli'].version, '0.2.1');
+  assert.equal(lock.packages['packages/conformance'].version, '0.1.0');
   assert.equal(lock.packages['packages/vscode'].version, '0.1.13');
 });
 

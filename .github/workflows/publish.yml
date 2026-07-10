@@ -2,7 +2,7 @@ name: Publish
 
 # Publishes ChromaMark packages when a GitHub Release is published, using
 # Trusted Publishing (OIDC) — no API tokens or secrets:
-#   - @chromamark/renderer and @chromamark/cli to npm  (environment: npm)
+#   - @chromamark/conformance, renderer, and CLI to npm (environment: npm)
 #   - chromamark to PyPI                               (environment: pypi)
 
 on:
@@ -29,11 +29,12 @@ jobs:
       - name: Use an npm that supports OIDC Trusted Publishing (>= 11.5.1)
         run: npm install -g "npm@^11.5.1"
       - run: npm ci --no-audit --no-fund
+      - run: npm test --workspace @chromamark/conformance
       - run: npm test --workspace @chromamark/renderer
       - run: npm test --workspace @chromamark/cli
       - name: Publish npm packages (skips versions already on the registry)
         run: |
-          for pkg in @chromamark/renderer @chromamark/cli; do
+          for pkg in @chromamark/conformance @chromamark/renderer @chromamark/cli; do
             dir="packages/${pkg#@chromamark/}"
             ver=$(node -p "require('./$dir/package.json').version")
             if npm view "$pkg@$ver" version >/dev/null 2>&1; then

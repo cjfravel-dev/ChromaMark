@@ -235,11 +235,12 @@ ChromaMark/
 ├── README.cm                   canonical source for generated README.md
 ├── SPEC.md                     the specification (written in ChromaMark)
 ├── docs/                       llms.txt, grammar.ebnf, integrations roadmap, logo assets
-├── conformance/                shared JS/Python rendering contract
+├── conformance/                public corpus, schema, and runner protocol
 ├── examples/demo.cm            a sample document exercising every construct
 ├── packages/
 │   ├── renderer/               @chromamark/renderer — HTML, GitHub GFM, ANSI, lint, browser
 │   ├── cli/                    @chromamark/cli — build, GitHub export, ANSI, lint
+│   ├── conformance/            @chromamark/conformance — fixtures, schema, runner
 │   ├── python/                 chromamark (pip) — renderer, builder, Jupyter
 │   └── vscode/                 chromamark-vscode — preview + highlighting
 ├── eval/                       LLM-conformance eval harness (measures llms.txt)
@@ -247,6 +248,15 @@ ChromaMark/
 ```
 
 ## Development
+
+Third-party renderer authors can install the public conformance kit:
+
+```bash
+npm install --save-dev @chromamark/conformance
+```
+
+It ships the versioned exact-HTML corpus, JSON Schema, typed JavaScript runner,
+and a [language-neutral protocol](./conformance/protocol.md).
 
 ```bash
 npm ci
