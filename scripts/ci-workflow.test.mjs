@@ -6,6 +6,8 @@ const workflow = readFileSync(new URL('../.github/workflows/ci.yml', import.meta
 const pagesWorkflow = readFileSync(new URL('../.github/workflows/pages.yml', import.meta.url), 'utf8');
 const publishWorkflow = readFileSync(new URL('../.github/workflows/publish.yml', import.meta.url), 'utf8');
 const gitignore = readFileSync(new URL('../.gitignore', import.meta.url), 'utf8');
+const packageJson = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
+const pyproject = readFileSync(new URL('../packages/python/pyproject.toml', import.meta.url), 'utf8');
 
 function job(name, nextName) {
   const end = nextName ? `\\n  ${nextName}:` : '$';
@@ -49,4 +51,14 @@ test('renderer CI rejects stale generated artifacts and theme copies', () => {
     renderer,
     /cmp packages\/renderer\/theme\/chromamark\.css packages\/python\/src\/chromamark\/theme\.css/,
   );
+});
+
+test('CI runs the repository static quality gates', () => {
+  const renderer = job('renderer', 'python');
+  const python = job('python', 'coverage');
+  assert.equal(packageJson.scripts.lint, 'eslint .');
+  assert.match(renderer, /run:\s*npm run lint/);
+  assert.match(pyproject, /test\s*=\s*\[[^\]]*"ruff>=/);
+  assert.match(pyproject, /\[tool\.ruff\]/);
+  assert.match(python, /ruff check src tests/);
 });

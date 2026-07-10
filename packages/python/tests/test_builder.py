@@ -69,7 +69,6 @@ def test_builder_fields_value_newline_does_not_inject_rows():
 
 
 def test_builder_title_newline_colon_does_not_break_container():
-    from chromamark import render
     h = ChromaDoc().success("t\n:::\ninjected").to_html()
     assert h.count('class="cm-block"') == 1
     assert '<div class="cm-title">t ::: injected</div>' in h

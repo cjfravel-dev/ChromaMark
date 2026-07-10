@@ -1,4 +1,4 @@
-from chromamark.tones import resolve_tone, parse_spec, is_safe_color, TONES
+from chromamark.tones import TONES, is_safe_color, parse_spec, resolve_tone
 
 
 def test_canonical_tones():

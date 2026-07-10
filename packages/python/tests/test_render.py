@@ -1,5 +1,6 @@
 from markdown_it import MarkdownIt
-from chromamark import render, create_renderer, chromamark_plugin, get_theme
+
+from chromamark import chromamark_plugin, create_renderer, get_theme, render
 
 
 def test_plugin_callable():

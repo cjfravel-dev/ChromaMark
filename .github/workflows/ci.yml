@@ -23,6 +23,7 @@ jobs:
       - run: npm test --workspace @chromamark/cli
       - run: npm run test:eval
       - run: npm run test:scripts
+      - run: npm run lint
       - run: npm run build --workspace chromamark-vscode
       - run: npm test --workspace chromamark-vscode
       - name: Validate the site builds
@@ -53,6 +54,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[test]"
+          ruff check src tests
           pytest -q
 
   coverage:
