@@ -38,6 +38,7 @@ across a status-heavy report.
 
 ## What it looks like on GitHub
 
+<!-- playground-demo:start -->
 ::: info GitHub-native approximation
 GitHub does not render ChromaMark directly. The example below is a **transpiled
 approximation** using GitHub Alerts, `<kbd>` badges, a text meter, and native
@@ -54,19 +55,14 @@ Build [!pass] · lint [!warn 12] · coverage [=success 87%]
 ::: details danger Integration failures (3)
 FAILED test_recon_merge_precedence — expected config to win
 :::
+<!-- playground-demo:end -->
+
+[Open this exact source in the full playground]({{PLAYGROUND_DEMO_URL}}).
 
 ### ChromaMark source
 
 ```chromamark
-::: success Deploy succeeded in 3m12s
-Region `eastus`, 3/3 replicas [!ok healthy].
-:::
-
-Build [!pass] · lint [!warn 12] · coverage [=success 87%]
-
-::: details danger Integration failures (3)
-FAILED test_recon_merge_precedence — expected config to win
-:::
+{{PLAYGROUND_DEMO_SOURCE}}
 ```
 
 | Feature            | Syntax                          |

@@ -25,6 +25,10 @@ const playground = readFileSync(join(root, 'docs/playground/index.html'), 'utf8'
   () => `<script>${bundle}</script>`,
 );
 writeFileSync(join(out, 'playground/index.html'), playground);
+copyFileSync(
+  join(root, 'docs/playground/share-codec.mjs'),
+  join(out, 'playground/share-codec.mjs'),
+);
 
 // 2) Rendered documents via the CLI compiler.
 const FAVICON = '<link rel="icon" type="image/png" href="assets/favicon.png">';

@@ -63,9 +63,18 @@ FAILED test\_recon\_merge\_precedence — expected config to win
 
 </details>
 
+[Open this exact source in the full playground](https://cjfravel-dev.github.io/ChromaMark/playground/#z.H4sIAAAAAAACA1WSwW4TMRCG7_sUwwGpjZJdtTmAVoBUKIVKcEHcqijx2rNeE-_YsmeT7I2H4F1651F4EiabVIWLpd9j__N5ftd1DY7aAJ8cfx6aBSl2OwQVYwoH14sKVJxqYAJmoMCQkAwm-NCl0KuvKm3BuISa_VjC9w4BD6qPHqFBH_bgMiiYzTgpytF5NMV_7rMZDNmRPRPAjcfEeQ6bN9vGvNtAo4xF0QoYDww9MiZRZODEWhhk5Xwu4S4kYGnfDt7_C4eHiMkhaYQ_P38dj_S4CHtCAzr4kMQ88yhgJ_M8L47uyelO6iTmJJvT1SHj1OEhejXaFAYyq4uOOea6qvSPNqkd-oXBXWkdd0NTulA9g1TPt6rLsqjrujgukAetMWe4xejDeJJoBMcRLPur61x8QyuTgg2qzEPezGFZLSWF6J1WGR5ehC10qDx34-rs-35w3kglqpxX8PsRvCMWvVeJ4Op62tJhh0lZec7bJ4TXr16uTlDnqYJRZCXre2K0aQoMWikMSf7CxfKyuLu5__LxVrLJvJY_EGjdY7K4jiLkEU9DP2ageZo4tc4CB9g7mlj_AlPJIpyDAgAA).
+
 ### ChromaMark source
 
 ```chromamark
+::: info GitHub-native approximation
+GitHub does not render ChromaMark directly. The example below is a **transpiled
+approximation** using GitHub Alerts, `<kbd>` badges, a text meter, and native
+details. For the full ChromaMark experience — theme-owned colors, styled meters,
+and rich containers — use the [playground](https://cjfravel-dev.github.io/ChromaMark/playground/).
+:::
+
 ::: success Deploy succeeded in 3m12s
 Region `eastus`, 3/3 replicas [!ok healthy].
 :::

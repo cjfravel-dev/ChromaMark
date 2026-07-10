@@ -54,8 +54,10 @@
   <div id="out" class="chromamark-output" aria-label="Preview"></div>
 </main>
 
-<script>
-(function () {
+<script type="module">
+import { encodeShare, decodeShare } from './share-codec.mjs';
+
+(async function () {
   var CM = window.ChromaMark;
   if (CM && CM.injectTheme) CM.injectTheme();
 
@@ -69,22 +71,21 @@
     'Minimal': '::: info Hello\nEdit this text and watch it render.\n\nTry a pill: [!ok it works]\n:::\n'
   };
 
-  function encode(text) {
-    return btoa(unescape(encodeURIComponent(text)));
-  }
-  function decode(hash) {
-    try { return decodeURIComponent(escape(atob(hash))); } catch (e) { return null; }
-  }
-
   var timer;
+  var shareRevision = 0;
   function renderNow() {
     out.innerHTML = CM && CM.render ? CM.render(src.value) : '(renderer failed to load)';
   }
   function onInput() {
     clearTimeout(timer);
-    timer = setTimeout(function () {
+    var revision = ++shareRevision;
+    timer = setTimeout(async function () {
       renderNow();
-      try { history.replaceState(null, '', '#' + encode(src.value)); } catch (e) {}
+      try {
+        var value = src.value;
+        var hash = await encodeShare(value);
+        if (revision === shareRevision && value === src.value) history.replaceState(null, '', '#' + hash);
+      } catch (e) {}
     }, 150);
   }
 
@@ -109,7 +110,7 @@
     setTimeout(function () { btn.textContent = old; }, 1200);
   });
 
-  var initial = location.hash ? decode(location.hash.slice(1)) : null;
+  var initial = location.hash ? await decodeShare(location.hash.slice(1)) : null;
   src.value = initial != null ? initial : SAMPLES['Deploy report'];
   src.addEventListener('input', onInput);
   renderNow();
