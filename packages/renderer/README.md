@@ -135,7 +135,7 @@ The bundle in `dist/` embeds the parser **and** theme. Load it from a CDN:
 
 ```html
 <!-- minified global build (window.ChromaMark) -->
-<script src="https://cdn.jsdelivr.net/npm/@chromamark/renderer@0.4.1/dist/chromamark.min.js"
+<script src="https://cdn.jsdelivr.net/npm/@chromamark/renderer@0.4.2/dist/chromamark.min.js"
         data-chromamark-auto></script>
 ```
 
@@ -206,7 +206,7 @@ the page itself stays lean:
 
 ```html
 <div data-chromamark-src="report.cm"></div>
-<script src="https://cdn.jsdelivr.net/npm/@chromamark/renderer@0.4.1/dist/chromamark.min.js"
+<script src="https://cdn.jsdelivr.net/npm/@chromamark/renderer@0.4.2/dist/chromamark.min.js"
         data-chromamark-auto></script>
 ```
 
@@ -226,7 +226,7 @@ import '@chromamark/renderer/theme.css';
 
 ```html
 <link rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@chromamark/renderer@0.4.1/dist/chromamark.css">
+      href="https://cdn.jsdelivr.net/npm/@chromamark/renderer@0.4.2/dist/chromamark.css">
 ```
 
 Tones map to CSS custom properties (`--cm-success-fg`, …) and respond to

@@ -14,7 +14,7 @@ from .notebook import ChromaMarkHTML, display_chromamark
 from .plugin import chromamark_plugin
 from .tones import TONES, is_safe_color, parse_spec, resolve_tone
 
-__version__ = "0.2.1"
+__version__ = "0.2.2"
 LANGUAGE_VERSION = "0.1"
 
 

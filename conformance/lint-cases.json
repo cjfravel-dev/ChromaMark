@@ -54,6 +54,37 @@
       "diagnostics": []
     },
     {
+      "name": "escaped backticks",
+      "source": "\\`[!succes x]\\`",
+      "diagnostics": [
+        {
+          "line": 1,
+          "column": 3,
+          "severity": "warning",
+          "rule": "CM002",
+          "message": "unknown tone/color \"succes\"; this looks like a pill but renders as literal text"
+        }
+      ]
+    },
+    {
+      "name": "unfinished Markdown link",
+      "source": "See [",
+      "diagnostics": []
+    },
+    {
+      "name": "maximal backtick delimiters",
+      "source": "`prefix``[!pass]`",
+      "diagnostics": [
+        {
+          "line": 1,
+          "column": 1,
+          "severity": "warning",
+          "rule": "CM001",
+          "message": "ChromaMark construct is inside backticks; it renders as code, not rich output"
+        }
+      ]
+    },
+    {
       "name": "fenced code",
       "source": "```\n[!succes x]\n::: succes T\n```",
       "diagnostics": []

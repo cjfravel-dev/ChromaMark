@@ -16,6 +16,11 @@ function job(name, nextName) {
   return match[1];
 }
 
+test('CI grants read-only token access unless a job explicitly needs more', () => {
+  assert.match(workflow, /^permissions:\s*\n\s+contents:\s*read$/m);
+  assert.match(job('coverage'), /permissions:[\s\S]*contents:\s*read[\s\S]*pull-requests:\s*write/);
+});
+
 test('renderer CI covers the oldest and current supported Node versions', () => {
   const renderer = job('renderer', 'python');
   assert.match(renderer, /node-version:\s*\[18,\s*24\]/);

@@ -74,7 +74,7 @@ test('public docs advertise both extension registries and immutable CDN installs
   for (const readme of [source, generated, renderer]) {
     assert.match(
       readme,
-      /cdn\.jsdelivr\.net\/npm\/@chromamark\/renderer@0\.4\.1\/dist\/chromamark\.min\.js/,
+      /cdn\.jsdelivr\.net\/npm\/@chromamark\/renderer@0\.4\.2\/dist\/chromamark\.min\.js/,
     );
     assert.doesNotMatch(readme, /cdn\.jsdelivr\.net\/gh\/cjfravel-dev\/ChromaMark/);
   }

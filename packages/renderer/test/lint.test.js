@@ -73,6 +73,26 @@ test('constructs inside fenced code are ignored', () => {
   assert.deepEqual(lint(src), []);
 });
 
+test('escaped backticks do not hide an invalid ChromaMark construct', () => {
+  assert.deepEqual(lint('\\`[!succes x]\\`').map((d) => d.rule), ['CM002']);
+});
+
+test('adversarial inline whitespace is scanned in linear time', () => {
+  const source = `[!! ${'  '.repeat(40000)}`;
+  const start = Date.now();
+  lint(source);
+  const elapsed = Date.now() - start;
+  assert.ok(elapsed < 1000, `lint took ${elapsed}ms (expected < 1000ms)`);
+});
+
+test('dense unclosed inline openers are scanned in linear time', () => {
+  const source = '[!a'.repeat(8000);
+  const start = Date.now();
+  lint(source);
+  const elapsed = Date.now() - start;
+  assert.ok(elapsed < 500, `lint took ${elapsed}ms (expected < 500ms)`);
+});
+
 test('every diagnostic carries line, column, severity, and message', () => {
   for (const d of lint('`[!x]`\n[!succes 1]\n::: nope\nz')) {
     assert.ok(Number.isInteger(d.line) && d.line >= 1);
