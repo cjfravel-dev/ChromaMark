@@ -12,17 +12,40 @@ function fakeUri(path, scheme = 'file') {
   return { scheme, path, toString: () => `${scheme}://${path}` };
 }
 
+const diagnosticApi = {
+  DiagnosticSeverity: { Warning: 1 },
+  Position: class Position {},
+  Range: class Range {},
+  Diagnostic: class Diagnostic {},
+  languages: {
+    createDiagnosticCollection: () => ({
+      set() {},
+      delete() {},
+      dispose() {},
+    }),
+  },
+};
+
+const diagnosticWorkspace = {
+  textDocuments: [],
+  onDidOpenTextDocument: () => ({ dispose() {} }),
+  onDidChangeTextDocument: () => ({ dispose() {} }),
+  onDidCloseTextDocument: () => ({ dispose() {} }),
+};
+
 /** Load the built bundle with a stubbed `vscode`, run activate(), and return the commands it executed. */
 async function activateWith({ path, scheme = 'file', languageId = 'markdown', config = {} }) {
   const executed = [];
   const editor = path ? { document: { uri: fakeUri(path, scheme), languageId } } : undefined;
   const vscodeStub = {
+    ...diagnosticApi,
     window: {
       activeTextEditor: editor,
       onDidChangeActiveTextEditor: () => ({ dispose() {} }),
       tabGroups: { all: [], onDidChangeTabs: () => ({ dispose() {} }) },
     },
     workspace: {
+      ...diagnosticWorkspace,
       getConfiguration: (section) => ({ get: (key) => config[`${section}.${key}`] }),
     },
     commands: { executeCommand: async (cmd) => { executed.push(cmd); }, registerCommand: () => ({ dispose() {} }) },
@@ -102,6 +125,7 @@ async function invokeSetOpenMode({ picks }) {
   let info;
   const ConfigurationTarget = { Global: 1, Workspace: 2, WorkspaceFolder: 3 };
   const vscodeStub = {
+    ...diagnosticApi,
     ConfigurationTarget,
     window: {
       activeTextEditor: undefined,
@@ -116,6 +140,7 @@ async function invokeSetOpenMode({ picks }) {
       showInformationMessage: (message) => { info = message; },
     },
     workspace: {
+      ...diagnosticWorkspace,
       getConfiguration: (section) => ({
         get: () => undefined,
         update: async (key, value, target) => { updates.push({ key: `${section}.${key}`, value, target }); },

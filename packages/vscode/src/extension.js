@@ -19,7 +19,7 @@
  */
 
 import * as vscode from 'vscode';
-import chromamark from '@chromamark/renderer';
+import chromamark, { lint } from '@chromamark/renderer';
 import { extensionKey, isSupportedExtension, commandForMode, openModeChoices, extensionChoices } from './open-mode.mjs';
 
 function isSupportedUri(uri) {
@@ -28,6 +28,10 @@ function isSupportedUri(uri) {
 
 function isSupportedDoc(doc) {
   return !!doc && doc.languageId === 'markdown' && isSupportedUri(doc.uri);
+}
+
+function isChromaMarkDoc(doc) {
+  return !!doc && doc.languageId === 'markdown' && !!doc.uri && extensionKey(doc.uri.path) === 'cm';
 }
 
 function tabUri(tab) {
@@ -72,6 +76,24 @@ async function setOpenMode() {
 
 export function activate(context) {
   const handled = new Set();
+  const diagnosticCollection = vscode.languages.createDiagnosticCollection('chromamark');
+
+  const updateDiagnostics = (doc) => {
+    if (!isChromaMarkDoc(doc)) return;
+    const diagnostics = lint(doc.getText()).map((problem) => {
+      const start = new vscode.Position(problem.line - 1, problem.column - 1);
+      const end = new vscode.Position(problem.line - 1, problem.column);
+      const diagnostic = new vscode.Diagnostic(
+        new vscode.Range(start, end),
+        problem.message,
+        vscode.DiagnosticSeverity.Warning,
+      );
+      diagnostic.code = problem.rule;
+      diagnostic.source = 'ChromaMark';
+      return diagnostic;
+    });
+    diagnosticCollection.set(doc.uri, diagnostics);
+  };
 
   const applyOpenMode = async (editor) => {
     const doc = editor && editor.document;
@@ -101,10 +123,15 @@ export function activate(context) {
   };
 
   context.subscriptions.push(
+    diagnosticCollection,
     vscode.commands.registerCommand('chromamark.setOpenMode', setOpenMode),
     vscode.window.onDidChangeActiveTextEditor(applyOpenMode),
     vscode.window.tabGroups.onDidChangeTabs(forgetClosed),
+    vscode.workspace.onDidOpenTextDocument(updateDiagnostics),
+    vscode.workspace.onDidChangeTextDocument((event) => updateDiagnostics(event.document)),
+    vscode.workspace.onDidCloseTextDocument((doc) => diagnosticCollection.delete(doc.uri)),
   );
+  for (const doc of vscode.workspace.textDocuments) updateDiagnostics(doc);
   applyOpenMode(vscode.window.activeTextEditor);
 
   return {
