@@ -87,15 +87,39 @@ function parseArgs(argv) {
   const opts = { providers: [], tasks: null, system: LLMS_TXT, json: false, failUnder: 0 };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
-    if (a === '--provider') opts.providers.push(argv[++i]);
-    else if (a === '--tasks') opts.tasks = argv[++i].split(',').map((s) => s.trim()).filter(Boolean);
-    else if (a === '--system') opts.system = argv[++i];
+    const takeValue = (flag, allowNegative = false) => {
+      const next = argv[i + 1];
+      if (
+        next === undefined ||
+        next.startsWith('--') ||
+        (!allowNegative && (next === '-h' || next === '-'))
+      ) {
+        throw new Error(`option ${flag} requires a value`);
+      }
+      i += 1;
+      return next;
+    };
+    if (a === '--provider') opts.providers.push(takeValue(a));
+    else if (a === '--tasks') {
+      opts.tasks = takeValue(a).split(',').map((s) => s.trim()).filter(Boolean);
+      if (!opts.tasks.length) throw new Error('option --tasks requires a value');
+    } else if (a === '--system') opts.system = takeValue(a);
     else if (a === '--json') opts.json = true;
-    else if (a === '--fail-under') opts.failUnder = Number(argv[++i]);
+    else if (a === '--fail-under') {
+      opts.failUnder = Number(takeValue(a, true));
+      if (!Number.isFinite(opts.failUnder) || opts.failUnder < 0 || opts.failUnder > 100) {
+        throw new Error('--fail-under must be a number from 0 to 100');
+      }
+    }
     else if (a === '-h' || a === '--help') opts.help = true;
     else throw new Error(`unknown option: ${a}`);
   }
   if (!opts.providers.length) opts.providers = ['mock'];
+  if (opts.tasks) {
+    const known = new Set(ALL_TASKS.map((task) => task.id));
+    const unknown = opts.tasks.find((id) => !known.has(id));
+    if (unknown) throw new Error(`unknown task "${unknown}"`);
+  }
   return opts;
 }
 
@@ -126,9 +150,17 @@ export async function main(argv = process.argv.slice(2)) {
   }
   if (opts.help) { process.stdout.write(HELP); return 0; }
 
-  const system = readFileSync(opts.system, 'utf8');
-  const tasks = opts.tasks ? ALL_TASKS.filter((t) => opts.tasks.includes(t.id)) : ALL_TASKS;
-  const providers = opts.providers.map((s) => providerFromSpec(s, { fixtures }));
+  let system;
+  let tasks;
+  let providers;
+  try {
+    system = readFileSync(opts.system, 'utf8');
+    tasks = opts.tasks ? ALL_TASKS.filter((t) => opts.tasks.includes(t.id)) : ALL_TASKS;
+    providers = opts.providers.map((s) => providerFromSpec(s, { fixtures }));
+  } catch (err) {
+    process.stderr.write(`${err.message}\n`);
+    return 1;
+  }
 
   const result = await runEval({ providers, tasks, system });
   if (opts.json) {

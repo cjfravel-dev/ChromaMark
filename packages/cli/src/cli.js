@@ -96,9 +96,11 @@ function parseArgs(argv) {
       opts.disable = opts.disable.concat(takeValue(a).split(',').map((s) => s.trim()).filter(Boolean));
     } else if (a === '-o' || a === '--output') opts.output = takeValue(a);
     else if (a === '--title') opts.title = takeValue(a);
-    else if (a === '-') opts.input = '-';
+    else if (a === '-' && opts.input == null) opts.input = '-';
+    else if (a === '-') throw new Error('unexpected argument: -');
     else if (a.startsWith('-')) throw new Error(`unknown option: ${a}`);
     else if (opts.input == null) opts.input = a;
+    else throw new Error(`unexpected argument: ${a}`);
   }
   return opts;
 }

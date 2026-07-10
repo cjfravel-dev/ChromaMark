@@ -123,6 +123,15 @@ test('parseArgs rejects -o/--title that would swallow the next flag', () => {
   }
 });
 
+test('CLI rejects extra positional arguments instead of ignoring them', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'cm-cli-'));
+  const input = join(dir, 'a.cm');
+  writeFileSync(input, '[!pass]\n');
+  const { code } = runCapture([input, 'extra.cm', '--stdout']);
+  assert.equal(code, 1);
+  assert.equal(runCapture([input, '-', '--stdout']).code, 1);
+});
+
 test('CLI errors (exit 1) on empty stdin with no input arg and no explicit -', () => {
   assert.throws(() => execFileSync(BIN, [], { input: '' }));
 });
