@@ -5,6 +5,14 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ## [Unreleased]
 
+### Fixed
+
+- JavaScript and Python plugins now honor their host Markdown renderer's raw
+  HTML policy consistently across container bodies, titles, summaries, and
+  fields; preconfigured renderers continue to escape raw HTML by default.
+- Documentation now distinguishes ChromaMark's strict syntax compatibility
+  from the reference renderers' safe default HTML policy.
+
 ## [0.3.1] - 2026-07-09
 
 ### Added
@@ -41,7 +49,7 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ### Fixed
 
-- Fence-aware container closing and raw-HTML escaping in container bodies.
+- Fence-aware container closing and consistent default raw-HTML escaping.
 - JavaScript/Python whitespace parity and browser dedent tab preservation.
 - CLI option parsing, Python builder escaping, and VS Code CriticMarkup
   highlighting and packaging.

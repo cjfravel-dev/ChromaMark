@@ -31,6 +31,10 @@ TypeScript declarations ship with the Node and browser entry points; no separate
 | `lint(src, opts?)`        | Check for common mistakes → array of `{ line, column, rule, … }`. |
 | `LANGUAGE_VERSION`        | ChromaMark language contract implemented by this release.         |
 
+`render()` and `createRenderer()` disable raw HTML for safe handling of
+untrusted input. The plugin honors the host `MarkdownIt` instance's `html`
+setting consistently; enable it only for trusted or separately sanitized input.
+
 ### Terminal rendering
 
 `renderAnsi` walks the same parse into a TTY: tones become ANSI colors, pills

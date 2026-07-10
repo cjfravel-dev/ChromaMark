@@ -204,16 +204,8 @@ def container_plugin(md, enabled):
         tone = f' data-tone="{meta["tone"]}"' if (not meta.get("color") and meta.get("tone")) else ""
         return custom, style, tone
 
-    def render_inline_safe(text, options, env):
-        # Render a title/summary/field value as inline content (pills, colored
-        # text, meters, markdown) while escaping any raw HTML. Force escaping by
-        # rewriting html_inline tokens to text rather than mutating md.options,
-        # so a shared instance stays thread-safe.
+    def render_inline(text, options, env):
         inline_tokens = md.parseInline(text, env)
-        for tok in inline_tokens:
-            for child in tok.children or ():
-                if child.type == "html_inline":
-                    child.type = "text"
         return md.renderer.render(inline_tokens, options, env)
 
     def render_open(self, tokens, idx, options, env):
@@ -223,11 +215,11 @@ def container_plugin(md, enabled):
             open_attr = " open" if meta.get("open") else ""
             return (
                 f'<details class="cm-details{custom}"{tone}{style}{open_attr}>'
-                f'<summary>{render_inline_safe(meta["summary"], options, env)}</summary><div class="cm-body">'
+                f'<summary>{render_inline(meta["summary"], options, env)}</summary><div class="cm-body">'
             )
         html = f'<div class="cm-block{custom}"{tone}{style}>'
         if meta.get("title"):
-            html += f'<div class="cm-title">{render_inline_safe(meta["title"], options, env)}</div>'
+            html += f'<div class="cm-title">{render_inline(meta["title"], options, env)}</div>'
         return html + '<div class="cm-body">'
 
     def render_close(self, tokens, idx, options, env):
@@ -236,32 +228,9 @@ def container_plugin(md, enabled):
     def render_fields(self, tokens, idx, options, env):
         html = '<dl class="cm-fields">'
         for key, value in tokens[idx].meta["rows"]:
-            html += f'<dt>{escapeHtml(key)}</dt><dd>{render_inline_safe(value, options, env)}</dd>'
+            html += f'<dt>{escapeHtml(key)}</dt><dd>{render_inline(value, options, env)}</dd>'
         return html + "</dl>"
 
     md.add_render_rule("cm_container_open", render_open)
     md.add_render_rule("cm_container_close", render_close)
     md.add_render_rule("cm_fields", render_fields)
-
-    def sanitize_bodies(state):
-        # Container bodies are always safe: escape any raw HTML inside a
-        # container so ChromaMark stays consistent with its force-escaped
-        # titles/fields even on a host MarkdownIt with html=True. Raw HTML
-        # outside a container still honors the host setting. Under the default
-        # html=False there are no html_block/html_inline tokens, so this is a
-        # no-op.
-        depth = 0
-        for token in state.tokens:
-            if token.type == "cm_container_open":
-                depth += 1
-            elif token.type == "cm_container_close":
-                depth -= 1
-            elif depth > 0:
-                if token.type == "html_block":
-                    token.content = escapeHtml(token.content)
-                elif token.type == "inline" and token.children:
-                    for child in token.children:
-                        if child.type == "html_inline":
-                            child.content = escapeHtml(child.content)
-
-    md.core.ruler.push("cm_sanitize_bodies", sanitize_bodies)

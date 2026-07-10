@@ -6027,15 +6027,6 @@ function containerPlugin(md, enabled) {
     alt: ["paragraph", "reference", "blockquote", "list"]
   });
   const esc = md.utils.escapeHtml;
-  const renderInlineSafe = (text2) => {
-    const prevHtml = md.options.html;
-    md.options.html = false;
-    try {
-      return md.renderInline(text2);
-    } finally {
-      md.options.html = prevHtml;
-    }
-  };
   function decorate(meta) {
     const custom = meta.color ? " cm-custom" : "";
     const style = meta.color ? ` style="--fg:${esc(meta.color)}"` : "";
@@ -6047,38 +6038,20 @@ function containerPlugin(md, enabled) {
     const { custom, style, tone } = decorate(meta);
     if (meta.structure === "details") {
       const open = meta.open ? " open" : "";
-      return `<details class="cm-details${custom}"${tone}${style}${open}><summary>${renderInlineSafe(meta.summary)}</summary><div class="cm-body">`;
+      return `<details class="cm-details${custom}"${tone}${style}${open}><summary>${md.renderInline(meta.summary)}</summary><div class="cm-body">`;
     }
     let html = `<div class="cm-block${custom}"${tone}${style}>`;
-    if (meta.title) html += `<div class="cm-title">${renderInlineSafe(meta.title)}</div>`;
+    if (meta.title) html += `<div class="cm-title">${md.renderInline(meta.title)}</div>`;
     return html + '<div class="cm-body">';
   };
   md.renderer.rules.cm_container_close = (tokens, idx) => tokens[idx].meta.structure === "details" ? "</div></details>" : "</div></div>";
   md.renderer.rules.cm_fields = (tokens, idx) => {
     let html = '<dl class="cm-fields">';
     for (const [key, value] of tokens[idx].meta.rows) {
-      html += `<dt>${esc(key)}</dt><dd>${renderInlineSafe(value)}</dd>`;
+      html += `<dt>${esc(key)}</dt><dd>${md.renderInline(value)}</dd>`;
     }
     return html + "</dl>";
   };
-  md.core.ruler.push("cm_sanitize_bodies", (state) => {
-    let depth = 0;
-    for (const token of state.tokens) {
-      if (token.type === "cm_container_open") {
-        depth++;
-      } else if (token.type === "cm_container_close") {
-        depth--;
-      } else if (depth > 0) {
-        if (token.type === "html_block") {
-          token.content = esc(token.content);
-        } else if (token.type === "inline" && token.children) {
-          for (const child of token.children) {
-            if (child.type === "html_inline") child.content = esc(child.content);
-          }
-        }
-      }
-    }
-  });
 }
 
 // src/index.js

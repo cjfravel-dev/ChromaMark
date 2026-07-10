@@ -27,6 +27,10 @@ from chromamark import chromamark_plugin
 md = MarkdownIt("commonmark").use(chromamark_plugin)
 ```
 
+`render()` and `create_renderer()` disable raw HTML for safe handling of
+untrusted input. The plugin honors the host `MarkdownIt` instance's `html`
+setting consistently; enable it only for trusted or separately sanitized input.
+
 Pass `highlight=` to `render` or `create_renderer` to integrate a fenced-code
 highlighter without adding one to ChromaMark:
 

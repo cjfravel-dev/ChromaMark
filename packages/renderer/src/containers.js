@@ -197,19 +197,6 @@ export default function containerPlugin(md, enabled) {
   });
   const esc = md.utils.escapeHtml;
 
-  // Render a title/summary/field value as inline content (so pills, colored
-  // text, meters, and markdown work there) while forcing html:false, so raw
-  // HTML in that user-controlled text is escaped rather than injected.
-  const renderInlineSafe = (text) => {
-    const prevHtml = md.options.html;
-    md.options.html = false;
-    try {
-      return md.renderInline(text);
-    } finally {
-      md.options.html = prevHtml;
-    }
-  };
-
   function decorate(meta) {
     const custom = meta.color ? ' cm-custom' : '';
     const style = meta.color ? ` style="--fg:${esc(meta.color)}"` : '';
@@ -224,11 +211,11 @@ export default function containerPlugin(md, enabled) {
       const open = meta.open ? ' open' : '';
       return (
         `<details class="cm-details${custom}"${tone}${style}${open}>` +
-        `<summary>${renderInlineSafe(meta.summary)}</summary><div class="cm-body">`
+        `<summary>${md.renderInline(meta.summary)}</summary><div class="cm-body">`
       );
     }
     let html = `<div class="cm-block${custom}"${tone}${style}>`;
-    if (meta.title) html += `<div class="cm-title">${renderInlineSafe(meta.title)}</div>`;
+    if (meta.title) html += `<div class="cm-title">${md.renderInline(meta.title)}</div>`;
     return html + '<div class="cm-body">';
   };
 
@@ -238,32 +225,8 @@ export default function containerPlugin(md, enabled) {
   md.renderer.rules.cm_fields = (tokens, idx) => {
     let html = '<dl class="cm-fields">';
     for (const [key, value] of tokens[idx].meta.rows) {
-      html += `<dt>${esc(key)}</dt><dd>${renderInlineSafe(value)}</dd>`;
+      html += `<dt>${esc(key)}</dt><dd>${md.renderInline(value)}</dd>`;
     }
     return html + '</dl>';
   };
-
-  // Container bodies are always safe: escape any raw HTML inside a container so
-  // ChromaMark stays consistent with its force-escaped titles/fields even when
-  // attached to a host MarkdownIt({ html: true }). Raw HTML outside a container
-  // still honors the host setting. Under the default html:false there are no
-  // html_block/html_inline tokens, so this is a no-op.
-  md.core.ruler.push('cm_sanitize_bodies', (state) => {
-    let depth = 0;
-    for (const token of state.tokens) {
-      if (token.type === 'cm_container_open') {
-        depth++;
-      } else if (token.type === 'cm_container_close') {
-        depth--;
-      } else if (depth > 0) {
-        if (token.type === 'html_block') {
-          token.content = esc(token.content);
-        } else if (token.type === 'inline' && token.children) {
-          for (const child of token.children) {
-            if (child.type === 'html_inline') child.content = esc(child.content);
-          }
-        }
-      }
-    }
-  });
 }
