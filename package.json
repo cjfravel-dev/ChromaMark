@@ -1,8 +1,8 @@
 {
   "name": "chromamark",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "private": true,
-  "description": "ChromaMark — a lean rich-markup for agent-to-human communication. CommonMark + GFM plus colored blocks, colored pills, and collapsible sections.",
+  "description": "ChromaMark — semantic, stream-safe Markdown for AI-generated reports.",
   "license": "MIT",
   "author": "cjfravel-dev",
   "repository": {

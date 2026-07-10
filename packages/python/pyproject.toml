@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "chromamark"
-version = "0.2.0"
+version = "0.2.1"
 description = "ChromaMark for Python — render and build colored blocks, pills, collapsibles, fields, meters and inline diff on top of Markdown, with Jupyter display."
 readme = "README.md"
 requires-python = ">=3.9"

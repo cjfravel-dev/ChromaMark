@@ -5,18 +5,29 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-07-10
+
 ### Changed
 
 - Reframed the README around “Markdown for AI-generated reports,” leading with
   semantic state, streaming, graceful truncation, and HTML tradeoffs.
 - Elevated the VS Code Marketplace extension as the primary shared evaluation
   surface for humans and agents reviewing generated reports.
+- Added Open VSX discovery alongside the VS Code Marketplace and pinned browser
+  examples to the released npm renderer instead of the mutable default branch.
+- Updated the security policy to identify the current supported package lines.
+- Added a rendered product preview plus structured bug, feature, and pull
+  request templates for public contributors.
+- Republished the conformance kit through npm trusted publishing so every npm
+  package in the release carries provenance.
 
 ### Fixed
 
 - Theme presets now set semantic report-body foreground colors, preserving
   contrast when dark presets are previewed in a light host and vice versa.
 - Added the published `@chromamark/conformance` package badge to the README.
+- Slim browser source loading now records synchronous and non-`Error` fetch
+  failures instead of throwing while handling them.
 
 ## [0.4.0] - 2026-07-10
 
@@ -107,6 +118,7 @@ from the [ChromaMark language version](./docs/compatibility.md).
 [#38]: https://github.com/cjfravel-dev/ChromaMark/pull/38
 [#39]: https://github.com/cjfravel-dev/ChromaMark/pull/39
 [#40]: https://github.com/cjfravel-dev/ChromaMark/pull/40
+[0.4.1]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.4.1
 [0.4.0]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.4.0
 [0.3.1]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.3.1
 [0.3.0]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.3.0

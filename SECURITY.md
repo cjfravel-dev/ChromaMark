@@ -9,10 +9,10 @@ Security fixes are provided for the latest release line of each package:
 
 | Package | Supported line |
 | --- | --- |
-| `@chromamark/renderer` | `0.3.x` |
-| `@chromamark/cli` | `0.2.x` |
-| `chromamark` (PyPI) | `0.1.x` |
-| `chromamark-vscode` | `0.1.x` |
+| `@chromamark/renderer` | `0.4.x` |
+| `@chromamark/cli` | `0.3.x` |
+| `chromamark` (PyPI) | `0.2.x` |
+| `chromamark-vscode` | `0.2.x` |
 
 Older release lines may not receive security updates. Upgrade to the latest
 published version before reporting behavior that has already been fixed.

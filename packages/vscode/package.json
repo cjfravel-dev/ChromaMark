@@ -2,7 +2,7 @@
   "name": "chromamark-vscode",
   "displayName": "ChromaMark",
   "description": "Live preview, syntax highlighting, lint diagnostics, and quick fixes for ChromaMark.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "chromamark",
   "icon": "icon.png",
   "license": "MIT",
@@ -107,7 +107,7 @@
     }
   },
   "dependencies": {
-    "@chromamark/renderer": "^0.4.0"
+    "@chromamark/renderer": "^0.4.1"
   },
   "devDependencies": {
     "@vscode/vsce": "^3.2.2",

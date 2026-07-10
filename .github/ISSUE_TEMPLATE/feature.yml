@@ -1,0 +1,34 @@
+name: Feature request
+description: Propose a focused improvement to ChromaMark
+title: "feat: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What report-authoring or rendering problem should ChromaMark solve?
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Proposed behavior
+      description: Describe the syntax, API, integration, or workflow you expect.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Explain current workarounds and why they are insufficient.
+  - type: checkboxes
+    id: contract
+    attributes:
+      label: Compatibility impact
+      options:
+        - label: This may change accepted syntax or rendered output.
+        - label: This requires JavaScript and Python parity.
+        - label: This requires a specification or conformance update.
+

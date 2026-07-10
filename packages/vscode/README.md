@@ -4,6 +4,10 @@ Live preview and syntax highlighting for [ChromaMark](https://github.com/cjfrave
 — Markdown (CommonMark + GFM) plus **colored blocks**, **colored pills**,
 **collapsible sections**, **fields**, **meters**, and inline **diff**.
 
+Install ChromaMark from the
+[VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=chromamark.chromamark-vscode)
+or [Open VSX](https://open-vsx.org/extension/chromamark/chromamark-vscode).
+
 ## Features
 
 - **Live preview.** Contributes the ChromaMark renderer to VS Code's built-in
