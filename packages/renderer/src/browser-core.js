@@ -4,7 +4,9 @@
  * the theme via configureTheme() and adds the CDN auto-init.
  */
 
-import { createRenderer, render as renderString } from './index.js';
+import { createRenderer, LANGUAGE_VERSION, render as renderString } from './index.js';
+
+export { LANGUAGE_VERSION };
 
 const STYLE_ID = 'chromamark-theme';
 const DONE_ATTR = 'data-chromamark-done';
@@ -151,6 +153,7 @@ export function autoRender(options = {}) {
 }
 
 export const ChromaMark = {
+  LANGUAGE_VERSION,
   render,
   renderElement,
   renderAll,

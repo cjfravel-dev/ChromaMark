@@ -22,11 +22,13 @@
    Every extension below is designed to degrade to readable CommonMark text, so
    a plain Markdown engine renders the literal source without loss.
 
+   Language version: 0.1
+
    Case. Kinds, tones, and aliases are matched case-insensitively.
 
-   Authoritative implementations: packages/renderer/src/{containers,inline,
-   critic,tones}.js (JS) and packages/python/src/chromamark/ (Python). Where this
-   grammar and those parsers disagree, the parsers win — please file an issue.
+   Authority. SPEC.md is the normative language definition, this grammar is its
+   formal syntax companion, and conformance/cases.json is the executable output
+   contract. Implementations that disagree with those sources have a defect.
    ========================================================================== *)
 
 

@@ -8,6 +8,7 @@ import {
   injectTheme,
   configureTheme,
 } from '../src/browser-core.js';
+import * as browserApi from '../src/browser-core.js';
 
 function setup(bodyHtml) {
   const dom = new JSDOM(`<!DOCTYPE html><html><head></head><body>${bodyHtml}</body></html>`);
@@ -15,6 +16,11 @@ function setup(bodyHtml) {
   global.document = dom.window.document;
   return dom;
 }
+
+test('browser API exposes the implemented ChromaMark language version', () => {
+  assert.equal(browserApi.LANGUAGE_VERSION, '0.1');
+  assert.equal(browserApi.ChromaMark.LANGUAGE_VERSION, browserApi.LANGUAGE_VERSION);
+});
 
 function stubFetch(dom, { ok = true, status = 200, body = '' } = {}) {
   const fn = async () => ({ ok, status, text: async () => body });

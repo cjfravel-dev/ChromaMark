@@ -26,6 +26,7 @@ import chromamark, { render, createRenderer } from '@chromamark/renderer';
 | `createRenderer(options?)`| A `markdown-it` instance preconfigured with ChromaMark.           |
 | `renderAnsi(src, opts?)`  | ChromaMark string → ANSI-styled text for a terminal.              |
 | `lint(src, opts?)`        | Check for common mistakes → array of `{ line, column, rule, … }`. |
+| `LANGUAGE_VERSION`        | ChromaMark language contract implemented by this release.         |
 
 ### Terminal rendering
 
@@ -86,6 +87,7 @@ ChromaMark.autoRender();
 | `injectTheme(doc?)`            | Add the theme `<style>` once (idempotent).                             |
 | `render(src, opts?)`           | ChromaMark string → HTML.                                              |
 | `theme`                        | The theme CSS as a string.                                             |
+| `LANGUAGE_VERSION`           | ChromaMark language contract implemented by the bundle.               |
 
 Targets default to `<script type="text/chromamark">`, `template.chromamark`,
 `.chromamark`, `[data-chromamark]`, and `[data-chromamark-src]`. Adding

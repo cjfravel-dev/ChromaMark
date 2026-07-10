@@ -6076,6 +6076,7 @@ function containerPlugin(md, enabled) {
 }
 
 // src/index.js
+var LANGUAGE_VERSION = "0.1";
 var DEFAULTS = {
   container: true,
   // ::: colored callouts
@@ -6216,6 +6217,7 @@ function autoRender(options = {}) {
   return renderAll(options.selector, options);
 }
 var ChromaMark = {
+  LANGUAGE_VERSION,
   render: render2,
   renderElement,
   renderAll,
@@ -6244,6 +6246,7 @@ var browser_default = browser_core_default;
 })();
 export {
   ChromaMark,
+  LANGUAGE_VERSION,
   autoRender,
   configureTheme,
   browser_default as default,
