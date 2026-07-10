@@ -21,6 +21,7 @@
     "coverage": "node scripts/coverage.mjs",
     "eval": "node eval/run.js",
     "build:site": "node scripts/build-site.mjs",
+    "build:readme": "node scripts/build-readme.mjs",
     "lint": "eslint ."
   },
   "devDependencies": {

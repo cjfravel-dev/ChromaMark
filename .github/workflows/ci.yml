@@ -31,6 +31,7 @@ jobs:
           npm run build --workspace @chromamark/renderer
           git diff --exit-code -- packages/renderer/dist/
           cmp packages/renderer/theme/chromamark.css packages/python/src/chromamark/theme.css
+          npm run build:readme -- --check
           node scripts/build-site.mjs "$RUNNER_TEMP/_site"
           site="$RUNNER_TEMP/_site"
           test -f "$site/assets/favicon.png"

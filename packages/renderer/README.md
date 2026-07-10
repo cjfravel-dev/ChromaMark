@@ -16,7 +16,7 @@ npm install @chromamark/renderer
 ## Node / bundler API
 
 ```js
-import chromamark, { render, createRenderer } from '@chromamark/renderer';
+import chromamark, { render, renderGitHub, createRenderer } from '@chromamark/renderer';
 ```
 
 TypeScript declarations ship with the Node and browser entry points; no separate
@@ -28,6 +28,7 @@ TypeScript declarations ship with the Node and browser entry points; no separate
 | `render(src, options?)`   | Convenience: ChromaMark string → HTML fragment.                   |
 | `createRenderer(options?)`| A `markdown-it` instance preconfigured with ChromaMark.           |
 | `renderAnsi(src, opts?)`  | ChromaMark string → ANSI-styled text for a terminal.              |
+| `renderGitHub(src, opts?)`| ChromaMark string → GitHub-native GFM.                            |
 | `lint(src, opts?)`        | Check for common mistakes → array of `{ line, column, rule, … }`. |
 | `LANGUAGE_VERSION`        | ChromaMark language contract implemented by this release.         |
 
@@ -51,6 +52,21 @@ process.stdout.write(renderAnsi('::: success\nAll good [!ok healthy]\n:::'));
 
 Color defaults to `'auto'` — on when stdout is a TTY and [`NO_COLOR`](https://no-color.org)
 is unset. The `colorEnabled(option, env?, isTTY?)` helper is exported too.
+
+### GitHub-native rendering
+
+`renderGitHub` maps callouts to GitHub Alerts, details to native `<details>`,
+fields to GFM tables, pills to tone-aware `<kbd>` badges, and meters to portable
+Unicode bars:
+
+```js
+import { renderGitHub } from '@chromamark/renderer';
+
+const markdown = renderGitHub('::: success\nReady [!pass]\n:::');
+```
+
+Raw HTML is escaped by default. Pass `{ allowHtml: true }` only for trusted
+repository-owned source. See the complete [mapping contract](../../docs/github-export.md).
 
 ### Options
 

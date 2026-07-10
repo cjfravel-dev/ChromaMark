@@ -5,7 +5,9 @@ import { mkdtempSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { compile, render, theme } from '../src/index.js';
+import {
+  compile, render, renderGitHub, theme,
+} from '../src/index.js';
 import { run } from '../src/cli.js';
 
 const BIN = fileURLToPath(new URL('../bin/chromamark.js', import.meta.url));
@@ -43,6 +45,13 @@ test('compile produces a self-contained HTML page', () => {
 test('render returns just a fragment', () => {
   assert.match(render('[!pass]'), /cm-pill/);
   assert.doesNotMatch(render('[!pass]'), /<!DOCTYPE/);
+});
+
+test('renderGitHub returns GitHub-native GFM', () => {
+  assert.equal(
+    renderGitHub('::: success Deploy\nAll good [!pass]\n:::'),
+    '> [!TIP]\n> **Deploy**\n>\n> All good ✅ <kbd>PASS</kbd>\n',
+  );
 });
 
 test('theme returns the stylesheet', () => {
@@ -220,6 +229,64 @@ test('CLI render reads ChromaMark from stdin', () => {
     input: '[!fail 3]\n', encoding: 'utf8',
   });
   assert.match(out, /\[✗ 3\]/);
+});
+
+test('CLI github renders a file to GitHub-native GFM', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'cm-cli-'));
+  const input = join(dir, 'report.cm');
+  writeFileSync(input, '::: warning Review\nNeeds attention [!warn P1]\n:::\n');
+  const out = execFileSync(process.execPath, [BIN, 'github', input], { encoding: 'utf8' });
+  assert.match(out, /^> \[!WARNING\]/m);
+  assert.match(out, /⚠️ <kbd>P1<\/kbd>/);
+});
+
+test('CLI github reads stdin and can write an output file', () => {
+  const stdinOut = execFileSync(process.execPath, [BIN, 'github'], {
+    input: '::: fields\nStatus: [!ok ready]\n:::\n',
+    encoding: 'utf8',
+  });
+  assert.match(stdinOut, /\| Status \| ✅ <kbd>ready<\/kbd> \|/);
+
+  const dir = mkdtempSync(join(tmpdir(), 'cm-cli-'));
+  const input = join(dir, 'report.cm');
+  const output = join(dir, 'report.md');
+  writeFileSync(input, '::: info\nhello\n:::\n');
+  execFileSync(process.execPath, [BIN, 'github', input, '-o', output]);
+  assert.match(readFileSync(output, 'utf8'), /^> \[!NOTE\]/m);
+});
+
+test('CLI github rejects unsupported command-specific options', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'cm-cli-'));
+  const input = join(dir, 'report.cm');
+  writeFileSync(input, '[!pass]\n');
+
+  for (const args of [
+    ['--watch'],
+    ['--title', 'Report'],
+    ['--color', 'always'],
+    ['--disable', 'CM001'],
+  ]) {
+    const result = spawnSync(process.execPath, [BIN, 'github', input, ...args], { encoding: 'utf8' });
+    assert.equal(result.status, 1, `${args[0]} should be rejected`);
+    assert.match(result.stderr, /not supported by the github command/);
+  }
+});
+
+test('CLI github reports output write failures without a stack trace', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'cm-cli-'));
+  const input = join(dir, 'report.cm');
+  const blocked = join(dir, 'blocked');
+  writeFileSync(input, '[!pass]\n');
+  writeFileSync(blocked, 'not a directory');
+
+  const result = spawnSync(
+    process.execPath,
+    [BIN, 'github', input, '-o', join(blocked, 'report.md')],
+    { encoding: 'utf8' },
+  );
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /^error:/);
+  assert.doesNotMatch(result.stderr, /\n {4}at /);
 });
 
 test('CLI render survives a live pipe from another Node process (no EAGAIN)', () => {

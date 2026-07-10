@@ -29,7 +29,7 @@ skipped, which allows coordinated releases where only some packages changed.
    commit the lockfile version changes.
 4. Update `CHANGELOG.md` and package-specific documentation.
 5. Run `npm ci`, all tests, ESLint, Ruff, coverage, and package builds.
-6. Rebuild and commit `packages/renderer/dist/`.
+6. Rebuild and commit `packages/renderer/dist/` and generated `README.md`.
 7. Merge the coordinated release pull request.
 8. Create and publish a GitHub Release whose tag matches the repository release,
    then monitor the npm and PyPI jobs.
