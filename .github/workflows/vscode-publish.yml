@@ -70,3 +70,11 @@ jobs:
           vsix=$(find packages/vscode -maxdepth 1 -name '*.vsix' -print -quit)
           test -n "$vsix"
           npx vsce publish --azure-credential --packagePath "$vsix" --skip-duplicate
+      - name: Publish VSIX to Open VSX
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+        run: |
+          vsix=$(find packages/vscode -maxdepth 1 -name '*.vsix' -print -quit)
+          test -n "$vsix"
+          npm exec --workspace chromamark-vscode -- ovsx publish \
+            --packagePath "$vsix" --skip-duplicate

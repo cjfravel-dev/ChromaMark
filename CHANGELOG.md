@@ -20,6 +20,8 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ### Added
 
+- Automated Open VSX publication of the same tested VSIX used for Microsoft
+  Marketplace releases.
 - Tokenless VS Code Marketplace publishing through GitHub OIDC, an Entra managed
   identity, and `vsce --azure-credential`.
 - Safe theme preset/resolution/application APIs with GitHub light/dark, ocean,

@@ -43,7 +43,9 @@ only for release events.
 The `VS Code Marketplace` workflow publishes without a PAT. GitHub OIDC
 federates the protected `vscode-marketplace` environment to a user-assigned
 Azure managed identity, and `vsce --azure-credential` obtains an Entra token at
-runtime.
+runtime. The same tested VSIX is also published to Open VSX with the
+environment-scoped, revocable `OVSX_PAT` token; Open VSX does not currently
+support OIDC trusted publishing.
 
 Publishing a GitHub Release runs this job after rebuilding, testing, and
 packaging the extension. It can also be dispatched manually with:
@@ -61,5 +63,7 @@ npm run package --workspace chromamark-vscode
 ```
 
 The Marketplace publisher `chromamark` must list the managed identity profile
-ID as a Contributor. GitHub environment variables hold only the non-secret
-Azure client, tenant, and subscription IDs.
+ID as a Contributor. Open VSX must grant ownership of the `chromamark`
+namespace. GitHub environment variables hold only the non-secret Azure client,
+tenant, and subscription IDs; the Open VSX token is stored only in the protected
+environment.
