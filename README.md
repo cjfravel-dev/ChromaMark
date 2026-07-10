@@ -214,14 +214,21 @@ ChromaMark/
 ## Development
 
 ```bash
-npm install
+npm ci
 npm test                                     # renderer test suite (node:test)
 npm test --workspace @chromamark/cli         # CLI tests (build, render, lint)
 npm run test:eval                            # eval harness tests
+npm run test:scripts                         # repository workflow/docs tests
+npm run lint                                 # ESLint
+packages/python/.venv/bin/python -m ruff check packages/python/src packages/python/tests
+npm run coverage                             # combined JS/Python coverage
 npm run eval                                 # offline LLM-conformance demo
 npm run build --workspace @chromamark/renderer   # bundle dist/ for the browser/CDN
 npm run build:site                           # build the Pages site into _site/
 ```
+
+See [Contributing](./CONTRIBUTING.md), the [changelog](./CHANGELOG.md), and the
+[release guide](./docs/releasing.md) for the complete workflow.
 
 ## Prior art & credits
 

@@ -35,6 +35,9 @@ Options: `-o/--output`, `--stdout`, `--title <text>`, `--watch`,
 `--color <auto|always|never>`, `--no-color`, `--disable <rules>`, `-h/--help`,
 `-v/--version`.
 
+Commands accept one input source. Extra positional arguments, including a second
+`-` stdin marker, are rejected instead of being silently ignored.
+
 The `render` command turns tones into terminal colors, pills into bracketed
 icon chips (`[✓ PASS]`), blocks into a colored left bar, and meters into a
 unicode bar. Color is automatic on a TTY and can be forced with `--color`; it
