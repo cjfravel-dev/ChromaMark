@@ -1,0 +1,48 @@
+# Changelog
+
+Notable user-visible changes are recorded here. Package versions are independent
+from the [ChromaMark language version](./docs/compatibility.md).
+
+## [Unreleased]
+
+### Added
+
+- Shared JavaScript/Python exact-HTML conformance corpus ([#34]).
+- CI matrices for Node 18/24 and Python 3.9/3.12/3.14 ([#35]).
+- Deterministic npm installs and generated-artifact drift checks ([#36]).
+- Accessible progressbar semantics for rendered meters ([#37]).
+- ESLint and Ruff static quality gates ([#39]).
+- ChromaMark language version `0.1`, public version constants, and compatibility
+  policy ([#40]).
+
+### Fixed
+
+- CLI and eval argument validation now rejects ignored positionals, missing
+  values, unknown task IDs, invalid thresholds, and setup errors ([#38]).
+
+## [0.3.0] - 2026-07-09
+
+### Added
+
+- ANSI terminal rendering and `NO_COLOR` support.
+- ChromaMark linter and CLI `render`/`lint` commands.
+- Formal EBNF grammar and LLM conformance eval harness.
+
+## [0.2.2] - 2026-07-08
+
+### Fixed
+
+- Fence-aware container closing and raw-HTML escaping in container bodies.
+- JavaScript/Python whitespace parity and browser dedent tab preservation.
+- CLI option parsing, Python builder escaping, and VS Code CriticMarkup
+  highlighting and packaging.
+
+[#34]: https://github.com/cjfravel-dev/ChromaMark/pull/34
+[#35]: https://github.com/cjfravel-dev/ChromaMark/pull/35
+[#36]: https://github.com/cjfravel-dev/ChromaMark/pull/36
+[#37]: https://github.com/cjfravel-dev/ChromaMark/pull/37
+[#38]: https://github.com/cjfravel-dev/ChromaMark/pull/38
+[#39]: https://github.com/cjfravel-dev/ChromaMark/pull/39
+[#40]: https://github.com/cjfravel-dev/ChromaMark/pull/40
+[0.3.0]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.3.0
+[0.2.2]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.2.2

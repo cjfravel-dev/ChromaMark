@@ -94,6 +94,9 @@ Targets default to `<script type="text/chromamark">`, `template.chromamark`,
 `data-chromamark-auto` to the loading `<script>` runs `autoRender()`
 automatically once the DOM is ready.
 
+Rendered meters expose `role="progressbar"` with bounded `aria-valuenow` and the
+authored value in `aria-valuetext`, while retaining the visible meter label.
+
 ### Load ChromaMark from an external file
 
 Point an element at a `.cm` file with `data-chromamark-src` and the bundle

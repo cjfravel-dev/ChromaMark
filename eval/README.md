@@ -34,6 +34,10 @@ node eval/run.js --provider openai --fail-under 80
 node eval/run.js --json
 ```
 
+Task filters must name existing task IDs, and `--fail-under` accepts a number
+from 0 through 100. Missing option values, unknown task IDs/providers, and
+unreadable system-prompt paths exit non-zero with an explicit error.
+
 ### Providers
 
 | Spec                | Backend                          | Env                                   |
