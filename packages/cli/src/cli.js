@@ -8,21 +8,25 @@ import {
 } from 'node:fs';
 import { join, basename, extname, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { compile, renderAnsi, lint } from './index.js';
+import {
+  compile, renderAnsi, renderGitHub, lint,
+} from './index.js';
 
-const HELP = `chromamark — compile ChromaMark (.cm) to HTML, render it, or lint it
+const HELP = `chromamark — compile ChromaMark (.cm) to HTML, GitHub GFM, ANSI, or lint it
 
 Usage:
   chromamark [build] <input.cm> [-o <output.html>]   compile one file to HTML
   chromamark [build] <dir> -o <outdir>               compile every .cm in a tree
   chromamark render <input.cm>                       render to ANSI on stdout
+  chromamark github <input.cm> [-o <output.md>]       render to GitHub-native GFM
   chromamark lint <input.cm>                         check for common mistakes
   cat file.cm | chromamark render                    render stdin to ANSI
+  cat file.cm | chromamark github                    render stdin to GitHub GFM
   chromamark <input.cm> --stdout                     write HTML to stdout
   cat file.cm | chromamark -                          read HTML from stdin
 
 Options:
-  -o, --output <path>   output file or directory (build)
+  -o, --output <path>   output file or directory (build/github)
   --stdout              write HTML to stdout instead of a file
   --title <text>        page title (default: derived from the file name)
   --color <when>        colorize render output: auto (default), always, never
@@ -33,7 +37,7 @@ Options:
   -v, --version         print the version
 `;
 
-const COMMANDS = new Set(['build', 'render', 'lint']);
+const COMMANDS = new Set(['build', 'render', 'github', 'lint']);
 
 /**
  * Read all of stdin synchronously. Unlike readFileSync(0), this tolerates a
@@ -66,7 +70,8 @@ function version() {
 
 function parseArgs(argv) {
   const opts = {
-    command: 'build', input: null, output: null, stdout: false, title: null, watch: false, color: 'auto', disable: [],
+    command: 'build', input: null, output: null, stdout: false, title: null, watch: false,
+    color: 'auto', colorSpecified: false, disable: [],
   };
   let rest = argv;
   if (argv.length && COMMANDS.has(argv[0])) {
@@ -87,11 +92,15 @@ function parseArgs(argv) {
     else if (a === '-v' || a === '--version') opts.version = true;
     else if (a === '--stdout') opts.stdout = true;
     else if (a === '--watch') opts.watch = true;
-    else if (a === '--no-color') opts.color = 'never';
+    else if (a === '--no-color') {
+      opts.color = 'never';
+      opts.colorSpecified = true;
+    }
     else if (a === '--color') {
       const v = takeValue(a);
       if (!['auto', 'always', 'never'].includes(v)) throw new Error('--color must be auto, always, or never');
       opts.color = v;
+      opts.colorSpecified = true;
     } else if (a === '--disable') {
       opts.disable = opts.disable.concat(takeValue(a).split(',').map((s) => s.trim()).filter(Boolean));
     } else if (a === '-o' || a === '--output') opts.output = takeValue(a);
@@ -135,6 +144,44 @@ function runRender(opts) {
     return 1;
   }
   process.stdout.write(renderAnsi(input.src, { color: opts.color }));
+  return 0;
+}
+
+/** Render ChromaMark to GitHub-native GFM, from a file, `-`, or piped stdin. */
+function runGitHub(opts) {
+  const unsupported = [];
+  if (opts.watch) unsupported.push('--watch');
+  if (opts.title !== null) unsupported.push('--title');
+  if (opts.colorSpecified) unsupported.push('--color');
+  if (opts.disable.length) unsupported.push('--disable');
+  if (unsupported.length) {
+    process.stderr.write(`error: ${unsupported.join(', ')} not supported by the github command\n`);
+    return 1;
+  }
+
+  let input;
+  try {
+    input = readInput(opts);
+  } catch (err) {
+    process.stderr.write(`error: ${err.message}\n`);
+    return 1;
+  }
+  if (!input || input.empty) {
+    process.stderr.write(`error: github needs an input file or piped stdin\n\n${HELP}`);
+    return 1;
+  }
+  const output = renderGitHub(input.src);
+  try {
+    if (opts.output && !opts.stdout) {
+      mkdirSync(dirname(opts.output), { recursive: true });
+      writeFileSync(opts.output, output);
+    } else {
+      process.stdout.write(output);
+    }
+  } catch (err) {
+    process.stderr.write(`error: ${err.message}\n`);
+    return 1;
+  }
   return 0;
 }
 
@@ -212,6 +259,9 @@ export function run(argv = process.argv.slice(2)) {
 
   if (opts.command === 'render') {
     return runRender(opts);
+  }
+  if (opts.command === 'github') {
+    return runGitHub(opts);
   }
   if (opts.command === 'lint') {
     return runLint(opts);

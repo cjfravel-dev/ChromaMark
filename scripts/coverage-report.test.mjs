@@ -5,6 +5,7 @@ import {
   aggregate,
   percent,
   buildReport,
+  formatChromaMark,
   formatSummary,
   COMMENT_MARKER,
 } from './coverage-report.mjs';
@@ -94,11 +95,27 @@ test('formatSummary renders a GFM table with a bold total row and the sticky mar
   assert.match(md, /\| *Package *\|/);
   assert.match(md, /renderer/);
   assert.match(md, /\*\*Total\*\*/);
+  assert.match(md, /<kbd>60\.00%<\/kbd>/);
   // Percent cells are formatted with two decimals and hit/found detail.
   assert.match(md, /66\.67% \(2\/3\)/);
   // Per-file breakdown is available but collapsed.
   assert.match(md, /<details>/);
   assert.match(md, /packages\/cli\/src\/cli\.js/);
+  assert.match(md, /\| `packages\/cli\/src\/cli\.js` \|/);
+});
+
+test('coverage is authored in ChromaMark before GitHub transpilation', () => {
+  const reports = [
+    buildReport({ name: 'renderer', dir: 'packages/renderer', lcovText: NODE_RECORD }),
+  ];
+  const source = formatChromaMark(reports);
+  const github = formatSummary(reports);
+
+  assert.match(source, /\[!success 66\.67%\]/);
+  assert.match(source, /::: details Per-file coverage/);
+  assert.doesNotMatch(github, /::: details/);
+  assert.match(github, /<details>/);
+  assert.match(github, /<summary>Per-file coverage<\/summary>/);
 });
 
 test('formatSummary embeds the marker when asked, for sticky PR comments', () => {

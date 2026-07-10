@@ -28,6 +28,11 @@ export interface RenderAnsiOptions {
   rendererOptions?: RendererOptions;
 }
 
+export interface RenderGitHubOptions {
+  allowHtml?: boolean;
+  rendererOptions?: RendererOptions;
+}
+
 export interface LintOptions {
   disable?: string[];
 }
@@ -48,6 +53,7 @@ export const LANGUAGE_VERSION: '0.1';
 export function createRenderer(options?: RendererOptions): MarkdownIt;
 export function render(source: unknown, options?: RendererOptions): string;
 export function renderAnsi(source: unknown, options?: RenderAnsiOptions): string;
+export function renderGitHub(source: unknown, options?: RenderGitHubOptions): string;
 export function colorEnabled(
   option?: 'auto' | 'always' | 'never',
   env?: Record<string, string | undefined>,

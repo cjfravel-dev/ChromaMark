@@ -56,6 +56,15 @@ Commit the resulting dist changes. CI rebuilds the bundle and rejects drift. The
 canonical theme is `packages/renderer/theme/chromamark.css`; its Python package
 copy must remain byte-identical.
 
+`README.cm` is the canonical repository README source. After changing it or the
+GitHub transpiler, regenerate and commit `README.md`:
+
+```bash
+npm run build:readme
+```
+
+CI runs the same command in check mode and rejects drift.
+
 ## Language changes
 
 Changes to accepted syntax, degradation, safety, or rendered output require:

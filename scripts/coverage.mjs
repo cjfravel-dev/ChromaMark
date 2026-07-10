@@ -1,6 +1,6 @@
 /**
  * Runs the test suites with coverage across the ChromaMark packages, then
- * writes a combined Markdown summary.
+ * authors a combined ChromaMark report and transpiles it to GitHub-native GFM.
  *
  *   - JavaScript packages use Node's built-in runner with the lcov reporter.
  *   - The Python package uses coverage.py via pytest-cov.

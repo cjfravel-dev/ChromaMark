@@ -5,7 +5,9 @@
 
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { render as renderFragment, renderAnsi, lint } from '@chromamark/renderer';
+import {
+  render as renderFragment, renderAnsi, renderGitHub, lint,
+} from '@chromamark/renderer';
 
 const require = createRequire(import.meta.url);
 
@@ -14,6 +16,9 @@ export const render = renderFragment;
 
 /** Render ChromaMark to ANSI-styled text for a terminal. */
 export { renderAnsi };
+
+/** Render ChromaMark to GitHub-native GFM. */
+export { renderGitHub };
 
 /** Lint ChromaMark source, returning an array of diagnostics. */
 export { lint };

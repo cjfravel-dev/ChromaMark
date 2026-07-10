@@ -5,6 +5,14 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ## [Unreleased]
 
+### Added
+
+- GitHub-native GFM export through renderer/CLI `renderGitHub` APIs and the
+  `chromamark github` command, including Alerts, details, tables, tone-aware
+  badges, meters, and CriticMarkup degradation.
+- First-party dogfooding: Actions coverage reports are authored in ChromaMark,
+  and `README.md` is generated from canonical `README.cm`.
+
 ### Fixed
 
 - JavaScript and Python plugins now honor their host Markdown renderer's raw

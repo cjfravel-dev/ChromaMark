@@ -5,6 +5,8 @@ import chromamark, {
   lint,
   render,
   renderAnsi,
+  renderGitHub,
+  type RenderGitHubOptions,
   type RendererOptions,
 } from '@chromamark/renderer';
 import BrowserChromaMark, {
@@ -12,7 +14,7 @@ import BrowserChromaMark, {
   injectTheme,
   renderElement,
 } from '@chromamark/renderer/browser';
-import { compile, theme } from '@chromamark/cli';
+import { compile, renderGitHub as renderGitHubFromCli, theme } from '@chromamark/cli';
 
 const options: RendererOptions = {
   pill: true,
@@ -32,6 +34,9 @@ md.use((instance) => {
 
 const html: string = render('[!pass]', options);
 const ansi: string = renderAnsi('[!pass]', { color: 'never', width: 80 });
+const githubOptions: RenderGitHubOptions = { allowHtml: false, rendererOptions: options };
+const github: string = renderGitHub('[!pass]', githubOptions);
+const cliGithub: string = renderGitHubFromCli('[!pass]', githubOptions);
 const diagnostics = lint('[!unknown x]', { disable: ['CM001'] });
 const page: string = compile('[!pass]', { title: 'Report', rendererOptions: options });
 const css: string = theme();
@@ -43,4 +48,4 @@ const rendered: Element | null | Promise<Element | null> = renderElement('#repor
 const all = autoRender({ ...options, selector: '.chromamark' });
 const browserVersion: string = BrowserChromaMark.LANGUAGE_VERSION;
 
-void [html, ansi, diagnostics, page, css, version, enabled, rendered, all, browserVersion];
+void [html, ansi, github, cliGithub, diagnostics, page, css, version, enabled, rendered, all, browserVersion];

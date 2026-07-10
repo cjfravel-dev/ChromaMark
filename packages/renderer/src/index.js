@@ -10,6 +10,7 @@ import criticPlugin from './critic.js';
 import containerPlugin from './containers.js';
 
 export { renderAnsi, colorEnabled } from './ansi.js';
+export { renderGitHub } from './github.js';
 export { lint } from './lint.js';
 
 /** Version of the ChromaMark language contract implemented by this renderer. */

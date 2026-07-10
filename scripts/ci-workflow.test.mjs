@@ -53,6 +53,10 @@ test('renderer CI rejects stale generated artifacts and theme copies', () => {
   );
 });
 
+test('renderer CI rejects a stale generated GitHub README', () => {
+  assert.match(workflow, /npm run build:readme -- --check/);
+});
+
 test('CI runs the repository static quality gates', () => {
   const renderer = job('renderer', 'python');
   const python = job('python', 'coverage');

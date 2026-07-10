@@ -1,5 +1,6 @@
 /**
- * Pure helpers for turning lcov coverage data into a Markdown summary.
+ * Pure helpers for turning lcov coverage data into a ChromaMark report and
+ * transpiling it to GitHub-native GFM.
  *
  * Coverage is produced per package in the lcov format: Node's built-in test
  * runner (`--test-reporter=lcov`) for the JavaScript packages and coverage.py
@@ -10,6 +11,8 @@
  * This module is side-effect free so it can be unit tested; the orchestration
  * that runs the tests and writes files lives in coverage.mjs.
  */
+
+import { renderGitHub } from '@chromamark/renderer';
 
 /** Marker embedded in the sticky PR comment so CI can find and update it. */
 export const COMMENT_MARKER = '<!-- chromamark-coverage -->';
@@ -118,22 +121,28 @@ function row(label, totals) {
     return `| ${label} | ${cell(totals.lines)} | ${cell(totals.branches)} | ${cell(totals.functions)} |`;
 }
 
+function code(text) {
+    const longest = Math.max(0, ...Array.from(String(text).matchAll(/`+/g), (match) => match[0].length));
+    const fence = '`'.repeat(Math.max(1, longest + 1));
+    return `${fence}${text}${fence}`;
+}
+
 /**
- * Render a Markdown coverage summary (valid GitHub-Flavored Markdown) with a
- * per-package table, a bold total row, and a collapsed per-file breakdown.
+ * Author a ChromaMark coverage report with a per-package table, a bold total
+ * row, a status pill, and a collapsed per-file breakdown.
  *
  * @param {Array<{name:string, dir?:string, files:Array, totals:object}>} reports
- * @param {{marker?:boolean}} [opts] when marker is set, prepend COMMENT_MARKER.
  */
-export function formatSummary(reports, opts = {}) {
+export function formatChromaMark(reports) {
     const lines = [];
-    if (opts.marker) lines.push(COMMENT_MARKER, '');
 
-    lines.push('## 🎨 Coverage', '');
+    const combined = aggregate(reports.flatMap((r) => r.files));
+    const total = percent(combined.lines);
+    const status = total === null ? '[!muted n/a]' : `[!success ${total.toFixed(2)}%]`;
+    lines.push(`## 🎨 Coverage ${status}`, '');
     lines.push('| Package | Lines | Branches | Functions |');
     lines.push('| --- | --- | --- | --- |');
 
-    const combined = aggregate(reports.flatMap((r) => r.files));
     for (const report of reports) {
         lines.push(row(report.name, report.totals));
     }
@@ -141,15 +150,26 @@ export function formatSummary(reports, opts = {}) {
 
     const files = reports.flatMap((r) => r.files);
     if (files.length > 0) {
-        lines.push('', '<details>', '<summary>Per-file coverage</summary>', '');
+        lines.push('', '::: details Per-file coverage');
         lines.push('| File | Lines | Branches | Functions |');
         lines.push('| --- | --- | --- | --- |');
         for (const f of files) {
-            lines.push(row(f.file, f));
+            lines.push(row(code(f.file), f));
         }
-        lines.push('', '</details>');
+        lines.push(':::');
     }
 
     lines.push('');
     return lines.join('\n');
+}
+
+/**
+ * Transpile the authored ChromaMark report to GitHub-native GFM.
+ *
+ * @param {Array<{name:string, dir?:string, files:Array, totals:object}>} reports
+ * @param {{marker?:boolean}} [opts] when marker is set, prepend COMMENT_MARKER.
+ */
+export function formatSummary(reports, opts = {}) {
+    const summary = renderGitHub(formatChromaMark(reports));
+    return opts.marker ? `${COMMENT_MARKER}\n\n${summary}` : summary;
 }
