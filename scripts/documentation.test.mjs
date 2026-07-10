@@ -48,6 +48,18 @@ test('surface docs describe newly enforced behavior', () => {
   assert.match(read('packages/vscode/README.md'), /live lint diagnostics/i);
 });
 
+test('all specification companions describe the renderer-controlled HTML policy', () => {
+  const compatibility = read('docs/compatibility.md');
+  const grammar = read('docs/grammar.ebnf');
+  const notebook = read('packages/python/examples/chromamark_report.ipynb');
+
+  assert.match(compatibility, /Raw HTML follows the host\s+renderer's policy/);
+  assert.match(compatibility, /reference convenience\s+renderers disable raw HTML by default/);
+  assert.match(grammar, /Raw HTML handling is a renderer policy/);
+  assert.match(notebook, /strict syntax superset of/);
+  assert.doesNotMatch(notebook, /a strict superset of/);
+});
+
 test('security policy routes vulnerability reports through GitHub privately', () => {
   const security = read('SECURITY.md');
   assert.match(security, /^# Security policy/m);
