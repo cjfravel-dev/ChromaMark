@@ -20,6 +20,11 @@
     "test:scripts": "node --test scripts/*.test.mjs",
     "coverage": "node scripts/coverage.mjs",
     "eval": "node eval/run.js",
-    "build:site": "node scripts/build-site.mjs"
+    "build:site": "node scripts/build-site.mjs",
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "eslint": "^9.39.4",
+    "globals": "^16.5.0"
   }
 }

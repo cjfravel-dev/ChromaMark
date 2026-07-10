@@ -1,6 +1,6 @@
-from chromamark import render
 from markdown_it import MarkdownIt
 
+from chromamark import render
 from chromamark.plugin import chromamark_plugin
 
 
@@ -114,6 +114,7 @@ def test_fields_escape_even_when_host_enables_html():
     # Defense in depth: even if the host configures html:true, raw HTML in field
     # values must still be escaped (byte-identical to the JS renderer).
     from markdown_it import MarkdownIt
+
     from chromamark.plugin import chromamark_plugin
 
     md = MarkdownIt("js-default", {"html": True, "linkify": True}).use(chromamark_plugin)

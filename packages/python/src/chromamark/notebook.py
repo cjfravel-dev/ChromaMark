@@ -15,7 +15,7 @@ class ChromaMarkHTML:
 
 
 def _wrap(src, options):
-    from . import render, get_theme
+    from . import get_theme, render
     body = render(src, **options)
     return f'<style>{get_theme()}</style>\n<div class="chromamark-output">{body}</div>'
 

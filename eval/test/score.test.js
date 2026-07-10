@@ -11,7 +11,7 @@ Replicas: 3/3 [!ok healthy]
 :::
 :::`;
 
-const backtickPill = 'Build \`[!pass]\` done'; // pill wrapped in backticks (CM001)
+const backtickPill = 'Build `[!pass]` done'; // pill wrapped in backticks (CM001)
 
 const onlyPill = 'Build [!pass]'; // valid but missing block + fields
 

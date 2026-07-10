@@ -3,7 +3,6 @@ from pathlib import Path
 
 from chromamark import render
 
-
 CORPUS = Path(__file__).parents[3] / "conformance" / "cases.json"
 
 
