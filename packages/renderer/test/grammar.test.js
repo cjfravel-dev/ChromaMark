@@ -5,6 +5,8 @@ import { fileURLToPath } from 'node:url';
 import { TONES, ALIASES } from '../src/tones.js';
 
 const GRAMMAR = fileURLToPath(new URL('../../../docs/grammar.ebnf', import.meta.url));
+const SPEC = fileURLToPath(new URL('../../../SPEC.md', import.meta.url));
+const COMPATIBILITY = fileURLToPath(new URL('../../../docs/compatibility.md', import.meta.url));
 
 /** Collect the quoted literals on the single-line production named `name`. */
 function literalsOf(text, name) {
@@ -15,6 +17,16 @@ function literalsOf(text, name) {
 
 test('docs/grammar.ebnf exists', () => {
   assert.ok(existsSync(GRAMMAR), 'expected docs/grammar.ebnf');
+});
+
+test('specification documents language version 0.1 and its compatibility policy', () => {
+  const spec = readFileSync(SPEC, 'utf8');
+  assert.match(spec, /\*\*Language version:\*\* 0\.1/);
+  assert.doesNotMatch(spec, /normative EBNF/);
+  const compatibility = readFileSync(COMPATIBILITY, 'utf8');
+  assert.match(compatibility, /^# ChromaMark compatibility policy/m);
+  assert.match(compatibility, /Language version `0\.1`/);
+  assert.match(compatibility, /Package versions are independent/);
 });
 
 test('grammar tone list matches the implementation', () => {

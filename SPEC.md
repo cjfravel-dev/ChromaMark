@@ -1,6 +1,7 @@
 # ChromaMark Specification
 
 > **Base dialect:** CommonMark + GFM (tables, strikethrough, autolinks)
+> **Language version:** 0.1
 > **File extensions:** `.cm` · **Info-string / fence tag:** `chromamark`
 >
 > _This document is written **in ChromaMark**. On a plain markdown viewer (e.g._
@@ -308,8 +309,8 @@ No construct requires seeing its end before it can begin styling.
 ## 13 · Grammar sketch (EBNF-ish)
 
 ::: info Full grammar
-The sketch below is a quick overview. The complete, normative EBNF for the
-extension layer — kept in sync with the parser by a test — lives in
+The sketch below is a quick overview. The complete EBNF syntax companion for the
+extension layer — kept in sync with the parser by tests — lives in
 [`docs/grammar.ebnf`](./docs/grammar.ebnf). Use it to build third-party tooling
 (editors, validators, tree-sitter grammars) without reimplementing the parser.
 :::

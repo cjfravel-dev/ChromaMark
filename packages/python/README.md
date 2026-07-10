@@ -16,9 +16,10 @@ pip install chromamark
 ## Render
 
 ```python
-from chromamark import render, create_renderer
+from chromamark import LANGUAGE_VERSION, create_renderer, render
 
 html = render("::: success\nAll good [!ok pass]\n:::")
+# LANGUAGE_VERSION == "0.1"
 
 # or as a markdown-it-py plugin:
 from markdown_it import MarkdownIt

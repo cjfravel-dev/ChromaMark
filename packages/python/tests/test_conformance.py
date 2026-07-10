@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+import chromamark
 from chromamark import render
 
 CORPUS = Path(__file__).parents[3] / "conformance" / "cases.json"
@@ -9,6 +10,8 @@ CORPUS = Path(__file__).parents[3] / "conformance" / "cases.json"
 def test_shared_conformance_corpus_renders_expected_html_in_python():
     corpus = json.loads(CORPUS.read_text(encoding="utf-8"))
     assert corpus["version"] == 1
+    assert corpus["languageVersion"] == "0.1"
+    assert chromamark.LANGUAGE_VERSION == corpus["languageVersion"]
     assert corpus["cases"], "the corpus must contain conformance cases"
 
     for fixture in corpus["cases"]:

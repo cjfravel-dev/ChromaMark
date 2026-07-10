@@ -12,6 +12,9 @@ import containerPlugin from './containers.js';
 export { renderAnsi, colorEnabled } from './ansi.js';
 export { lint } from './lint.js';
 
+/** Version of the ChromaMark language contract implemented by this renderer. */
+export const LANGUAGE_VERSION = '0.1';
+
 const DEFAULTS = {
   container: true, // ::: colored callouts
   details: true, // ::: details collapsibles

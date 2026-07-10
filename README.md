@@ -31,7 +31,7 @@ A colored callout shows the same ratio — `::: success` / body / `:::` is 10 to
 versus 22 for the `<div class="callout…">…</div>` equivalent — and it compounds
 across a status-heavy report.
 
-📄 **[Read the spec](./SPEC.md)** · 📐 **[Grammar](./docs/grammar.ebnf)** · 🎨 **[Playground](https://cjfravel-dev.github.io/ChromaMark/playground/)** · 🖼️ **[Gallery](https://cjfravel-dev.github.io/ChromaMark/gallery.html)**
+📄 **[Read the spec](./SPEC.md)** · 🔄 **[Compatibility](./docs/compatibility.md)** · 📐 **[Grammar](./docs/grammar.ebnf)** · 🎨 **[Playground](https://cjfravel-dev.github.io/ChromaMark/playground/)** · 🖼️ **[Gallery](https://cjfravel-dev.github.io/ChromaMark/gallery.html)**
 
 ## What it looks like
 

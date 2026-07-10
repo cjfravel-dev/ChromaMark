@@ -14,6 +14,7 @@ from .plugin import chromamark_plugin
 from .tones import TONES, is_safe_color, parse_spec, resolve_tone
 
 __version__ = "0.1.3"
+LANGUAGE_VERSION = "0.1"
 
 
 def create_renderer(**options):
@@ -45,5 +46,6 @@ __all__ = [
     "parse_spec",
     "is_safe_color",
     "TONES",
+    "LANGUAGE_VERSION",
     "__version__",
 ]

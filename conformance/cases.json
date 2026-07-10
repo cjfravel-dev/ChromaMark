@@ -1,5 +1,6 @@
 {
   "version": 1,
+  "languageVersion": "0.1",
   "cases": [
     {
       "name": "plain CommonMark",

@@ -1,7 +1,8 @@
 # ChromaMark conformance corpus
 
 `cases.json` is the language-neutral rendering contract shared by the JavaScript
-and Python implementations. Each case contains:
+and Python implementations. `version` identifies the corpus schema, while
+`languageVersion` identifies the ChromaMark language contract. Each case contains:
 
 - `name` — a unique human-readable identifier
 - `source` — ChromaMark input
