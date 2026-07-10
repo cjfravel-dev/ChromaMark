@@ -13,6 +13,8 @@ from the [ChromaMark language version](./docs/compatibility.md).
   the README demo links to its exact full ChromaMark source.
 - Parser-free `browser-slim` ESM/global entries for consumers that supply
   MarkdownIt or another render function, with an 8 KiB gzip budget.
+- Append-only incremental renderer sessions and browser stable-prefix/tail DOM
+  patching, with exact full-render parity on finalization.
 - Public `@chromamark/conformance` kit with versioned fixtures, JSON Schema,
   typed validation/runner APIs, and a language-neutral runner protocol.
 - Python `lint()` parity and a lint-focused `chromamark lint` console command,

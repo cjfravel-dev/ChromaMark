@@ -58,6 +58,26 @@ export interface ThemeConfig {
 }
 export type ThemeInput = ThemePresetName | ThemeConfig;
 export type ThemeVariables = Record<string, string>;
+export interface StreamingMetrics {
+  parsedCharacters: number;
+  verificationCharacters: number;
+  committedCharacters: number;
+  renders: number;
+}
+export interface StreamingSnapshot {
+  html: string;
+  committedHtml: string;
+  tailHtml: string;
+  sourceLength: number;
+  finalized: boolean;
+  metrics: StreamingMetrics;
+}
+export interface StreamingRenderer {
+  append(chunk: unknown): StreamingSnapshot;
+  snapshot(): StreamingSnapshot;
+  finalize(): StreamingSnapshot;
+  readonly source: string;
+}
 
 declare const chromamark: ChromaMarkPlugin;
 
@@ -77,3 +97,4 @@ export function lint(source: unknown, options?: LintOptions): LintDiagnostic[];
 export const THEME_PRESETS: Readonly<Record<ThemePresetName, Readonly<ThemeVariables>>>;
 export function resolveTheme(theme?: ThemeInput): ThemeVariables;
 export function applyTheme(target: Element | Document, theme?: ThemeInput): Element;
+export function createStreamingRenderer(options?: { rendererOptions?: RendererOptions }): StreamingRenderer;

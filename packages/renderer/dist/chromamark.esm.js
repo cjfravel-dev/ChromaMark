@@ -6246,6 +6246,84 @@ function applyTheme(target, input) {
   return element;
 }
 
+// src/streaming.js
+var REFERENCE_LIKE = /(^|[^\\])\[(?![!.=])[^\]\n]+\](?:\[[^\]\n]*\])?/;
+function createStreamingRenderer(options = {}) {
+  const md = createRenderer(options.rendererOptions);
+  let source = "";
+  let committedSource = "";
+  let committedHtml = "";
+  let tail = "";
+  let tailHtml = "";
+  let finalized = false;
+  let finalHtml = null;
+  const metrics = {
+    parsedCharacters: 0,
+    verificationCharacters: 0,
+    committedCharacters: 0,
+    renders: 0
+  };
+  const parse = (value, verification = false) => {
+    if (verification) metrics.verificationCharacters += value.length;
+    else metrics.parsedCharacters += value.length;
+    metrics.renders += 1;
+    return md.render(value);
+  };
+  const snapshot = (html = finalHtml != null ? finalHtml : committedHtml + tailHtml) => ({
+    html,
+    committedHtml,
+    tailHtml,
+    sourceLength: source.length,
+    finalized,
+    metrics: { ...metrics }
+  });
+  const commitBoundary = () => {
+    if (REFERENCE_LIKE.test(tail)) return;
+    const boundaries = [];
+    for (let index = tail.indexOf("\n\n"); index !== -1; index = tail.indexOf("\n\n", index + 2)) {
+      if (index + 2 < tail.length) boundaries.push(index + 2);
+    }
+    for (let i = boundaries.length - 1; i >= 0; i--) {
+      const boundary = boundaries[i];
+      const prefix = tail.slice(0, boundary);
+      const suffix = tail.slice(boundary);
+      if (!suffix.trim()) continue;
+      const prefixHtml = parse(prefix, true);
+      const suffixHtml = parse(suffix, true);
+      if (prefixHtml + suffixHtml !== tailHtml) continue;
+      committedSource += prefix;
+      committedHtml += prefixHtml;
+      metrics.committedCharacters = committedSource.length;
+      tail = suffix;
+      tailHtml = suffixHtml;
+      return;
+    }
+  };
+  return {
+    append(chunk) {
+      if (finalized) throw new Error("stream is already finalized");
+      const text2 = String(chunk != null ? chunk : "");
+      source += text2;
+      tail += text2;
+      tailHtml = parse(tail);
+      commitBoundary();
+      return snapshot();
+    },
+    snapshot,
+    finalize() {
+      if (!finalized) {
+        finalHtml = parse(source);
+        finalized = true;
+        return snapshot();
+      }
+      return snapshot();
+    },
+    get source() {
+      return source;
+    }
+  };
+}
+
 // src/index.js
 var LANGUAGE_VERSION = "0.1";
 function createRenderer(options = {}) {
@@ -6259,6 +6337,42 @@ function render(src, options = {}) {
 }
 
 // src/browser-core.js
+function createStreamingElement(target, options = {}) {
+  const element = resolve(target);
+  if (!element) throw new Error("stream target was not found");
+  element.innerHTML = "<div data-cm-stream-stable></div><div data-cm-stream-tail></div>";
+  const stable = element.querySelector("[data-cm-stream-stable]");
+  const tail = element.querySelector("[data-cm-stream-tail]");
+  const stream = createStreamingRenderer(options);
+  let appliedStable = "";
+  const patch = (snapshot) => {
+    if (snapshot.committedHtml.startsWith(appliedStable)) {
+      stable.insertAdjacentHTML("beforeend", snapshot.committedHtml.slice(appliedStable.length));
+    } else {
+      stable.innerHTML = snapshot.committedHtml;
+    }
+    appliedStable = snapshot.committedHtml;
+    tail.innerHTML = snapshot.tailHtml;
+    return snapshot;
+  };
+  return {
+    append(chunk) {
+      return patch(stream.append(chunk));
+    },
+    snapshot() {
+      return stream.snapshot();
+    },
+    finalize() {
+      const final = stream.finalize();
+      if (final.html !== final.committedHtml + final.tailHtml) {
+        stable.innerHTML = "";
+        tail.innerHTML = final.html;
+        appliedStable = "";
+      }
+      return final;
+    }
+  };
+}
 var STYLE_ID = "chromamark-theme";
 var DONE_ATTR = "data-chromamark-done";
 var SRC_ATTR = "data-chromamark-src";
@@ -6365,6 +6479,7 @@ var ChromaMark = {
   injectTheme,
   autoRender,
   applyTheme,
+  createStreamingElement,
   resolveTheme,
   THEME_PRESETS,
   createRenderer,
@@ -6394,6 +6509,7 @@ export {
   applyTheme,
   autoRender,
   configureTheme,
+  createStreamingElement,
   browser_default as default,
   injectTheme,
   render2 as render,
