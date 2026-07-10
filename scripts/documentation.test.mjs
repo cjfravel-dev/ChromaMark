@@ -45,6 +45,7 @@ test('surface docs describe newly enforced behavior', () => {
   assert.match(read('packages/renderer/README.md'), /role="progressbar"/);
   assert.match(read('packages/cli/README.md'), /extra positional arguments/i);
   assert.match(read('eval/README.md'), /unknown task IDs/);
+  assert.match(read('packages/vscode/README.md'), /live lint diagnostics/i);
 });
 
 test('security policy routes vulnerability reports through GitHub privately', () => {

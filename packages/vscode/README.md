@@ -20,6 +20,8 @@ Live preview and syntax highlighting for [ChromaMark](https://github.com/cjfrave
   with scroll-spy highlighting and a collapse toggle.
 - **Syntax highlighting.** An injection grammar highlights ChromaMark constructs
   inside any Markdown document.
+- **Live lint diagnostics.** `.cm` files show ChromaMark authoring mistakes in
+  the Problems panel and editor as you type. Ordinary `.md` files are not linted.
 - **`.cm` files.** This extension is treated as Markdown, so it gets
   full editing and preview support.
 
@@ -70,7 +72,7 @@ active editor color theme.
 From the repository root:
 
 ```bash
-npm install
+npm ci
 npm run build --workspace @chromamark/renderer   # build the renderer
 npm run build --workspace chromamark-vscode       # bundle the extension
 ```
@@ -92,4 +94,3 @@ so the VSIX is self-contained. After installing, open a `.cm`/`.md` file and run
 ## License
 
 Modified MIT License with a SaaS source-availability provision — see [LICENSE.md](./LICENSE.md).
-
