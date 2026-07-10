@@ -20,6 +20,13 @@
   header .spacer { flex: 1; }
   select, button { font: inherit; font-size: 13px; color: var(--fg); background: var(--bg);
     border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; cursor: pointer; }
+  #theme-editor { display: flex; gap: 12px; align-items: flex-start; padding: 10px 16px;
+    border-bottom: 1px solid var(--line); background: var(--panel); }
+  #theme-editor[hidden] { display: none; }
+  #custom-theme { flex: 1; min-height: 76px; resize: vertical; padding: 8px 10px;
+    color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 8px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
+  #theme-error { color: #cf222e; font-size: 12px; max-width: 320px; }
   main { flex: 1; display: grid; grid-template-columns: 1fr 1fr; min-height: 0; }
   @media (max-width: 760px){ main { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; } }
   #src { border: none; outline: none; resize: none; padding: 16px; width: 100%; height: 100%;
@@ -46,9 +53,19 @@
   <span class="hint">live preview</span>
   <span class="spacer"></span>
   <select id="examples" title="Load an example"></select>
+  <select id="report-theme" title="Preview theme" aria-label="Preview theme"></select>
   <button id="share" type="button" title="Copy a shareable link">Copy link</button>
   <button id="theme" type="button" title="Toggle theme">&#9680; Theme</button>
 </header>
+<section id="theme-editor" hidden>
+  <textarea id="custom-theme" aria-label="Custom theme JSON">{
+  "preset": "ocean",
+  "tones": {
+    "success": { "foreground": "#123456", "background": "#eef6ff", "border": "navy" }
+  }
+}</textarea>
+  <span id="theme-error" role="status"></span>
+</section>
 <main>
   <textarea id="src" spellcheck="false" aria-label="ChromaMark source"></textarea>
   <div id="out" class="chromamark-output" aria-label="Preview"></div>
@@ -56,6 +73,8 @@
 
 <script type="module">
 import { encodeShare, decodeShare } from './share-codec.mjs';
+import { SAMPLES } from './samples.mjs';
+import { presetNames, applyPlaygroundTheme } from './theme-controls.mjs';
 
 (async function () {
   var CM = window.ChromaMark;
@@ -64,12 +83,10 @@ import { encodeShare, decodeShare } from './share-codec.mjs';
   var src = document.getElementById('src');
   var out = document.getElementById('out');
   var examples = document.getElementById('examples');
-
-  var SAMPLES = {
-    'Deploy report': '## Deploy \u2014 service-recon @ 25d7426\n\n:::: success Deploy succeeded in 3m12s\n::: fields\nRegion: eastus\nReplicas: 3/3 [!ok healthy]\nCoverage: [=success 87%]\n:::\n::::\n\n| Stage | Result          |\n| ----- | --------------- |\n| unit  | [!pass 247]     |\n| integ | [!fail 3 of 88] |\n| lint  | [!warn 12]      |\n\n::: details danger Integration failures (3)\nFAILED test_recon_merge_precedence\nFAILED test_query_parameters_map\n:::\n\nOverall: [!warn SHIP WITH CAUTION]\n',
-    'Gallery': '::: success\nAll 247 tests passed.\n:::\n\n::: warning Deprecation\n`recon.flights` is removed in v3.\n:::\n\nBuild [!pass] \u00b7 lint [!warn 12] \u00b7 coverage [=success 87%]\n\nThe gate is [.success green] but the [.danger critical] path is [.warning slow].\n\nThe field was {--flights--}{++query_parameters++} and is {==worth reviewing==}.\n',
-    'Minimal': '::: info Hello\nEdit this text and watch it render.\n\nTry a pill: [!ok it works]\n:::\n'
-  };
+  var themeSelect = document.getElementById('report-theme');
+  var themeEditor = document.getElementById('theme-editor');
+  var customTheme = document.getElementById('custom-theme');
+  var themeError = document.getElementById('theme-error');
 
   var timer;
   var shareRevision = 0;
@@ -93,6 +110,20 @@ import { encodeShare, decodeShare } from './share-codec.mjs';
     var o = document.createElement('option');
     o.value = name; o.textContent = name; examples.appendChild(o);
   });
+  presetNames(CM).forEach(function (name) {
+    var option = document.createElement('option');
+    option.value = name;
+    option.textContent = name === 'auto' ? 'Theme: auto' : 'Theme: ' + name;
+    themeSelect.appendChild(option);
+  });
+  function updateReportTheme() {
+    var custom = themeSelect.value === 'custom';
+    themeEditor.hidden = !custom;
+    var result = applyPlaygroundTheme(CM, out, themeSelect.value, customTheme.value);
+    themeError.textContent = result.ok ? '' : result.error;
+  }
+  themeSelect.addEventListener('change', updateReportTheme);
+  customTheme.addEventListener('input', updateReportTheme);
   examples.addEventListener('change', function () {
     src.value = SAMPLES[examples.value] || '';
     onInput();
@@ -111,8 +142,9 @@ import { encodeShare, decodeShare } from './share-codec.mjs';
   });
 
   var initial = location.hash ? await decodeShare(location.hash.slice(1)) : null;
-  src.value = initial != null ? initial : SAMPLES['Deploy report'];
+  src.value = initial != null ? initial : SAMPLES['Agent code review'];
   src.addEventListener('input', onInput);
+  updateReportTheme();
   renderNow();
 })();
 </script>

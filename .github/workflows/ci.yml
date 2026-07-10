@@ -38,6 +38,8 @@ jobs:
           site="$RUNNER_TEMP/_site"
           test -f "$site/assets/favicon.png"
           test -f "$site/playground/share-codec.mjs"
+          test -f "$site/playground/samples.mjs"
+          test -f "$site/playground/theme-controls.mjs"
           for p in index.html spec.html gallery.html playground/index.html; do
             grep -q 'rel="icon"' "$site/$p"
           done
