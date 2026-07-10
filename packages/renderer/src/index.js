@@ -5,9 +5,7 @@
  */
 
 import MarkdownIt from 'markdown-it';
-import inlinePlugin from './inline.js';
-import criticPlugin from './critic.js';
-import containerPlugin from './containers.js';
+import chromamark from './plugin.js';
 
 export { renderAnsi, colorEnabled } from './ansi.js';
 export { renderGitHub } from './github.js';
@@ -17,34 +15,7 @@ export { THEME_PRESETS, resolveTheme, applyTheme } from './theme-presets.js';
 /** Version of the ChromaMark language contract implemented by this renderer. */
 export const LANGUAGE_VERSION = '0.1';
 
-const DEFAULTS = {
-  container: true, // ::: colored callouts
-  details: true, // ::: details collapsibles
-  fields: true, // ::: fields key/value lists
-  pill: true, // [!…] badges
-  text: true, // [.…] colored text
-  meter: true, // [=…] progress meters
-  critic: true, // CriticMarkup inline diff
-};
-
-/** markdown-it plugin entry point: `md.use(chromamark, options)`. */
-export default function chromamark(md, options = {}) {
-  const opts = { ...DEFAULTS, ...options };
-
-  if (opts.pill || opts.text || opts.meter) {
-    inlinePlugin(md, { pill: opts.pill, text: opts.text, meter: opts.meter });
-  }
-  if (opts.critic) {
-    criticPlugin(md);
-  }
-  if (opts.container || opts.details || opts.fields) {
-    containerPlugin(md, {
-      callout: opts.container,
-      details: opts.details,
-      fields: opts.fields,
-    });
-  }
-}
+export default chromamark;
 
 /** Build a markdown-it instance preconfigured with ChromaMark (CommonMark + GFM). */
 export function createRenderer(options = {}) {

@@ -172,6 +172,24 @@ The minified CDN bundle has a 64 KiB gzip budget enforced by the repository test
 suite. Applications with stricter budgets can use the Node/plugin API with their
 existing `markdown-it` installation instead of the standalone browser bundle.
 
+### Slim browser entry
+
+Consumers that already provide MarkdownIt can use the parser-free
+`@chromamark/renderer/browser-slim` entry. It includes ChromaMark plugin rules,
+DOM hooks, theme CSS, and presets, but excludes markdown-it:
+
+```js
+import MarkdownIt from 'markdown-it';
+import ChromaMarkSlim from '@chromamark/renderer/browser-slim';
+
+ChromaMarkSlim.configureMarkdownIt(new MarkdownIt({ html: false }));
+ChromaMarkSlim.renderAll();
+```
+
+The global bundle is `dist/chromamark.slim.min.js` (`window.ChromaMarkSlim`).
+It is capped at **32 KiB raw / 8 KiB gzip**. Call `configureRenderer(fn)` instead
+when using another compatible parser/renderer.
+
 ### Load ChromaMark from an external file
 
 Point an element at a `.cm` file with `data-chromamark-src` and the bundle

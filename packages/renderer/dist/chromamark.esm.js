@@ -6054,6 +6054,31 @@ function containerPlugin(md, enabled) {
   };
 }
 
+// src/plugin.js
+var DEFAULTS = {
+  container: true,
+  details: true,
+  fields: true,
+  pill: true,
+  text: true,
+  meter: true,
+  critic: true
+};
+function chromamark(md, options = {}) {
+  const opts = { ...DEFAULTS, ...options };
+  if (opts.pill || opts.text || opts.meter) {
+    inlinePlugin(md, { pill: opts.pill, text: opts.text, meter: opts.meter });
+  }
+  if (opts.critic) criticPlugin(md);
+  if (opts.container || opts.details || opts.fields) {
+    containerPlugin(md, {
+      callout: opts.container,
+      details: opts.details,
+      fields: opts.fields
+    });
+  }
+}
+
 // src/theme-presets.js
 var GITHUB_LIGHT = {
   "--cm-success-fg": "#1a7f37",
@@ -6223,38 +6248,6 @@ function applyTheme(target, input) {
 
 // src/index.js
 var LANGUAGE_VERSION = "0.1";
-var DEFAULTS = {
-  container: true,
-  // ::: colored callouts
-  details: true,
-  // ::: details collapsibles
-  fields: true,
-  // ::: fields key/value lists
-  pill: true,
-  // [!…] badges
-  text: true,
-  // [.…] colored text
-  meter: true,
-  // [=…] progress meters
-  critic: true
-  // CriticMarkup inline diff
-};
-function chromamark(md, options = {}) {
-  const opts = { ...DEFAULTS, ...options };
-  if (opts.pill || opts.text || opts.meter) {
-    inlinePlugin(md, { pill: opts.pill, text: opts.text, meter: opts.meter });
-  }
-  if (opts.critic) {
-    criticPlugin(md);
-  }
-  if (opts.container || opts.details || opts.fields) {
-    containerPlugin(md, {
-      callout: opts.container,
-      details: opts.details,
-      fields: opts.fields
-    });
-  }
-}
 function createRenderer(options = {}) {
   const { highlight = null, ...pluginOptions } = options;
   const md = new lib_default({ html: false, linkify: true, typographer: false, highlight });
