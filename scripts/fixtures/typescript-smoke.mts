@@ -14,7 +14,13 @@ import BrowserChromaMark, {
 } from '@chromamark/renderer/browser';
 import { compile, theme } from '@chromamark/cli';
 
-const options: RendererOptions = { pill: true, critic: false };
+const options: RendererOptions = {
+  pill: true,
+  critic: false,
+  highlight(code, language, attrs) {
+    return `${language}:${attrs}:${code}`;
+  },
+};
 const md = createRenderer(options);
 md.use(chromamark, options);
 md.set({ linkify: false });

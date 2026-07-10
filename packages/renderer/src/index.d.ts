@@ -1,5 +1,11 @@
 import type MarkdownIt from 'markdown-it';
 
+export type HighlightFunction = (
+  code: string,
+  language: string,
+  attributes: string,
+) => string;
+
 export interface RendererOptions {
   container?: boolean;
   details?: boolean;
@@ -8,6 +14,7 @@ export interface RendererOptions {
   text?: boolean;
   meter?: boolean;
   critic?: boolean;
+  highlight?: HighlightFunction;
 }
 
 export type ChromaMarkPlugin = (

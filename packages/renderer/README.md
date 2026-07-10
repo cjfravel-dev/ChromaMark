@@ -64,6 +64,23 @@ createRenderer({
 });
 ```
 
+### Fenced-code highlighting
+
+ChromaMark stays dependency-free and lets callers supply any highlighter through
+the standard markdown-it callback:
+
+```js
+const html = render(source, {
+  highlight(code, language, attributes) {
+    return yourHighlighter(code, language, attributes);
+  },
+});
+```
+
+The callback receives fence content, the language name, and trailing info-string
+attributes. Its return value is trusted HTML, matching markdown-it behavior, so
+escape or sanitize output from any highlighter that does not guarantee safe HTML.
+
 ## Browser API
 
 The bundle in `dist/` embeds the parser **and** theme. Load it from a CDN:

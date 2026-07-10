@@ -46,8 +46,9 @@ export default function chromamark(md, options = {}) {
 
 /** Build a markdown-it instance preconfigured with ChromaMark (CommonMark + GFM). */
 export function createRenderer(options = {}) {
-  const md = new MarkdownIt({ html: false, linkify: true, typographer: false });
-  md.use(chromamark, options);
+  const { highlight = null, ...pluginOptions } = options;
+  const md = new MarkdownIt({ html: false, linkify: true, typographer: false, highlight });
+  md.use(chromamark, pluginOptions);
   return md;
 }
 

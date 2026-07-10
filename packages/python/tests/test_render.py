@@ -47,6 +47,18 @@ def test_feature_toggle_others():
     assert "cm-block" not in create_renderer(container=False).render("::: success\nx\n:::")
 
 
+def test_caller_supplied_highlight_hook_renders_fenced_code():
+    calls = []
+
+    def highlight(code, language, attrs):
+        calls.append((code, language, attrs))
+        return '<span class="keyword">const</span> x = 1;'
+
+    html = render("```js extra\nconst x = 1;\n```", highlight=highlight)
+    assert calls == [("const x = 1;\n", "js", "extra")]
+    assert '<span class="keyword">const</span> x = 1;' in html
+
+
 def test_fields_escape_on_html_true_instance():
     md = MarkdownIt("commonmark", {"html": True}).enable(["table", "strikethrough"]).use(chromamark_plugin)
     out = md.render("::: fields\nStatus: <img src=x onerror=alert(1)>\n:::")

@@ -39,3 +39,15 @@ test('features can be toggled off via options', () => {
   assert.match(md.render('[!pass]'), /\[!pass\]/);
   assert.doesNotMatch(md.render('[!pass]'), /cm-pill/);
 });
+
+test('a caller-supplied highlight hook renders fenced code without bundling a highlighter', () => {
+  const calls = [];
+  const html = render('```js extra\nconst x = 1;\n```', {
+    highlight(code, language, attrs) {
+      calls.push({ code, language, attrs });
+      return '<span class="keyword">const</span> x = 1;';
+    },
+  });
+  assert.deepEqual(calls, [{ code: 'const x = 1;\n', language: 'js', attrs: 'extra' }]);
+  assert.match(html, /<span class="keyword">const<\/span> x = 1;/);
+});

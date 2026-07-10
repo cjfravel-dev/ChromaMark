@@ -27,6 +27,16 @@ from chromamark import chromamark_plugin
 md = MarkdownIt("commonmark").use(chromamark_plugin)
 ```
 
+Pass `highlight=` to `render` or `create_renderer` to integrate a fenced-code
+highlighter without adding one to ChromaMark:
+
+```python
+html = render(source, highlight=lambda code, language, attrs: your_highlighter(code, language))
+```
+
+The callback output is trusted HTML, following markdown-it-py behavior. Escape
+or sanitize output from highlighters that do not guarantee safe HTML.
+
 ## Build (fluent, for agent reports)
 
 ```python

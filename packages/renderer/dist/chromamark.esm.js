@@ -6116,8 +6116,9 @@ function chromamark(md, options = {}) {
   }
 }
 function createRenderer(options = {}) {
-  const md = new lib_default({ html: false, linkify: true, typographer: false });
-  md.use(chromamark, options);
+  const { highlight = null, ...pluginOptions } = options;
+  const md = new lib_default({ html: false, linkify: true, typographer: false, highlight });
+  md.use(chromamark, pluginOptions);
   return md;
 }
 function render(src, options = {}) {

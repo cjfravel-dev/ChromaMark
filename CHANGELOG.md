@@ -16,6 +16,7 @@ from the [ChromaMark language version](./docs/compatibility.md).
   policy ([#40]).
 - Bundled TypeScript declarations for renderer, browser, and CLI entry points.
 - Live ChromaMark lint diagnostics for `.cm` files in VS Code.
+- Dependency-free fenced-code highlighting hooks in JavaScript and Python.
 
 ### Fixed
 
