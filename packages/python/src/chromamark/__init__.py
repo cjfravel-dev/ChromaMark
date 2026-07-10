@@ -9,6 +9,7 @@ import importlib.resources as _resources
 from markdown_it import MarkdownIt
 
 from .builder import ChromaDoc
+from .lint import LintDiagnostic, lint
 from .notebook import ChromaMarkHTML, display_chromamark
 from .plugin import chromamark_plugin
 from .tones import TONES, is_safe_color, parse_spec, resolve_tone
@@ -44,6 +45,8 @@ __all__ = [
     "chromamark_plugin",
     "get_theme",
     "ChromaDoc",
+    "lint",
+    "LintDiagnostic",
     "display_chromamark",
     "ChromaMarkHTML",
     "resolve_tone",

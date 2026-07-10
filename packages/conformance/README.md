@@ -3,6 +3,7 @@
 Public, versioned conformance kit for ChromaMark implementations. It ships:
 
 - the exact-HTML corpus in `cases.json`
+- the cross-runtime diagnostic corpus in `lint-cases.json`
 - its Draft 2020-12 JSON Schema in `schema.json`
 - validation helpers
 - an async runner for JavaScript implementations
@@ -48,6 +49,7 @@ Other languages can consume the exported JSON directly:
 
 ```text
 @chromamark/conformance/cases.json
+@chromamark/conformance/lint-cases.json
 @chromamark/conformance/schema.json
 ```
 

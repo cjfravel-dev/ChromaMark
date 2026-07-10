@@ -1,0 +1,112 @@
+{
+  "version": 1,
+  "languageVersion": "0.1",
+  "cases": [
+    {
+      "name": "clean nested",
+      "source": ":::: success\n::: fields\nRegion: eastus\n:::\n::::",
+      "diagnostics": []
+    },
+    {
+      "name": "all rules",
+      "source": "See `[!pass]`.\nBuild [!succes 3]\n[=info 3/0]\n::: nope Title\n::: success Open",
+      "diagnostics": [
+        {
+          "line": 1,
+          "column": 5,
+          "severity": "warning",
+          "rule": "CM001",
+          "message": "ChromaMark construct is inside backticks; it renders as code, not rich output"
+        },
+        {
+          "line": 2,
+          "column": 7,
+          "severity": "warning",
+          "rule": "CM002",
+          "message": "unknown tone/color \"succes\"; this looks like a pill but renders as literal text"
+        },
+        {
+          "line": 3,
+          "column": 1,
+          "severity": "warning",
+          "rule": "CM004",
+          "message": "meter value \"3/0\" is not NN% or A/B"
+        },
+        {
+          "line": 4,
+          "column": 4,
+          "severity": "warning",
+          "rule": "CM003",
+          "message": "unknown block kind \"nope\"; this \":::\" fence renders as literal text"
+        },
+        {
+          "line": 5,
+          "column": 1,
+          "severity": "warning",
+          "rule": "CM005",
+          "message": "container \"success\" is opened here but never closed (auto-closes at end of input)"
+        }
+      ]
+    },
+    {
+      "name": "escaped and links",
+      "source": "\\[!succes x] and [=foo](https://example.com) and [!bar][ref]",
+      "diagnostics": []
+    },
+    {
+      "name": "fenced code",
+      "source": "```\n[!succes x]\n::: succes T\n```",
+      "diagnostics": []
+    },
+    {
+      "name": "disabled rule",
+      "source": "See `[!pass]` and [!succes 3]",
+      "disable": ["CM001"],
+      "diagnostics": [
+        {
+          "line": 1,
+          "column": 19,
+          "severity": "warning",
+          "rule": "CM002",
+          "message": "unknown tone/color \"succes\"; this looks like a pill but renders as literal text"
+        }
+      ]
+    },
+    {
+      "name": "missing meter",
+      "source": "[=success]",
+      "diagnostics": [
+        {
+          "line": 1,
+          "column": 1,
+          "severity": "warning",
+          "rule": "CM004",
+          "message": "meter is missing a value (NN% or A/B)"
+        }
+      ]
+    },
+    {
+      "name": "canonical meter whitespace",
+      "source": "[=info 87%\ufeff]",
+      "diagnostics": []
+    },
+    {
+      "name": "BOM-only container closer",
+      "source": ":::\ufeff",
+      "diagnostics": []
+    },
+    {
+      "name": "NEL-prefixed container kind",
+      "source": ":::\u0085details",
+      "diagnostics": [
+        {
+          "line": 1,
+          "column": 4,
+          "severity": "warning",
+          "rule": "CM003",
+          "message": "unknown block kind \"\u0085details\"; this \":::\" fence renders as literal text"
+        }
+      ]
+    }
+  ]
+}

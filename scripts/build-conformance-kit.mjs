@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const pairs = [
   ['conformance/cases.json', 'packages/conformance/cases.json'],
+  ['conformance/lint-cases.json', 'packages/conformance/lint-cases.json'],
   ['conformance/schema.json', 'packages/conformance/schema.json'],
 ];
 

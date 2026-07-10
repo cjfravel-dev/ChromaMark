@@ -4,8 +4,9 @@ This directory is the canonical, language-neutral rendering contract shared by
 the JavaScript and Python implementations and published as
 [`@chromamark/conformance`](https://www.npmjs.com/package/@chromamark/conformance).
 
-`cases.json` contains the fixtures, `schema.json` defines their JSON structure,
-and [`protocol.md`](./protocol.md) defines implementation-independent runner
+`cases.json` contains rendering fixtures, `lint-cases.json` contains exact
+cross-runtime diagnostic fixtures, `schema.json` defines the rendering corpus
+structure, and [`protocol.md`](./protocol.md) defines implementation-independent runner
 behavior. `version` identifies the corpus schema, while
 `languageVersion` identifies the ChromaMark language contract. Each case contains:
 

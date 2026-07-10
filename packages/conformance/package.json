@@ -28,11 +28,13 @@
       "default": "./src/index.js"
     },
     "./cases.json": "./cases.json",
+    "./lint-cases.json": "./lint-cases.json",
     "./schema.json": "./schema.json"
   },
   "files": [
     "src/",
     "cases.json",
+    "lint-cases.json",
     "schema.json",
     "README.md",
     "LICENSE.md"
