@@ -1,6 +1,6 @@
 {
   "name": "chromamark",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "private": true,
   "description": "ChromaMark — a lean rich-markup for agent-to-human communication. CommonMark + GFM plus colored blocks, colored pills, and collapsible sections.",
   "license": "MIT",

@@ -5,6 +5,8 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-07-10
+
 ### Added
 
 - Tokenless VS Code Marketplace publishing through GitHub OIDC, an Entra managed
@@ -88,6 +90,7 @@ from the [ChromaMark language version](./docs/compatibility.md).
 [#38]: https://github.com/cjfravel-dev/ChromaMark/pull/38
 [#39]: https://github.com/cjfravel-dev/ChromaMark/pull/39
 [#40]: https://github.com/cjfravel-dev/ChromaMark/pull/40
+[0.4.0]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.4.0
 [0.3.1]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.3.1
 [0.3.0]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.3.0
 [0.2.2]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.2.2
