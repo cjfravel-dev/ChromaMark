@@ -5,6 +5,10 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ## [Unreleased]
 
+### Fixed
+
+- Added the published `@chromamark/conformance` package badge to the README.
+
 ## [0.4.0] - 2026-07-10
 
 ### Added
