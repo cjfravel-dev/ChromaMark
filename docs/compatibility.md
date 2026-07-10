@@ -28,11 +28,13 @@ versions while implementing the same language contract.
 
 An implementation claiming ChromaMark `0.1` compatibility must:
 
-1. Preserve CommonMark + GFM behavior except for the documented raw-HTML safety
-   rule.
+1. Preserve CommonMark + GFM syntax and behavior. Raw HTML follows the host
+   renderer's policy.
 2. Match the extension syntax and degradation behavior in the specification.
-3. Pass the applicable cases in `conformance/cases.json`.
-4. Escape untrusted content and reject unsafe custom color values as specified.
+3. Pass the applicable cases in `conformance/cases.json`; unless a case
+   specifies otherwise, the corpus uses the safe reference-renderer profile.
+4. Provide a safe profile for untrusted input. The reference convenience
+   renderers disable raw HTML by default and reject unsafe custom color values.
 
 Unknown or malformed ChromaMark constructs must remain readable literal text.
 This degradation rule allows older renderers to display documents that use

@@ -18,8 +18,9 @@
 
    Scope. This file specifies ONLY the constructs ChromaMark adds. The base
    language is CommonMark (https://spec.commonmark.org/) plus the GFM tables,
-   strikethrough, and autolink extensions (https://github.github.com/gfm/), with
-   one change: raw HTML is escaped and shown as literal text, never parsed.
+   strikethrough, and autolink extensions (https://github.github.com/gfm/).
+   Raw HTML handling is a renderer policy: the reference convenience renderers
+   disable it by default, while plugins honor their host renderer's setting.
    Every extension below is designed to degrade to readable CommonMark text, so
    a plain Markdown engine renders the literal source without loss.
 

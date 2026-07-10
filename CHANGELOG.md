@@ -10,8 +10,9 @@ from the [ChromaMark language version](./docs/compatibility.md).
 - JavaScript and Python plugins now honor their host Markdown renderer's raw
   HTML policy consistently across container bodies, titles, summaries, and
   fields; preconfigured renderers continue to escape raw HTML by default.
-- Documentation now distinguishes ChromaMark's strict syntax compatibility
-  from the reference renderers' safe default HTML policy.
+- Documentation, compatibility guidance, grammar commentary, and examples now
+  distinguish ChromaMark's strict syntax compatibility from the reference
+  renderers' safe default HTML policy.
 
 ## [0.3.1] - 2026-07-09
 
