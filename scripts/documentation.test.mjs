@@ -59,12 +59,62 @@ test('README leads with the Markdown-for-AI-reports category story', () => {
   );
 });
 
+test('public docs advertise both extension registries and immutable CDN installs', () => {
+  const source = read('README.cm');
+  const generated = read('README.md');
+  const renderer = read('packages/renderer/README.md');
+  const vscode = read('packages/vscode/README.md');
+
+  for (const readme of [source, generated]) {
+    assert.match(readme, /img\.shields\.io\/open-vsx\/v\/chromamark\/chromamark-vscode/);
+    assert.match(readme, /open-vsx\.org\/extension\/chromamark\/chromamark-vscode/);
+  }
+  assert.match(vscode, /open-vsx\.org\/extension\/chromamark\/chromamark-vscode/);
+
+  for (const readme of [source, generated, renderer]) {
+    assert.match(
+      readme,
+      /cdn\.jsdelivr\.net\/npm\/@chromamark\/renderer@0\.4\.1\/dist\/chromamark\.min\.js/,
+    );
+    assert.doesNotMatch(readme, /cdn\.jsdelivr\.net\/gh\/cjfravel-dev\/ChromaMark/);
+  }
+});
+
+test('README shows the rendered product before detailed syntax', () => {
+  const source = read('README.cm');
+  const generated = read('README.md');
+
+  for (const readme of [source, generated]) {
+    assert.match(readme, /docs\/assets\/chromamark-preview\.png/);
+    assert.ok(
+      readme.indexOf('docs/assets/chromamark-preview.png') < readme.indexOf('## Why not HTML?'),
+      'rendered preview must appear before detailed positioning and syntax',
+    );
+  }
+});
+
 test('contributor guide requires the repository test-first workflow', () => {
   const contributing = read('CONTRIBUTING.md');
   assert.match(contributing, /^# Contributing to ChromaMark/m);
   assert.match(contributing, /^## Test-first workflow/m);
   assert.match(contributing, /confirm that it\s+fails/i);
   assert.match(contributing, /conformance\/cases\.json/);
+});
+
+test('GitHub contribution templates route actionable reports and preserve TDD evidence', () => {
+  const bug = read('.github/ISSUE_TEMPLATE/bug.yml');
+  const feature = read('.github/ISSUE_TEMPLATE/feature.yml');
+  const config = read('.github/ISSUE_TEMPLATE/config.yml');
+  const pullRequest = read('.github/pull_request_template.md');
+
+  assert.match(bug, /minimal reproduction/i);
+  assert.match(bug, /affected package/i);
+  assert.match(feature, /problem/i);
+  assert.match(feature, /proposed behavior/i);
+  assert.match(config, /security\/advisories\/new/);
+  assert.match(pullRequest, /RED/i);
+  assert.match(pullRequest, /GREEN/i);
+  assert.match(pullRequest, /CHANGELOG/i);
 });
 
 test('changelog records the completed hardening work', () => {
@@ -118,5 +168,9 @@ test('security policy routes vulnerability reports through GitHub privately', ()
   assert.match(security, /^## Supported versions/m);
   assert.match(security, /security\/advisories\/new/);
   assert.match(security, /Do not open a public issue/);
+  assert.match(security, /\| `@chromamark\/renderer` \| `0\.4\.x` \|/);
+  assert.match(security, /\| `@chromamark\/cli` \| `0\.3\.x` \|/);
+  assert.match(security, /\| `chromamark` \(PyPI\) \| `0\.2\.x` \|/);
+  assert.match(security, /\| `chromamark-vscode` \| `0\.2\.x` \|/);
   assert.match(read('README.md'), /\[Security\]\(\.\/SECURITY\.md\)/);
 });

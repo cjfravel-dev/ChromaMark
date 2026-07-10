@@ -8,6 +8,7 @@
 [![npm conformance](https://img.shields.io/npm/v/@chromamark/conformance?label=npm%20conformance)](https://www.npmjs.com/package/@chromamark/conformance)
 [![PyPI](https://img.shields.io/pypi/v/chromamark?label=pypi)](https://pypi.org/project/chromamark/)
 [![VS Code Marketplace](https://vsmarketplacebadges.dev/version-short/chromamark.chromamark-vscode.svg)](https://marketplace.visualstudio.com/items?itemName=chromamark.chromamark-vscode)
+[![Open VSX](https://img.shields.io/open-vsx/v/chromamark/chromamark-vscode?label=Open%20VSX)](https://open-vsx.org/extension/chromamark/chromamark-vscode)
 [![Code license](https://img.shields.io/badge/license-MIT-blue)](LICENSE.md)
 [![Spec license](https://img.shields.io/badge/spec-CC_BY--SA_4.0-blue)](LICENSE-SPEC.md)
 
@@ -16,7 +17,9 @@
 **[Start with the VS Code extension](https://marketplace.visualstudio.com/items?itemName=chromamark.chromamark-vscode).**
 It is the fastest way for humans and agents to evaluate agent output together:
 open a `.cm` report, compare its compact source with the rendered result, and
-use live diagnostics and quick fixes while the work is still in context.
+use live diagnostics and quick fixes while the work is still in context. It is
+also available from [Open VSX](https://open-vsx.org/extension/chromamark/chromamark-vscode)
+for VSCodium, Eclipse Theia, and other compatible editors.
 
 Markdown was designed for people writing documents. Today, more and more
 reports are written by agents: deployment summaries, evaluations, code reviews,
@@ -47,6 +50,12 @@ making that meaning scannable.
   constructs degrade to literal text.
 - **Markdown-compatible** — ordinary CommonMark and GFM continue to work.
 - **Safe by default** — no raw HTML or script execution is required.
+
+<p align="center">
+  <a href="https://cjfravel-dev.github.io/ChromaMark/gallery.html">
+    <img src="docs/assets/chromamark-preview.png" alt="ChromaMark feature gallery showing semantic blocks, pills, colored text, and progress meters" width="960">
+  </a>
+</p>
 
 ## Why not HTML?
 
@@ -129,7 +138,7 @@ Already shipping MarkdownIt? Use the
 plugin rules, DOM hooks, and themes while excluding the parser library.
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/cjfravel-dev/ChromaMark/packages/renderer/dist/chromamark.min.js"
+<script src="https://cdn.jsdelivr.net/npm/@chromamark/renderer@0.4.1/dist/chromamark.min.js"
         data-chromamark-auto></script>
 
 <div class="chromamark">
@@ -181,7 +190,9 @@ const md = new MarkdownIt().use(chromamark);
 The [`chromamark-vscode`](./packages/vscode) extension renders ChromaMark in the
 built-in Markdown preview, highlights its syntax, and reports live lint
 diagnostics with quick fixes for `.cm` files. `.cm` files are treated as Markdown. Press
-<kbd>F5</kbd> from the repo to try it.
+<kbd>F5</kbd> from the repo to try it. Install it from the
+[VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=chromamark.chromamark-vscode)
+or [Open VSX](https://open-vsx.org/extension/chromamark/chromamark-vscode).
 
 ## For LLMs & agents
 

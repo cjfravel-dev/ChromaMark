@@ -9,6 +9,7 @@ import Slim, {
   injectTheme,
   render,
   renderElement,
+  renderSrc,
 } from '../src/browser-slim-core.js';
 
 test('slim browser delegates rendering to a consumer-supplied function', () => {
@@ -45,6 +46,31 @@ test('slim browser removes only the exact shared indentation prefix', () => {
   configureRenderer((source) => { received = source; return source; });
   renderElement('#mixed');
   assert.equal(received, '  alpha\n\tbeta');
+});
+
+test('slim renderSrc degrades gracefully when fetch throws synchronously', async () => {
+  const dom = new JSDOM('<div data-chromamark-src="report.cm" id="report">original</div>');
+  global.document = dom.window.document;
+  dom.window.fetch = () => {
+    throw new Error('network unavailable');
+  };
+
+  const result = renderSrc('#report');
+  assert.equal(await result, null);
+  const element = dom.window.document.getElementById('report');
+  assert.match(element.getAttribute('data-chromamark-error'), /network unavailable/);
+  assert.equal(element.textContent, 'original');
+});
+
+test('slim renderSrc handles fetch rejecting without an Error object', async () => {
+  const dom = new JSDOM('<div data-chromamark-src="report.cm" id="report">original</div>');
+  global.document = dom.window.document;
+  dom.window.fetch = () => Promise.reject(undefined);
+
+  assert.equal(await renderSrc('#report'), null);
+  const element = dom.window.document.getElementById('report');
+  assert.match(element.getAttribute('data-chromamark-error'), /undefined/);
+  assert.equal(element.textContent, 'original');
 });
 
 test('slim global API exposes configuration and DOM hooks', () => {

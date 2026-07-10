@@ -1,6 +1,6 @@
 {
   "name": "@chromamark/renderer",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "ChromaMark renderer — a markdown-it plugin adding colored blocks, colored pills, collapsible sections, fields, meters and inline diff on top of CommonMark + GFM.",
   "license": "MIT",
   "author": "cjfravel-dev",
@@ -69,7 +69,7 @@
   },
   "devDependencies": {
     "@chromamark/conformance": "0.1.0",
-    "esbuild": "^0.24.2",
+    "esbuild": "^0.25.12",
     "jsdom": "^26.1.0"
   }
 }

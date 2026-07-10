@@ -107,7 +107,8 @@ export function renderSrc(target, options) {
     return null;
   };
   if (!doFetch) return Promise.resolve(fail('ChromaMark: fetch is unavailable'));
-  return Promise.resolve(doFetch(url))
+  return Promise.resolve()
+    .then(() => doFetch(url))
     .then((response) => {
       if (!response || !response.ok) throw new Error(`HTTP ${response ? response.status : '?'}`);
       return response.text();
@@ -117,7 +118,7 @@ export function renderSrc(target, options) {
       element.classList.add('chromamark-output');
       return element;
     })
-    .catch((error) => fail(`ChromaMark: failed to load ${url} (${error.message || error})`));
+    .catch((error) => fail(`ChromaMark: failed to load ${url} (${(error && error.message) || error})`));
 }
 
 export function renderAll(selector, options) {

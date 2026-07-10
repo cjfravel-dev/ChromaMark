@@ -1,0 +1,9 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/cjfravel-dev/ChromaMark/security/advisories/new
+    about: Send injection, escaping, filesystem, or execution vulnerabilities privately.
+  - name: ChromaMark playground
+    url: https://cjfravel-dev.github.io/ChromaMark/playground/
+    about: Reduce rendering problems to a shareable ChromaMark example.
+
