@@ -101,6 +101,20 @@ test('contributor guide requires the repository test-first workflow', () => {
   assert.match(contributing, /conformance\/cases\.json/);
 });
 
+test('Code of Conduct uses the selected policy and transparent solo enforcement', () => {
+  const conduct = read('CODE_OF_CONDUCT.md');
+
+  assert.match(conduct, /^# Contributor Covenant Code of Conduct/m);
+  assert.match(conduct, /Contributor Covenant[\s\S]*version 2\.1/i);
+  assert.match(conduct, /conduct@cjfravel\.dev/);
+  assert.match(conduct, /currently maintained by one person/i);
+  assert.match(conduct, /no independent escalation contact/i);
+  assert.match(conduct, /no\s+response time is promised/i);
+  assert.doesNotMatch(conduct, /within \d+ (?:business )?(?:hours?|days?)/i);
+  assert.match(read('README.md'), /\[Code of Conduct\]\(\.\/CODE_OF_CONDUCT\.md\)/);
+  assert.match(read('CONTRIBUTING.md'), /\[Code of Conduct\]\(\.\/CODE_OF_CONDUCT\.md\)/);
+});
+
 test('GitHub contribution templates route actionable reports and preserve TDD evidence', () => {
   const bug = read('.github/ISSUE_TEMPLATE/bug.yml');
   const feature = read('.github/ISSUE_TEMPLATE/feature.yml');
