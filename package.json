@@ -18,7 +18,7 @@
   "scripts": {
     "test": "npm test --workspace @chromamark/renderer",
     "test:eval": "node --test eval/test/*.test.js",
-    "test:scripts": "node --test scripts/*.test.mjs",
+    "test:scripts": "node --test scripts/*.test.mjs docs/playground/*.test.mjs",
     "coverage": "node scripts/coverage.mjs",
     "eval": "node eval/run.js",
     "build:site": "node scripts/build-site.mjs",

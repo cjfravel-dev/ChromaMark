@@ -9,6 +9,8 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 - Safe theme preset/resolution/application APIs with GitHub light/dark, ocean,
   sunset, and monochrome palettes plus constrained semantic overrides.
+- Versioned compressed playground share links with legacy base64 compatibility;
+  the README demo links to its exact full ChromaMark source.
 - Public `@chromamark/conformance` kit with versioned fixtures, JSON Schema,
   typed validation/runner APIs, and a language-neutral runner protocol.
 - Python `lint()` parity and a lint-focused `chromamark lint` console command,
