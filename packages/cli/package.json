@@ -2,7 +2,7 @@
   "name": "@chromamark/cli",
   "version": "0.2.0",
   "description": "ChromaMark command-line tool — compile .cm to self-contained HTML, render to a color terminal, or lint.",
-  "license": "SEE LICENSE IN LICENSE.md",
+  "license": "MIT",
   "author": "cjfravel-dev",
   "homepage": "https://github.com/cjfravel-dev/ChromaMark#readme",
   "repository": {

@@ -8,4 +8,5 @@ node_modules/**
 **/*.map
 *.vsix
 
-# Keep in the VSIX: dist/, media/, syntaxes/, package.json, README.md, LICENSE
+# Keep in the VSIX: dist/, media/, syntaxes/, package.json, README.md, LICENSE,
+# and THIRD_PARTY_NOTICES.md

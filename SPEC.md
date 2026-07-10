@@ -2,6 +2,7 @@
 
 > **Base dialect:** CommonMark + GFM (tables, strikethrough, autolinks)
 > **Language version:** 0.1
+> **License:** [CC BY-SA 4.0](./LICENSE-SPEC.md)
 > **File extensions:** `.cm` · **Info-string / fence tag:** `chromamark`
 >
 > _This document is written **in ChromaMark**. On a plain markdown viewer (e.g._

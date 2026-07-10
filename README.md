@@ -7,7 +7,8 @@
 [![npm cli](https://img.shields.io/npm/v/@chromamark/cli?label=npm%20cli)](https://www.npmjs.com/package/@chromamark/cli)
 [![PyPI](https://img.shields.io/pypi/v/chromamark?label=pypi)](https://pypi.org/project/chromamark/)
 [![VS Code Marketplace](https://vsmarketplacebadges.dev/version-short/chromamark.chromamark-vscode.svg)](https://marketplace.visualstudio.com/items?itemName=chromamark.chromamark-vscode)
-[![License](https://img.shields.io/badge/license-MIT%20%2B%20SaaS-blue)](LICENSE.md)
+[![Code license](https://img.shields.io/badge/license-MIT-blue)](LICENSE.md)
+[![Spec license](https://img.shields.io/badge/spec-CC_BY--SA_4.0-blue)](LICENSE-SPEC.md)
 
 **A lean rich-markup for agent-to-human communication.** ChromaMark is a strict
 superset of Markdown (CommonMark + GFM) that adds the three things agents
@@ -242,4 +243,16 @@ ChromaMark builds on well-designed standards rather than reinventing them:
 
 ## License
 
-Modified MIT License with a SaaS source-availability provision — see [LICENSE.md](./LICENSE.md).
+ChromaMark uses a deliberate code/specification split:
+
+- **Software:** [MIT License](./LICENSE.md).
+- **Specification:** [CC BY-SA 4.0](./LICENSE-SPEC.md), with attribution to the
+  CommonMark and GitHub Flavored Markdown specifications it builds upon.
+
+See [third-party notices](./THIRD_PARTY_NOTICES.md) for dependency and prior-art
+attribution.
+
+## Citation
+
+Published work can cite ChromaMark using [`CITATION.cff`](./CITATION.cff), which
+preserves the project name, canonical repository, and author attribution.

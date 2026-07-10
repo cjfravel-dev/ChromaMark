@@ -1,5 +1,7 @@
 # ChromaMark — LLM quick reference
 
+License: CC BY-SA 4.0 — see ../LICENSE-SPEC.md.
+
 ChromaMark is Markdown (CommonMark + GFM) plus a handful of constructs for rich
 agent→human reports. Emit it as plain text. Everything below is the ENTIRE extra
 syntax beyond normal Markdown; if in doubt, plain Markdown always works.

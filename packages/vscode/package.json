@@ -5,7 +5,7 @@
   "version": "0.1.12",
   "publisher": "chromamark",
   "icon": "icon.png",
-  "license": "SEE LICENSE IN LICENSE.md",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/cjfravel-dev/ChromaMark.git",

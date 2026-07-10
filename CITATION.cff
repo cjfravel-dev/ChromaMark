@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use ChromaMark in published work, please cite the project using this metadata."
+title: ChromaMark
+type: software
+authors:
+  - family-names: Fravel
+    given-names: CJ
+repository-code: "https://github.com/cjfravel-dev/ChromaMark"
+url: "https://cjfravel-dev.github.io/ChromaMark/"
+license: MIT
+abstract: "A lean rich-markup format and renderer for agent-to-human communication."
