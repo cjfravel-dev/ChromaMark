@@ -93,16 +93,71 @@ test('CLI --watch rebuilds on change', async () => {
   const input = join(dir, 'w.cm');
   const output = join(dir, 'w.html');
   writeFileSync(input, '::: info\nfirst version\n:::\n');
-  const child = spawn(process.execPath, [BIN, input, '--watch', '-o', output], { stdio: 'ignore' });
+  const child = spawn(process.execPath, [BIN, input, '--watch', '-o', output], {
+    stdio: ['ignore', 'ignore', 'pipe'],
+  });
+  let stderr = '';
+  child.stderr.on('data', (chunk) => { stderr += chunk; });
   try {
-    const built = await waitFor(() => existsSync(output) && readFileSync(output, 'utf8').includes('first version'), 4000);
+    const built = await waitFor(
+      () =>
+        existsSync(output) &&
+        readFileSync(output, 'utf8').includes('first version') &&
+        stderr.includes('watching for changes') &&
+        stderr.includes(`built ${output}`),
+      4000,
+    );
     assert.ok(built, 'initial build did not happen');
+    assert.ok(
+      stderr.indexOf('watching for changes') < stderr.indexOf(`built ${output}`),
+      'watcher must be ready before the initial build is reported',
+    );
     writeFileSync(input, '::: success\nsecond version\n:::\n');
     const rebuilt = await waitFor(() => readFileSync(output, 'utf8').includes('second version'), 4000);
     assert.ok(rebuilt, 'watch did not rebuild on change');
   } finally {
     child.kill();
   }
+});
+
+test('directory watch ignores generated HTML inside the input tree', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'cm-cli-watch-tree-'));
+  const output = join(dir, 'site');
+  writeFileSync(join(dir, 'one.cm'), '[!pass]\n');
+  const child = spawn(process.execPath, [BIN, dir, '--watch', '-o', output], {
+    stdio: ['ignore', 'ignore', 'pipe'],
+  });
+  let stderr = '';
+  child.stderr.on('data', (chunk) => { stderr += chunk; });
+  try {
+    assert.ok(
+      await waitFor(() => existsSync(join(output, 'one.html')), 4000),
+      'initial directory build did not happen',
+    );
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    const builds = stderr.match(/built 1 file\(s\) into/g) || [];
+    assert.equal(builds.length, 1, `generated output retriggered the watcher:\n${stderr}`);
+  } finally {
+    child.kill();
+  }
+});
+
+test('run() closes its watcher when the initial watched build fails', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'cm-cli-watch-fail-'));
+  const blockedOutput = join(dir, 'blocked');
+  writeFileSync(join(dir, 'one.cm'), '[!pass]\n');
+  writeFileSync(blockedOutput, 'not a directory');
+  const script = [
+    "import { run } from './packages/cli/src/cli.js';",
+    `process.exitCode = run(${JSON.stringify([dir, '--watch', '-o', blockedOutput])});`,
+  ].join('\n');
+  const result = spawnSync(process.execPath, ['--input-type=module', '--eval', script], {
+    cwd: fileURLToPath(new URL('../../..', import.meta.url)),
+    encoding: 'utf8',
+    timeout: 2000,
+  });
+  assert.equal(result.signal, null, 'run() leaked the watcher after the failed build');
+  assert.equal(result.status, 1);
 });
 
 test('parseArgs rejects -o/--title that would swallow the next flag', () => {

@@ -21,6 +21,8 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 - CLI and eval argument validation now rejects ignored positionals, missing
   values, unknown task IDs, invalid thresholds, and setup errors ([#38]).
+- CLI watch mode registers its filesystem watcher before reporting the initial
+  build, closing a race that could miss an immediate file change.
 
 ## [0.3.0] - 2026-07-09
 
