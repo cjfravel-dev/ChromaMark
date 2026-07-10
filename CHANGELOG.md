@@ -14,6 +14,7 @@ from the [ChromaMark language version](./docs/compatibility.md).
 - ESLint and Ruff static quality gates ([#39]).
 - ChromaMark language version `0.1`, public version constants, and compatibility
   policy ([#40]).
+- Bundled TypeScript declarations for renderer, browser, and CLI entry points.
 
 ### Fixed
 
