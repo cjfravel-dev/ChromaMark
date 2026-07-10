@@ -93,8 +93,6 @@ def test_unclosed_container_to_eof():
 
 
 def test_render_fields_does_not_mutate_shared_options():
-    # Field values force HTML-escaping without mutating the shared MarkdownIt
-    # options, so a concurrent render on another thread can't observe html:false.
     from chromamark import create_renderer
 
     md = create_renderer()
@@ -110,17 +108,10 @@ def test_render_fields_does_not_mutate_shared_options():
     assert "html" not in writes, f"render_fields mutated shared options: {writes}"
 
 
-def test_fields_escape_even_when_host_enables_html():
-    # Defense in depth: even if the host configures html:true, raw HTML in field
-    # values must still be escaped (byte-identical to the JS renderer).
-    from markdown_it import MarkdownIt
-
-    from chromamark.plugin import chromamark_plugin
-
+def test_fields_preserve_html_when_host_enables_html():
     md = MarkdownIt("js-default", {"html": True, "linkify": True}).use(chromamark_plugin)
-    out = md.render("::: fields\nDanger: <img src=x onerror=alert(1)>\nBold: **hi** [!ok pass]\n:::")
-    assert "<img" not in out
-    assert "&lt;img src=x onerror=alert(1)&gt;" in out
+    out = md.render("::: fields\nStatus: <kbd>ready</kbd>\nBold: **hi** [!ok pass]\n:::")
+    assert "<dd><kbd>ready</kbd></dd>" in out
     assert "<strong>hi</strong>" in out
     assert 'class="cm-pill"' in out
 
@@ -170,28 +161,32 @@ def test_tilde_fence_inside_container_is_fence_aware():
     assert "</div></div>\n<pre>" not in h
 
 
-def test_container_body_escapes_raw_block_html_on_html_true_host():
+def test_container_body_preserves_raw_block_html_on_html_true_host():
     h = _html_true().render("::: success\n<img src=x onerror=alert(1)>\n:::")
-    assert "<img" not in h
-    assert "&lt;img" in h
+    assert "<img src=x onerror=alert(1)>" in h
 
 
-def test_container_body_escapes_inline_html_on_html_true_host():
+def test_container_body_preserves_inline_html_on_html_true_host():
     h = _html_true().render("::: info\ntext <b>bold</b> more\n:::")
-    assert "<b>bold</b>" not in h
-    assert "&lt;b&gt;bold&lt;/b&gt;" in h
+    assert "<b>bold</b>" in h
 
 
-def test_details_body_escapes_raw_html_on_html_true_host():
+def test_details_body_preserves_raw_html_on_html_true_host():
     h = _html_true().render("::: details Summary\n<script>alert(1)</script>\n:::")
-    assert "<script>" not in h
-    assert "&lt;script&gt;" in h
+    assert "<script>alert(1)</script>" in h
 
 
-def test_html_outside_container_passes_through_on_html_true_host():
+def test_html_passes_through_consistently_on_html_true_host():
     h = _html_true().render("<div>outside</div>\n\n::: success\n<b>in</b>\n:::")
     assert "<div>outside</div>" in h
-    assert "&lt;b&gt;in&lt;/b&gt;" in h
+    assert "<b>in</b>" in h
+
+
+def test_titles_and_summaries_preserve_inline_html_on_html_true_host():
+    block = _html_true().render("::: info Press <kbd>Enter</kbd>\nbody\n:::")
+    details = _html_true().render("::: details See <em>more</em>\nbody\n:::")
+    assert '<div class="cm-title">Press <kbd>Enter</kbd></div>' in block
+    assert "<summary>See <em>more</em></summary>" in details
 
 
 def test_ws_bom_separates_container_kind_from_title():

@@ -140,28 +140,32 @@ test('a ~~~ fence inside a container is also fence-aware', () => {
   assert.doesNotMatch(html, /<\/div><\/div>\s*<pre>/);
 });
 
-test('container bodies escape raw block HTML even on an html:true host', () => {
+test('container bodies preserve raw block HTML on an html:true host', () => {
   const html = htmlTrue().render('::: success\n<img src=x onerror=alert(1)>\n:::');
-  assert.doesNotMatch(html, /<img/);
-  assert.match(html, /&lt;img/);
+  assert.match(html, /<img src=x onerror=alert\(1\)>/);
 });
 
-test('inline raw HTML in a container body is escaped on an html:true host', () => {
+test('inline raw HTML in a container body is preserved on an html:true host', () => {
   const html = htmlTrue().render('::: info\ntext <b>bold</b> more\n:::');
-  assert.doesNotMatch(html, /<b>bold<\/b>/);
-  assert.match(html, /&lt;b&gt;bold&lt;\/b&gt;/);
+  assert.match(html, /<b>bold<\/b>/);
 });
 
-test('details bodies also escape raw HTML on an html:true host', () => {
+test('details bodies preserve raw HTML on an html:true host', () => {
   const html = htmlTrue().render('::: details Summary\n<script>alert(1)</script>\n:::');
-  assert.doesNotMatch(html, /<script>/);
-  assert.match(html, /&lt;script&gt;/);
+  assert.match(html, /<script>alert\(1\)<\/script>/);
 });
 
-test('raw HTML outside a container still passes through on an html:true host', () => {
+test('raw HTML passes through consistently on an html:true host', () => {
   const html = htmlTrue().render('<div>outside</div>\n\n::: success\n<b>in</b>\n:::');
   assert.match(html, /<div>outside<\/div>/);
-  assert.match(html, /&lt;b&gt;in&lt;\/b&gt;/);
+  assert.match(html, /<b>in<\/b>/);
+});
+
+test('container titles and summaries preserve inline HTML on an html:true host', () => {
+  const block = htmlTrue().render('::: info Press <kbd>Enter</kbd>\nbody\n:::');
+  const details = htmlTrue().render('::: details See <em>more</em>\nbody\n:::');
+  assert.match(block, /<div class="cm-title">Press <kbd>Enter<\/kbd><\/div>/);
+  assert.match(details, /<summary>See <em>more<\/em><\/summary>/);
 });
 
 test('U+FEFF (BOM) separates a container kind from its title', () => {

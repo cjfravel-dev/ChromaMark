@@ -11,7 +11,7 @@
 [![Spec license](https://img.shields.io/badge/spec-CC_BY--SA_4.0-blue)](LICENSE-SPEC.md)
 
 **A lean rich-markup for agent-to-human communication.** ChromaMark is a strict
-superset of Markdown (CommonMark + GFM) that adds the three things agents
+syntax superset of Markdown (CommonMark + GFM) that adds the three things agents
 actually need to communicate clearly — **colored blocks**, **colored pills**, and
 **collapsible sections** — plus a few opt-in extensions. It costs a fraction of
 the tokens of equivalent HTML and degrades to readable plain text anywhere it
@@ -149,10 +149,10 @@ the streaming contract in [SPEC §12](./SPEC.md).
 
 Agent output is untrusted input, so ChromaMark is safe by default:
 
-- **Raw HTML is escaped, not injected.** The renderer runs markdown-it with
-  `html: false`, and block titles, `::: fields`, and container bodies are
-  force-escaped even when attached to a host that enables raw HTML — so a
-  `<script>` in agent output renders as literal text.
+- **Raw HTML is escaped by default.** The preconfigured renderer runs markdown-it
+  with `html: false`, so a `<script>` in agent output renders as literal text.
+  The plugin respects its host's HTML setting consistently; enabling raw HTML is
+  appropriate only for trusted or separately sanitized input.
 - **No CSS injection.** `color=` accepts only hex literals or plain color names;
   functional forms (e.g. `url(...)`, `expression(...)`) are rejected.
 - **No script execution.** No construct requires or permits `<script>`, event
@@ -237,7 +237,7 @@ the complete workflow.
 
 ChromaMark builds on well-designed standards rather than reinventing them:
 
-- **[CommonMark](https://commonmark.org/) + [GitHub Flavored Markdown](https://github.github.com/gfm/)** — the base syntax ChromaMark is a strict superset of.
+- **[CommonMark](https://commonmark.org/) + [GitHub Flavored Markdown](https://github.github.com/gfm/)** — the base syntax ChromaMark extends without redefining.
 - **[CriticMarkup](http://criticmarkup.com/)** (© 2013 Gabe Weatherhead & Erik Hess, Apache-2.0) — the inline change-tracking syntax (`{++add++}`, `{--del--}`, `{~~a~>b~~}`) ChromaMark adopts for diffs. Our parser is an original, independent implementation.
 - **[markdown-it](https://github.com/markdown-it/markdown-it)** and **[markdown-it-py](https://github.com/executablebooks/markdown-it-py)** — the pluggable Markdown engines the JS and Python renderers extend.
 

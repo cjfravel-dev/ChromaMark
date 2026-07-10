@@ -59,11 +59,10 @@ def test_caller_supplied_highlight_hook_renders_fenced_code():
     assert '<span class="keyword">const</span> x = 1;' in html
 
 
-def test_fields_escape_on_html_true_instance():
+def test_fields_preserve_html_on_html_true_instance():
     md = MarkdownIt("commonmark", {"html": True}).enable(["table", "strikethrough"]).use(chromamark_plugin)
-    out = md.render("::: fields\nStatus: <img src=x onerror=alert(1)>\n:::")
-    assert "<img" not in out
-    assert "&lt;img" in out
+    out = md.render("::: fields\nStatus: <kbd>ready</kbd>\n:::")
+    assert "<dd><kbd>ready</kbd></dd>" in out
 
 
 def test_get_theme_has_tone_vars():
