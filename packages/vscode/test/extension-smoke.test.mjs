@@ -9,6 +9,7 @@ import MarkdownIt from 'markdown-it';
 const distPath = fileURLToPath(new URL('../dist/extension.js', import.meta.url));
 
 const diagnostics = [];
+const codeActionProviders = [];
 const cmDocument = {
   languageId: 'markdown',
   uri: { scheme: 'file', path: '/workspace/report.cm', toString: () => 'file:///workspace/report.cm' },
@@ -44,12 +45,27 @@ const vscodeStub = {
       this.severity = severity;
     }
   },
+  CodeActionKind: { QuickFix: 'quickfix' },
+  CodeAction: class CodeAction {
+    constructor(title, kind) {
+      this.title = title;
+      this.kind = kind;
+    }
+  },
+  WorkspaceEdit: class WorkspaceEdit {
+    constructor() { this.replacements = []; }
+    replace(uri, range, text) { this.replacements.push({ uri, range, text }); }
+  },
   languages: {
     createDiagnosticCollection: () => ({
       set: (uri, values) => diagnostics.push({ uri, values }),
       delete: () => {},
       dispose() {},
     }),
+    registerCodeActionsProvider: (selector, provider, metadata) => {
+      codeActionProviders.push({ selector, provider, metadata });
+      return { dispose() {} };
+    },
   },
   workspace: {
     textDocuments: [cmDocument, mdDocument, remoteCmDocument],
@@ -94,4 +110,19 @@ test('the built extension bundle activates and wires ChromaMark into markdown-it
   assert.equal(diagnostics[0].values[0].source, 'ChromaMark');
   assert.equal(diagnostics[0].values[0].range.start.line, 0);
   assert.equal(diagnostics[0].values[0].range.start.character, 6);
+  assert.equal(codeActionProviders.length, 1);
+  const actions = codeActionProviders[0].provider.provideCodeActions(
+    cmDocument,
+    diagnostics[0].values[0].range,
+    { diagnostics: diagnostics[0].values },
+  );
+  assert.equal(actions.length, 1);
+  assert.equal(actions[0].title, 'Replace "succes" with "success"');
+  assert.equal(actions[0].kind, 'quickfix');
+  assert.equal(actions[0].isPreferred, true);
+  assert.deepEqual(actions[0].diagnostics, diagnostics[0].values);
+  assert.equal(actions[0].edit.replacements.length, 1);
+  assert.equal(actions[0].edit.replacements[0].range.start.character, 8);
+  assert.equal(actions[0].edit.replacements[0].range.end.character, 14);
+  assert.equal(actions[0].edit.replacements[0].text, 'success');
 });

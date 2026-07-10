@@ -20,6 +20,7 @@
 
 import * as vscode from 'vscode';
 import chromamark, { lint } from '@chromamark/renderer';
+import { quickFixes } from './code-actions.mjs';
 import { extensionKey, isSupportedExtension, commandForMode, openModeChoices, extensionChoices } from './open-mode.mjs';
 
 function isSupportedUri(uri) {
@@ -95,6 +96,37 @@ export function activate(context) {
     diagnosticCollection.set(doc.uri, diagnostics);
   };
 
+  const codeActionProvider = {
+    provideCodeActions(doc, _range, actionContext) {
+      if (!isChromaMarkDoc(doc)) return [];
+      const source = doc.getText();
+      return actionContext.diagnostics
+        .filter((diagnostic) => diagnostic.source === 'ChromaMark')
+        .flatMap((diagnostic) => {
+          const code = typeof diagnostic.code === 'object' ? diagnostic.code.value : diagnostic.code;
+          return quickFixes(source, {
+            code,
+            line: diagnostic.range.start.line + 1,
+            column: diagnostic.range.start.character + 1,
+          }).map((fix) => {
+            const action = new vscode.CodeAction(fix.title, vscode.CodeActionKind.QuickFix);
+            action.diagnostics = [diagnostic];
+            action.isPreferred = fix.preferred;
+            action.edit = new vscode.WorkspaceEdit();
+            action.edit.replace(
+              doc.uri,
+              new vscode.Range(
+                new vscode.Position(fix.start.line, fix.start.character),
+                new vscode.Position(fix.end.line, fix.end.character),
+              ),
+              fix.text,
+            );
+            return action;
+          });
+        });
+    },
+  };
+
   const applyOpenMode = async (editor) => {
     const doc = editor && editor.document;
     if (!isSupportedDoc(doc)) return;
@@ -124,6 +156,11 @@ export function activate(context) {
 
   context.subscriptions.push(
     diagnosticCollection,
+    vscode.languages.registerCodeActionsProvider(
+      { language: 'markdown', pattern: '**/*.cm' },
+      codeActionProvider,
+      { providedCodeActionKinds: [vscode.CodeActionKind.QuickFix] },
+    ),
     vscode.commands.registerCommand('chromamark.setOpenMode', setOpenMode),
     vscode.window.onDidChangeActiveTextEditor(applyOpenMode),
     vscode.window.tabGroups.onDidChangeTabs(forgetClosed),

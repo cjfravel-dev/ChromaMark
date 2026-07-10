@@ -67,6 +67,7 @@ test('surface docs describe newly enforced behavior', () => {
   assert.match(read('packages/python/README.md'), /chromamark lint/);
   assert.match(read('eval/README.md'), /unknown task IDs/);
   assert.match(read('packages/vscode/README.md'), /live lint diagnostics/i);
+  assert.match(read('packages/vscode/README.md'), /quick fixes/i);
 });
 
 test('all specification companions describe the renderer-controlled HTML policy', () => {
