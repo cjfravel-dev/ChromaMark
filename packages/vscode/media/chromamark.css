@@ -32,8 +32,14 @@ body.vscode-dark, body.vscode-high-contrast {
 [data-tone="muted"]  {--fg:var(--cm-muted-fg);  --bg:var(--cm-muted-bg);  --bd:var(--cm-muted-bd);}
 
 .cm-custom {
-  --bg:color-mix(in srgb, var(--fg) 12%, transparent);
-  --bd:color-mix(in srgb, var(--fg) 45%, transparent);
+  --bg:transparent;
+  --bd:currentColor;
+}
+@supports (color:color-mix(in srgb, red, blue)) {
+  .cm-custom {
+    --bg:color-mix(in srgb, var(--fg) 12%, transparent);
+    --bd:color-mix(in srgb, var(--fg) 45%, transparent);
+  }
 }
 
 .cm-block {

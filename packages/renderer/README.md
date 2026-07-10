@@ -97,6 +97,20 @@ automatically once the DOM is ready.
 Rendered meters expose `role="progressbar"` with bounded `aria-valuenow` and the
 authored value in `aria-valuetext`, while retaining the visible meter label.
 
+## Browser support
+
+The browser bundles target ES2019 and require standard evergreen-browser APIs
+such as `fetch`, `querySelectorAll`, and CSS custom properties. They do not
+include legacy-browser polyfills.
+
+Custom-color tinting uses `color-mix()` as a progressive enhancement. Browsers
+without `color-mix()` retain the authored foreground color, transparent
+background, and a visible current-color border as a fallback.
+
+The minified CDN bundle has a 64 KiB gzip budget enforced by the repository test
+suite. Applications with stricter budgets can use the Node/plugin API with their
+existing `markdown-it` installation instead of the standalone browser bundle.
+
 ### Load ChromaMark from an external file
 
 Point an element at a `.cm` file with `data-chromamark-src` and the bundle

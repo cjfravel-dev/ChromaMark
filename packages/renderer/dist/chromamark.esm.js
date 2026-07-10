@@ -56,8 +56,14 @@ var chromamark_default = `/*
 
 /* Custom color (color=\u2026): derive a tinted bg/border from the chosen --fg. */
 .cm-custom {
-  --bg:color-mix(in srgb, var(--fg) 12%, transparent);
-  --bd:color-mix(in srgb, var(--fg) 45%, transparent);
+  --bg:transparent;
+  --bd:currentColor;
+}
+@supports (color:color-mix(in srgb, red, blue)) {
+  .cm-custom {
+    --bg:color-mix(in srgb, var(--fg) 12%, transparent);
+    --bd:color-mix(in srgb, var(--fg) 45%, transparent);
+  }
 }
 
 /* ---- Colored block / callout ---- */
