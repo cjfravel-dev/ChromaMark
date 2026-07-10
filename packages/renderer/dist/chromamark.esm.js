@@ -22,6 +22,7 @@ var chromamark_default = `/*
   --cm-tip-fg:#0f7b6c;     --cm-tip-bg:#d3f5f0;     --cm-tip-bd:#3bc4b0;
   --cm-muted-fg:#656d76;   --cm-muted-bg:#f6f8fa;   --cm-muted-bd:#d0d7de;
   --cm-neutral-bg:#f6f8fa; --cm-neutral-bd:#d0d7de;
+  --cm-content-fg:#1f2328;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -33,6 +34,7 @@ var chromamark_default = `/*
     --cm-tip-fg:#56d4c3;     --cm-tip-bg:#0c2620;     --cm-tip-bd:#1c6f63;
     --cm-muted-fg:#8b949e;   --cm-muted-bg:#161b22;   --cm-muted-bd:#30363d;
     --cm-neutral-bg:#161b22; --cm-neutral-bd:#30363d;
+    --cm-content-fg:#e6edf3;
   }
 }
 
@@ -44,6 +46,7 @@ var chromamark_default = `/*
   --cm-tip-fg:#56d4c3;     --cm-tip-bg:#0c2620;     --cm-tip-bd:#1c6f63;
   --cm-muted-fg:#8b949e;   --cm-muted-bg:#161b22;   --cm-muted-bd:#30363d;
   --cm-neutral-bg:#161b22; --cm-neutral-bd:#30363d;
+  --cm-content-fg:#e6edf3;
 }
 
 /* Map a tone onto the generic --fg/--bg/--bd consumed by every component. */
@@ -70,6 +73,7 @@ var chromamark_default = `/*
 .cm-block {
   border:1px solid var(--bd, var(--cm-neutral-bd)); border-left-width:4px;
   background:var(--bg, var(--cm-neutral-bg));
+  color:var(--cm-content-fg, inherit);
   border-radius:8px; padding:10px 14px; margin:12px 0;
 }
 .cm-block > .cm-title { font-weight:700; color:var(--fg, inherit); }
@@ -100,12 +104,14 @@ var chromamark_default = `/*
   display:grid; grid-template-columns:auto 1fr; gap:4px 16px; margin:12px 0;
   border:1px solid var(--cm-neutral-bd); border-radius:8px; padding:12px 14px;
   background:var(--cm-neutral-bg);
+  color:var(--cm-content-fg, inherit);
 }
 .cm-fields dt { font-weight:600; opacity:.75; }
 .cm-fields dd { margin:0; }
 
 /* ---- Collapsible ---- */
-.cm-details { border:1px solid var(--bd); border-radius:8px; margin:12px 0; overflow:hidden; }
+.cm-details { border:1px solid var(--bd); border-radius:8px; margin:12px 0; overflow:hidden;
+  color:var(--cm-content-fg, inherit); }
 .cm-details > summary {
   cursor:pointer; padding:8px 14px; font-weight:600; list-style:none; background:var(--cm-neutral-bg);
 }
@@ -6100,7 +6106,8 @@ var GITHUB_LIGHT = {
   "--cm-muted-bg": "#f6f8fa",
   "--cm-muted-bd": "#d0d7de",
   "--cm-neutral-bg": "#f6f8fa",
-  "--cm-neutral-bd": "#d0d7de"
+  "--cm-neutral-bd": "#d0d7de",
+  "--cm-content-fg": "#1f2328"
 };
 var GITHUB_DARK = {
   "--cm-success-fg": "#3fb950",
@@ -6122,7 +6129,8 @@ var GITHUB_DARK = {
   "--cm-muted-bg": "#161b22",
   "--cm-muted-bd": "#30363d",
   "--cm-neutral-bg": "#161b22",
-  "--cm-neutral-bd": "#30363d"
+  "--cm-neutral-bd": "#30363d",
+  "--cm-content-fg": "#e6edf3"
 };
 var OCEAN = {
   "--cm-success-fg": "#047857",
@@ -6144,7 +6152,8 @@ var OCEAN = {
   "--cm-muted-bg": "#f1f5f9",
   "--cm-muted-bd": "#cbd5e1",
   "--cm-neutral-bg": "#f8fafc",
-  "--cm-neutral-bd": "#cbd5e1"
+  "--cm-neutral-bd": "#cbd5e1",
+  "--cm-content-fg": "#0f172a"
 };
 var SUNSET = {
   "--cm-success-fg": "#4d7c0f",
@@ -6166,7 +6175,8 @@ var SUNSET = {
   "--cm-muted-bg": "#f9fafb",
   "--cm-muted-bd": "#d1d5db",
   "--cm-neutral-bg": "#fff7ed",
-  "--cm-neutral-bd": "#fed7aa"
+  "--cm-neutral-bd": "#fed7aa",
+  "--cm-content-fg": "#431407"
 };
 var MONOCHROME = {
   "--cm-success-fg": "#262626",
@@ -6188,7 +6198,8 @@ var MONOCHROME = {
   "--cm-muted-bg": "#fafafa",
   "--cm-muted-bd": "#d4d4d4",
   "--cm-neutral-bg": "#fafafa",
-  "--cm-neutral-bd": "#d4d4d4"
+  "--cm-neutral-bd": "#d4d4d4",
+  "--cm-content-fg": "#171717"
 };
 function freezePreset(preset) {
   return Object.freeze({ ...preset });
@@ -6229,9 +6240,11 @@ function resolveTheme(input = "github-light") {
     }
   }
   for (const [slot, value] of Object.entries(config2.neutral || {})) {
-    if (slot !== "background" && slot !== "border") throw new Error(`unknown theme slot "${slot}"`);
-    const suffix = slot === "background" ? "bg" : "bd";
-    variables[`--cm-neutral-${suffix}`] = safeColor(value, `neutral.${slot}`);
+    if (!["foreground", "background", "border"].includes(slot)) {
+      throw new Error(`unknown theme slot "${slot}"`);
+    }
+    const variable = slot === "foreground" ? "--cm-content-fg" : `--cm-neutral-${slot === "background" ? "bg" : "bd"}`;
+    variables[variable] = safeColor(value, `neutral.${slot}`);
   }
   return variables;
 }

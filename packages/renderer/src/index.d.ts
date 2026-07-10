@@ -54,7 +54,7 @@ export type ThemeSlot = {
 export interface ThemeConfig {
   preset?: ThemePresetName;
   tones?: Partial<Record<'success' | 'danger' | 'warning' | 'info' | 'tip' | 'muted', ThemeSlot>>;
-  neutral?: Pick<ThemeSlot, 'background' | 'border'>;
+  neutral?: ThemeSlot;
 }
 export type ThemeInput = ThemePresetName | ThemeConfig;
 export type ThemeVariables = Record<string, string>;

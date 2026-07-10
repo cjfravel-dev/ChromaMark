@@ -14,6 +14,8 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ### Fixed
 
+- Theme presets now set semantic report-body foreground colors, preserving
+  contrast when dark presets are previewed in a light host and vice versa.
 - Added the published `@chromamark/conformance` package badge to the README.
 
 ## [0.4.0] - 2026-07-10

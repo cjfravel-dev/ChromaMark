@@ -35,8 +35,10 @@ applyTheme(document, {
 
 Overrides are limited to the six semantic tones (`success`, `danger`,
 `warning`, `info`, `tip`, `muted`) and the slots `foreground`, `background`,
-and `border`. Neutral styling supports `background` and `border`. Values must be
-hex colors or plain CSS color names; functions such as `url()` and
+and `border`. Neutral styling supports `foreground`, `background`, and `border`;
+the foreground keeps report body text readable when a dark preset is applied
+inside a light host (or vice versa). Values must be hex colors or plain CSS color
+names; functions such as `url()` and
 `expression()` are rejected.
 
 `applyTheme()` accepts an `Element` or `Document` and writes only the 20 known
