@@ -354,7 +354,8 @@ npm run build:readme                         # README.cm → GitHub-native READM
 npm run build:site                           # build the Pages site into _site/
 ```
 
-See [Contributing](./CONTRIBUTING.md), [Security](./SECURITY.md), the
+See [Contributing](./CONTRIBUTING.md), the
+[Code of Conduct](./CODE_OF_CONDUCT.md), [Security](./SECURITY.md), the
 [changelog](./CHANGELOG.md), and the [release guide](./docs/releasing.md) for
 the complete workflow.
 

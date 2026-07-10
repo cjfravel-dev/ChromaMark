@@ -4,6 +4,10 @@ Thank you for improving ChromaMark. Changes should keep the specification,
 JavaScript renderer, Python renderer, browser bundle, CLI, and editor integration
 consistent where their capabilities overlap.
 
+Participation in this project is governed by the
+[Code of Conduct](./CODE_OF_CONDUCT.md). Conduct concerns may be reported
+privately using the contact method defined there.
+
 ## Setup
 
 ```bash

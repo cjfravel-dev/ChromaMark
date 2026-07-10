@@ -5,6 +5,11 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ## [Unreleased]
 
+### Added
+
+- Added Contributor Covenant 2.1 with a private conduct-reporting address and
+  transparent solo-maintainer enforcement limitations.
+
 ## [0.4.1] - 2026-07-10
 
 ### Changed
