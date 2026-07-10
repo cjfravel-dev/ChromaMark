@@ -5,6 +5,8 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-07-09
+
 ### Added
 
 - Shared JavaScript/Python exact-HTML conformance corpus ([#34]).
@@ -51,5 +53,6 @@ from the [ChromaMark language version](./docs/compatibility.md).
 [#38]: https://github.com/cjfravel-dev/ChromaMark/pull/38
 [#39]: https://github.com/cjfravel-dev/ChromaMark/pull/39
 [#40]: https://github.com/cjfravel-dev/ChromaMark/pull/40
+[0.3.1]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.3.1
 [0.3.0]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.3.0
 [0.2.2]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.2.2

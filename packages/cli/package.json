@@ -1,6 +1,6 @@
 {
   "name": "@chromamark/cli",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "ChromaMark command-line tool — compile .cm to self-contained HTML, render to a color terminal, or lint.",
   "license": "MIT",
   "author": "cjfravel-dev",
@@ -46,6 +46,6 @@
     "html"
   ],
   "dependencies": {
-    "@chromamark/renderer": "^0.3.0"
+    "@chromamark/renderer": "^0.3.1"
   }
 }
