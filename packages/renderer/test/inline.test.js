@@ -28,9 +28,17 @@ test('colored text renders a tinted span with no badge', () => {
 
 test('a meter parses a percentage into a fill width', () => {
   const html = inline('[=success 87%]');
-  assert.match(html, /<span class="cm-meter" data-tone="success">/);
+  assert.match(html, /^<span class="cm-meter" data-tone="success"/);
   assert.match(html, /<span class="cm-fill" style="width:87%"><\/span>/);
   assert.match(html, /<span class="cm-val">87%<\/span>/);
+});
+
+test('a meter exposes its bounded value to assistive technology', () => {
+  const html = inline('[=success 125%]');
+  assert.match(
+    html,
+    /role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" aria-valuetext="125%"/,
+  );
 });
 
 test('a meter parses an A/B fraction into a fill width', () => {

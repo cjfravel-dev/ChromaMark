@@ -29,9 +29,17 @@ def test_colored_text():
 
 def test_meter_percent():
     h = inline("[=success 87%]")
-    assert '<span class="cm-meter" data-tone="success">' in h
+    assert h.startswith('<span class="cm-meter" data-tone="success"')
     assert '<span class="cm-fill" style="width:87%"></span>' in h
     assert '<span class="cm-val">87%</span>' in h
+
+
+def test_meter_exposes_bounded_value_to_assistive_technology():
+    h = inline("[=success 125%]")
+    assert (
+        'role="progressbar" aria-valuemin="0" aria-valuemax="100" '
+        'aria-valuenow="100" aria-valuetext="125%"'
+    ) in h
 
 
 def test_meter_fraction():
