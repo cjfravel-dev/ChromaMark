@@ -22,6 +22,8 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 - Automated Open VSX publication of the same tested VSIX used for Microsoft
   Marketplace releases.
+- Playground controls for every built-in theme, safe custom theme JSON, and
+  realistic agent code-review, evaluation, deployment, and incident samples.
 - Tokenless VS Code Marketplace publishing through GitHub OIDC, an Entra managed
   identity, and `vsce --azure-credential`.
 - Safe theme preset/resolution/application APIs with GitHub light/dark, ocean,

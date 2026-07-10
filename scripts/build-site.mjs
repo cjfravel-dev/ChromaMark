@@ -29,6 +29,9 @@ copyFileSync(
   join(root, 'docs/playground/share-codec.mjs'),
   join(out, 'playground/share-codec.mjs'),
 );
+for (const module of ['samples.mjs', 'theme-controls.mjs']) {
+  copyFileSync(join(root, 'docs/playground', module), join(out, 'playground', module));
+}
 
 // 2) Rendered documents via the CLI compiler.
 const FAVICON = '<link rel="icon" type="image/png" href="assets/favicon.png">';
