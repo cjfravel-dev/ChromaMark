@@ -1,0 +1,72 @@
+name: VS Code Marketplace
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Retrieve identity or publish the current extension version
+        required: true
+        type: choice
+        options:
+          - identity
+          - publish
+        default: identity
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: vscode-marketplace
+  cancel-in-progress: false
+
+jobs:
+  identity:
+    if: github.event_name == 'workflow_dispatch' && inputs.operation == 'identity'
+    runs-on: ubuntu-latest
+    environment: vscode-marketplace
+    steps:
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Resolve Azure DevOps profile ID
+        run: |
+          profile_id=$(az rest \
+            --url "https://app.vssps.visualstudio.com/_apis/profile/profiles/me" \
+            --resource 499b84ac-1321-427f-aa17-267ca6975798 \
+            --query id -o tsv)
+          test -n "$profile_id"
+          echo "### Marketplace managed identity" >> "$GITHUB_STEP_SUMMARY"
+          echo '```text' >> "$GITHUB_STEP_SUMMARY"
+          echo "$profile_id" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "Add this ID to publisher **chromamark** with the Contributor role." >> "$GITHUB_STEP_SUMMARY"
+
+  publish:
+    if: github.event_name == 'release' || inputs.operation == 'publish'
+    runs-on: ubuntu-latest
+    environment: vscode-marketplace
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - run: npm ci --no-audit --no-fund
+      - run: npm run build --workspace @chromamark/renderer
+      - run: npm run build --workspace chromamark-vscode
+      - run: npm test --workspace chromamark-vscode
+      - run: npm run package --workspace chromamark-vscode
+      - name: Publish VSIX using Microsoft Entra ID
+        run: |
+          vsix=$(find packages/vscode -maxdepth 1 -name '*.vsix' -print -quit)
+          test -n "$vsix"
+          npx vsce publish --azure-credential --packagePath "$vsix" --skip-duplicate
