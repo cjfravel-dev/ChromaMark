@@ -24,6 +24,7 @@ test('README.md is generated from the canonical ChromaMark source', () => {
   assert.match(source, /transpiled[\s\S]*approximation[\s\S]*full ChromaMark experience[\s\S]*playground/i);
   assert.match(source, /::: success Deploy succeeded/);
   assert.match(generated, /^<!-- Generated from README\.cm/m);
+  assert.match(generated, /img\.shields\.io\/npm\/v\/@chromamark\/conformance/);
   assert.doesNotMatch(generated, /^::: info Why ChromaMark/m);
   assert.match(generated, /> \[!NOTE\]/);
   assert.match(generated, /\*\*GitHub-native approximation\*\*/);
