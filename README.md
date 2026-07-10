@@ -227,8 +227,9 @@ npm run build --workspace @chromamark/renderer   # bundle dist/ for the browser/
 npm run build:site                           # build the Pages site into _site/
 ```
 
-See [Contributing](./CONTRIBUTING.md), the [changelog](./CHANGELOG.md), and the
-[release guide](./docs/releasing.md) for the complete workflow.
+See [Contributing](./CONTRIBUTING.md), [Security](./SECURITY.md), the
+[changelog](./CHANGELOG.md), and the [release guide](./docs/releasing.md) for
+the complete workflow.
 
 ## Prior art & credits
 

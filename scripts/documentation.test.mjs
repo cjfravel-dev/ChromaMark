@@ -46,3 +46,12 @@ test('surface docs describe newly enforced behavior', () => {
   assert.match(read('packages/cli/README.md'), /extra positional arguments/i);
   assert.match(read('eval/README.md'), /unknown task IDs/);
 });
+
+test('security policy routes vulnerability reports through GitHub privately', () => {
+  const security = read('SECURITY.md');
+  assert.match(security, /^# Security policy/m);
+  assert.match(security, /^## Supported versions/m);
+  assert.match(security, /security\/advisories\/new/);
+  assert.match(security, /Do not open a public issue/);
+  assert.match(read('README.md'), /\[Security\]\(\.\/SECURITY\.md\)/);
+});
