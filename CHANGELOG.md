@@ -21,6 +21,8 @@ from the [ChromaMark language version](./docs/compatibility.md).
 - Documentation, compatibility guidance, grammar commentary, and examples now
   distinguish ChromaMark's strict syntax compatibility from the reference
   renderers' safe default HTML policy.
+- The README now labels its GitHub-rendered demo as a transpiled approximation
+  and links to the playground for the full ChromaMark experience.
 
 ## [0.3.1] - 2026-07-09
 

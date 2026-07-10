@@ -20,10 +20,14 @@ test('README.md is generated from the canonical ChromaMark source', () => {
   const generated = read('README.md');
 
   assert.match(source, /::: info Why ChromaMark/);
+  assert.match(source, /::: info GitHub-native approximation/);
+  assert.match(source, /transpiled[\s\S]*approximation[\s\S]*full ChromaMark experience[\s\S]*playground/i);
   assert.match(source, /::: success Deploy succeeded/);
   assert.match(generated, /^<!-- Generated from README\.cm/m);
   assert.doesNotMatch(generated, /^::: info Why ChromaMark/m);
   assert.match(generated, /> \[!NOTE\]/);
+  assert.match(generated, /\*\*GitHub-native approximation\*\*/);
+  assert.match(generated, /transpiled[\s\S]*approximation[\s\S]*full ChromaMark experience[\s\S]*playground/i);
   assert.match(generated, /✅ <kbd>healthy<\/kbd>/);
 });
 

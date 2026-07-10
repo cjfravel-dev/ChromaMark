@@ -36,7 +36,14 @@ across a status-heavy report.
 
 📄 **[Read the spec](./SPEC.md)** · 🔄 **[Compatibility](./docs/compatibility.md)** · 📐 **[Grammar](./docs/grammar.ebnf)** · 🎨 **[Playground](https://cjfravel-dev.github.io/ChromaMark/playground/)** · 🖼️ **[Gallery](https://cjfravel-dev.github.io/ChromaMark/gallery.html)**
 
-## What it looks like
+## What it looks like on GitHub
+
+::: info GitHub-native approximation
+GitHub does not render ChromaMark directly. The example below is a **transpiled
+approximation** using GitHub Alerts, `<kbd>` badges, a text meter, and native
+details. For the full ChromaMark experience — theme-owned colors, styled meters,
+and rich containers — use the [playground](https://cjfravel-dev.github.io/ChromaMark/playground/).
+:::
 
 ::: success Deploy succeeded in 3m12s
 Region `eastus`, 3/3 replicas [!ok healthy].
