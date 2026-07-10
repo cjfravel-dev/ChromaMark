@@ -1,3 +1,5 @@
+from time import perf_counter
+
 from chromamark import lint
 
 
@@ -40,6 +42,22 @@ def test_lint_matches_inline_and_container_edge_cases():
 def test_lint_ignores_escaped_markdown_links_and_fenced_code():
     assert lint(r"\[!succes x] and [=foo](https://example.com) and [!bar][ref]") == []
     assert lint("```\n[!succes x]\n::: succes T\n```\n") == []
+
+
+def test_lint_scans_adversarial_inline_whitespace_in_linear_time():
+    source = "[!! " + "  " * 8000
+    start = perf_counter()
+    lint(source)
+    elapsed = perf_counter() - start
+    assert elapsed < 0.5, f"lint took {elapsed:.3f}s (expected < 0.5s)"
+
+
+def test_lint_scans_dense_unclosed_inline_openers_in_linear_time():
+    source = "[!a" * 4000
+    start = perf_counter()
+    lint(source)
+    elapsed = perf_counter() - start
+    assert elapsed < 0.5, f"lint took {elapsed:.3f}s (expected < 0.5s)"
 
 
 def test_lint_can_disable_rules():

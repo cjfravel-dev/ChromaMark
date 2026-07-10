@@ -111,6 +111,17 @@ test('ordinary GFM structure remains native and links stay intact', () => {
   assert.match(output, /\| unit \| pass \|/);
 });
 
+test('link and image titles escape backslashes before GFM serialization', () => {
+  assert.equal(
+    renderGitHub('[docs](https://example.com "C:\\\\temp")'),
+    '[docs](https://example.com "C:\\\\temp")\n',
+  );
+  assert.equal(
+    renderGitHub('![plot](plot.png "C:\\\\plots")'),
+    '![plot](plot.png "C:\\\\plots")\n',
+  );
+});
+
 test('escaped leading block markers remain literal after GitHub reparsing', () => {
   assert.equal(
     renderGitHub('\\# not a heading\n\n\\- not a list\n\n1\\. not a list\n\n\\---\n\ntext\n\\==='),

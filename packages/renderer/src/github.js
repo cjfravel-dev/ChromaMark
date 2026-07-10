@@ -35,6 +35,12 @@ function escapeMarkdown(text) {
     .replace(/([*_[\]`~])/g, '\\$1');
 }
 
+function escapeMarkdownTitle(title) {
+  return String(title)
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"');
+}
+
 function inlineCode(content) {
   const longest = Math.max(0, ...Array.from(String(content).matchAll(/`+/g), (match) => match[0].length));
   const fence = '`'.repeat(Math.max(1, longest + 1));
@@ -46,7 +52,7 @@ function linkTarget(token) {
   const href = token.attrGet('href') || '';
   const target = /[\s()]/.test(href) ? `<${href.replace(/>/g, '%3E')}>` : href;
   const title = token.attrGet('title');
-  return title ? `${target} "${String(title).replace(/"/g, '\\"')}"` : target;
+  return title ? `${target} "${escapeMarkdownTitle(title)}"` : target;
 }
 
 function renderPill(meta) {
@@ -93,7 +99,7 @@ function renderInline(children) {
       case 'image': {
         const src = token.attrGet('src') || '';
         const title = token.attrGet('title');
-        const suffix = title ? ` "${String(title).replace(/"/g, '\\"')}"` : '';
+        const suffix = title ? ` "${escapeMarkdownTitle(title)}"` : '';
         output += `![${escapeMarkdown(token.content || '')}](${src}${suffix})`;
         break;
       }

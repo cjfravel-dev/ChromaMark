@@ -5,10 +5,18 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-07-10
+
 ### Added
 
 - Added Contributor Covenant 2.1 with a private conduct-reporting address and
   transparent solo-maintainer enforcement limitations.
+
+### Fixed
+
+- Replaced polynomial linter regular expressions with linear scanners, escaped
+  backslashes in GitHub-exported link/image titles, and limited default CI token
+  permissions to read-only.
 
 ## [0.4.1] - 2026-07-10
 
@@ -125,6 +133,7 @@ from the [ChromaMark language version](./docs/compatibility.md).
 [#38]: https://github.com/cjfravel-dev/ChromaMark/pull/38
 [#39]: https://github.com/cjfravel-dev/ChromaMark/pull/39
 [#40]: https://github.com/cjfravel-dev/ChromaMark/pull/40
+[0.4.2]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.4.2
 [0.4.1]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.4.1
 [0.4.0]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.4.0
 [0.3.1]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.3.1

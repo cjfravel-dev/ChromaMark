@@ -159,7 +159,7 @@ Already shipping MarkdownIt? Use the
 plugin rules, DOM hooks, and themes while excluding the parser library.
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@chromamark/renderer@0.4.1/dist/chromamark.min.js"
+<script src="https://cdn.jsdelivr.net/npm/@chromamark/renderer@0.4.2/dist/chromamark.min.js"
         data-chromamark-auto></script>
 
 <div class="chromamark">

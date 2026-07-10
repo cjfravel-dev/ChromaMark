@@ -37,17 +37,92 @@ function isEscaped(line, idx) {
 
 /** Backtick-delimited code-span ranges on one line (approximate). */
 function codeSpans(line) {
+  const runs = [];
+  for (let index = 0; index < line.length;) {
+    if (line[index] !== '`' || isEscaped(line, index)) {
+      index++;
+      continue;
+    }
+    const start = index;
+    while (index < line.length && line[index] === '`') index++;
+    runs.push({ start, end: index, length: index - start });
+  }
+
+  const nextSameLength = new Array(runs.length).fill(-1);
+  const nextByLength = new Map();
+  for (let index = runs.length - 1; index >= 0; index--) {
+    nextSameLength[index] = nextByLength.get(runs[index].length) ?? -1;
+    nextByLength.set(runs[index].length, index);
+  }
+
   const ranges = [];
-  const re = /(`+)(.+?)\1/g;
-  for (let m; (m = re.exec(line)); ) {
-    ranges.push({ start: m.index, end: m.index + m[0].length, inner: m[2] });
-    if (re.lastIndex === m.index) re.lastIndex++;
+  for (let index = 0; index < runs.length;) {
+    const closeIndex = nextSameLength[index];
+    if (closeIndex === -1) {
+      index++;
+      continue;
+    }
+    const opener = runs[index];
+    const closer = runs[closeIndex];
+    ranges.push({
+      start: opener.start,
+      end: closer.end,
+      inner: line.slice(opener.end, closer.start),
+    });
+    index = closeIndex + 1;
   }
   return ranges;
 }
 
-const INLINE = /\[([!.=])([^\s\]]+)(?:\s+([^\]]*))?\]/g;
 const CONSTRUCT_IN_CODE = /\[[!.=]|\{(?:\+\+|--|~~|==|>>)/;
+
+function inlineConstructs(line) {
+  const constructs = [];
+  const nextClose = new Int32Array(line.length + 1);
+  let closingBracket = -1;
+  nextClose[line.length] = -1;
+  for (let index = line.length - 1; index >= 0; index--) {
+    if (line[index] === ']') closingBracket = index;
+    nextClose[index] = closingBracket;
+  }
+
+  for (let cursor = 0; cursor < line.length;) {
+    const start = line.indexOf('[', cursor);
+    if (start === -1) break;
+    const sigil = line[start + 1];
+    if (sigil !== '!' && sigil !== '.' && sigil !== '=') {
+      cursor = start + 1;
+      continue;
+    }
+
+    const specStart = start + 2;
+    const close = nextClose[specStart];
+    if (close === -1) break;
+    let specEnd = specStart;
+    while (specEnd < close && !/\s/.test(line[specEnd])) specEnd++;
+    if (specEnd === specStart) {
+      cursor = start + 1;
+      continue;
+    }
+
+    let label;
+    if (specEnd < close) {
+      let labelStart = specEnd;
+      while (labelStart < close && /\s/.test(line[labelStart])) labelStart++;
+      label = line.slice(labelStart, close);
+    }
+
+    constructs.push({
+      index: start,
+      length: close - start + 1,
+      sigil,
+      specTok: line.slice(specStart, specEnd),
+      label,
+    });
+    cursor = close + 1;
+  }
+  return constructs;
+}
 
 function scanInline(line, row, diags) {
   const spans = codeSpans(line);
@@ -59,15 +134,19 @@ function scanInline(line, row, diags) {
       });
     }
   }
-  const inSpan = (idx) => spans.some((s) => idx >= s.start && idx < s.end);
+  let spanIndex = 0;
+  const inSpan = (idx) => {
+    while (spanIndex < spans.length && spans[spanIndex].end <= idx) spanIndex++;
+    const span = spans[spanIndex];
+    return Boolean(span && idx >= span.start && idx < span.end);
+  };
 
-  INLINE.lastIndex = 0;
-  for (let m; (m = INLINE.exec(line)); ) {
-    const idx = m.index;
+  for (const construct of inlineConstructs(line)) {
+    const idx = construct.index;
     if (inSpan(idx) || isEscaped(line, idx)) continue;
-    const after = line[idx + m[0].length];
+    const after = line[idx + construct.length];
     if (after === '(' || after === '[') continue; // markdown link / reference
-    const [, sigil, specTok, label] = m;
+    const { sigil, specTok, label } = construct;
     const spec = parseSpec(specTok);
     if (!spec) {
       const what = sigil === '!' ? 'pill' : sigil === '.' ? 'colored text' : 'meter';

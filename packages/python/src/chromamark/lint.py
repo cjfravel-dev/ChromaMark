@@ -4,7 +4,7 @@ import re
 from typing import Iterable, List, Optional, TypedDict
 
 from .tones import parse_spec, resolve_tone
-from .whitespace import WSR
+from .whitespace import WS, WSR
 from .whitespace import split as ws_split
 from .whitespace import strip as ws_strip
 
@@ -19,8 +19,6 @@ class LintDiagnostic(TypedDict):
 
 _BLOCK_KINDS = {"details", "fields", "block"}
 _HEX = re.compile(r"^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})\Z")
-_CODE_SPAN = re.compile(r"(`+)(.+?)\1")
-_INLINE = re.compile(r"\[([!.=])([^" + WSR + r"\]]+)(?:[" + WSR + r"]+([^\]]*))?\]")
 _CONSTRUCT_IN_CODE = re.compile(r"\[[!.=]|\{(?:\+\+|--|~~|==|>>)")
 _FENCE_CODE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
 _FENCE_CODE_CLOSE = re.compile(r"^ {0,3}(`{3,}|~{3,})[" + WSR + r"]*\Z")
@@ -52,8 +50,83 @@ def _is_escaped(line: str, index: int) -> bool:
     return count % 2 == 1
 
 
+def _code_spans(line: str):
+    runs = []
+    index = 0
+    while index < len(line):
+        if line[index] != "`" or _is_escaped(line, index):
+            index += 1
+            continue
+        start = index
+        while index < len(line) and line[index] == "`":
+            index += 1
+        runs.append((start, index, index - start))
+
+    next_same_length = [-1] * len(runs)
+    next_by_length = {}
+    for index in range(len(runs) - 1, -1, -1):
+        length = runs[index][2]
+        next_same_length[index] = next_by_length.get(length, -1)
+        next_by_length[length] = index
+
+    spans = []
+    index = 0
+    while index < len(runs):
+        close_index = next_same_length[index]
+        if close_index == -1:
+            index += 1
+            continue
+        start, content_start, _length = runs[index]
+        content_end, end, _close_length = runs[close_index]
+        spans.append((start, end, line[content_start:content_end]))
+        index = close_index + 1
+    return spans
+
+
+def _inline_constructs(line: str):
+    constructs = []
+    next_close = [-1] * (len(line) + 1)
+    closing_bracket = -1
+    for index in range(len(line) - 1, -1, -1):
+        if line[index] == "]":
+            closing_bracket = index
+        next_close[index] = closing_bracket
+
+    cursor = 0
+    while cursor < len(line):
+        start = line.find("[", cursor)
+        if start == -1:
+            break
+        sigil = line[start + 1] if start + 1 < len(line) else ""
+        if sigil not in ("!", ".", "="):
+            cursor = start + 1
+            continue
+
+        spec_start = start + 2
+        close = next_close[spec_start]
+        if close == -1:
+            break
+        spec_end = spec_start
+        while spec_end < close and line[spec_end] not in WS:
+            spec_end += 1
+        if spec_end == spec_start:
+            cursor = start + 1
+            continue
+
+        label = None
+        if spec_end < close:
+            label_start = spec_end
+            while label_start < close and line[label_start] in WS:
+                label_start += 1
+            label = line[label_start:close]
+
+        constructs.append((start, close + 1, sigil, line[spec_start:spec_end], label))
+        cursor = close + 1
+    return constructs
+
+
 def _scan_inline(line: str, row: int, diagnostics: List[LintDiagnostic]) -> None:
-    spans = [(match.start(), match.end(), match.group(2)) for match in _CODE_SPAN.finditer(line)]
+    spans = _code_spans(line)
     for start, _end, inner in spans:
         if _CONSTRUCT_IN_CODE.search(inner):
             diagnostics.append({
@@ -64,14 +137,15 @@ def _scan_inline(line: str, row: int, diagnostics: List[LintDiagnostic]) -> None
                 "message": "ChromaMark construct is inside backticks; it renders as code, not rich output",
             })
 
-    for match in _INLINE.finditer(line):
-        index = match.start()
-        if any(start <= index < end for start, end, _inner in spans) or _is_escaped(line, index):
+    span_index = 0
+    for index, end, sigil, spec_token, label in _inline_constructs(line):
+        while span_index < len(spans) and spans[span_index][1] <= index:
+            span_index += 1
+        in_span = span_index < len(spans) and spans[span_index][0] <= index < spans[span_index][1]
+        if in_span or _is_escaped(line, index):
             continue
-        after_index = match.end()
-        if after_index < len(line) and line[after_index] in "([":
+        if end < len(line) and line[end] in "([":
             continue
-        sigil, spec_token, label = match.groups()
         spec = parse_spec(spec_token)
         if spec is None:
             what = "pill" if sigil == "!" else "colored text" if sigil == "." else "meter"

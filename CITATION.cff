@@ -8,6 +8,6 @@ authors:
 repository-code: "https://github.com/cjfravel-dev/ChromaMark"
 url: "https://cjfravel-dev.github.io/ChromaMark/"
 license: MIT
-version: 0.4.1
+version: 0.4.2
 date-released: 2026-07-10
 abstract: "A lean rich-markup format and renderer for agent-to-human communication."
