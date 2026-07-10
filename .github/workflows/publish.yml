@@ -8,6 +8,7 @@ name: Publish
 on:
   release:
     types: [published]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -34,7 +35,7 @@ jobs:
       - run: npm test --workspace @chromamark/cli
       - name: Publish npm packages (skips versions already on the registry)
         run: |
-          for pkg in @chromamark/conformance @chromamark/renderer @chromamark/cli; do
+          for pkg in @chromamark/renderer @chromamark/cli @chromamark/conformance; do
             dir="packages/${pkg#@chromamark/}"
             ver=$(node -p "require('./$dir/package.json').version")
             if npm view "$pkg@$ver" version >/dev/null 2>&1; then
@@ -45,6 +46,7 @@ jobs:
           done
 
   pypi:
+    if: github.event_name == 'release'
     name: PyPI
     runs-on: ubuntu-latest
     environment: pypi

@@ -10,3 +10,12 @@ test('Trusted Publishing includes the public conformance package', () => {
   assert.match(publish, /npm test --workspace @chromamark\/conformance/);
   assert.match(releasing, /@chromamark\/conformance/);
 });
+
+test('npm publishing can be retried manually and publishes established packages first', () => {
+  assert.match(publish, /workflow_dispatch:/);
+  assert.match(
+    publish,
+    /for pkg in @chromamark\/renderer @chromamark\/cli @chromamark\/conformance/,
+  );
+  assert.match(publish, /github\.event_name == 'release'/);
+});
