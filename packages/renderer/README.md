@@ -19,6 +19,9 @@ npm install @chromamark/renderer
 import chromamark, { render, createRenderer } from '@chromamark/renderer';
 ```
 
+TypeScript declarations ship with the Node and browser entry points; no separate
+`@types` package is required.
+
 | Export                    | Description                                                        |
 | ------------------------- | ----------------------------------------------------------------- |
 | `default` (`chromamark`)  | markdown-it plugin: `new MarkdownIt().use(chromamark, options?)`. |

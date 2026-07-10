@@ -60,6 +60,8 @@ const ansi = renderAnsi('[!pass]', { color: 'always' }); // terminal-styled text
 const problems = lint('Use `[!pass]` here'); // [{ line, column, rule, ... }]
 ```
 
+TypeScript declarations ship with the package.
+
 ## License
 
 Modified MIT License with a SaaS source-availability provision — see LICENSE.md.

@@ -21,12 +21,19 @@
   },
   "type": "module",
   "main": "./src/index.js",
+  "types": "./src/index.d.ts",
   "browser": "./dist/chromamark.esm.js",
   "unpkg": "./dist/chromamark.min.js",
   "jsdelivr": "./dist/chromamark.min.js",
   "exports": {
-    ".": "./src/index.js",
-    "./browser": "./dist/chromamark.esm.js",
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./browser": {
+      "types": "./src/browser.d.ts",
+      "default": "./dist/chromamark.esm.js"
+    },
     "./global": "./dist/chromamark.min.js",
     "./theme.css": "./theme/chromamark.css"
   },
@@ -51,6 +58,7 @@
     "callout"
   ],
   "dependencies": {
+    "@types/markdown-it": "^14.1.2",
     "markdown-it": "^14.1.0"
   },
   "devDependencies": {
