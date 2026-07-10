@@ -5,6 +5,11 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ## [Unreleased]
 
+### Changed
+
+- Reframed the README around “Markdown for AI-generated reports,” leading with
+  semantic state, streaming, graceful truncation, and HTML tradeoffs.
+
 ### Fixed
 
 - Added the published `@chromamark/conformance` package badge to the README.

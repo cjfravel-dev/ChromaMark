@@ -19,7 +19,7 @@ test('README.md is generated from the canonical ChromaMark source', () => {
   const source = read('README.cm');
   const generated = read('README.md');
 
-  assert.match(source, /::: info Why ChromaMark/);
+  assert.match(source, /::: info Agent reports aren't prose/);
   assert.match(source, /::: info GitHub-native approximation/);
   assert.match(source, /transpiled[\s\S]*approximation[\s\S]*full ChromaMark experience[\s\S]*playground/i);
   assert.match(source, /::: success Deploy succeeded/);
@@ -30,6 +30,23 @@ test('README.md is generated from the canonical ChromaMark source', () => {
   assert.match(generated, /\*\*GitHub-native approximation\*\*/);
   assert.match(generated, /transpiled[\s\S]*approximation[\s\S]*full ChromaMark experience[\s\S]*playground/i);
   assert.match(generated, /✅ <kbd>healthy<\/kbd>/);
+});
+
+test('README leads with the Markdown-for-AI-reports category story', () => {
+  const readme = read('README.md');
+  const lead = readme.slice(0, 7000);
+  assert.match(lead, /Markdown for AI-generated reports/);
+  assert.match(lead, /Markdown was designed for people writing documents/);
+  assert.match(lead, /Agent reports aren't prose/);
+  assert.match(lead, /Designed for AI from the ground up/);
+  assert.match(lead, /stream-safe/i);
+  assert.match(lead, /readable when truncated/i);
+  assert.match(lead, /semantic state/);
+  assert.match(lead, /HTML solves presentation[\s\S]*wrong tradeoffs/i);
+  assert.ok(
+    lead.indexOf('Markdown for AI-generated reports') < lead.indexOf('| Colored block'),
+    'category story must precede feature details',
+  );
 });
 
 test('contributor guide requires the repository test-first workflow', () => {
