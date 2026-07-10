@@ -11,29 +11,58 @@
 [![Code license](https://img.shields.io/badge/license-MIT-blue)](LICENSE.md)
 [![Spec license](https://img.shields.io/badge/spec-CC_BY--SA_4.0-blue)](LICENSE-SPEC.md)
 
-**A lean rich-markup for agent-to-human communication.** ChromaMark is a strict
-syntax superset of Markdown (CommonMark + GFM) that adds the three things agents
-actually need to communicate clearly — **colored blocks**, **colored pills**, and
-**collapsible sections** — plus a few opt-in extensions. It costs a fraction of
-the tokens of equivalent HTML and degrades to readable plain text anywhere it
-isn't natively rendered.
+**Markdown for AI-generated reports.**
 
-::: info Why ChromaMark
-Markdown can't color a callout or render a `PASS`/`FAIL` badge. HTML can, but
-`<span class="pill pill--ok">PASS</span>` burns 12 tokens per badge and reads
-terribly when unrendered. ChromaMark gets you both — cheap and legible.
+Markdown was designed for people writing documents. Today, more and more
+reports are written by agents: deployment summaries, evaluations, code reviews,
+incident diagnostics, and CI results. The audience changed, but the format did
+not.
+
+::: info Agent reports aren't prose
+They communicate **semantic state**: status, severity, health, pass/fail,
+progress, metrics, structured fields, and expandable diagnostics.
+
+Plain Markdown cannot express those concepts directly. Agents compensate with
+emoji conventions, raw HTML, or a different custom syntax in every project.
 :::
 
-Same rendered badge, counted with the `o200k_base` tokenizer (GPT-4o/4.1/5-class):
+ChromaMark is a strict **syntax** superset of CommonMark + GFM that adds the
+semantic building blocks agent reports need while remaining readable anywhere
+Markdown already works. It adds meaning first; color is one renderer's way of
+making that meaning scannable.
+
+### Designed for AI from the ground up
+
+- **Semantic, not decorative** — encode success, danger, warnings, progress,
+  fields, and details directly.
+- **Token efficient** — express report structure without verbose HTML.
+- **Stream-safe** — every opener precedes its content, so rendering can begin as
+  tokens arrive.
+- **Readable when truncated** — unclosed blocks auto-close and incomplete
+  constructs degrade to literal text.
+- **Markdown-compatible** — ordinary CommonMark and GFM continue to work.
+- **Safe by default** — no raw HTML or script execution is required.
+
+## Why not HTML?
+
+HTML solves presentation, but it makes the wrong tradeoffs for agent output:
+
+- expensive in tokens
+- noisy and fragile in plain text
+- awkward to stream incrementally
+- unsafe unless carefully sanitized
+- tedious for models and humans to author
+
+The difference compounds across status-heavy reports. The same rendered badge,
+counted with the `o200k_base` tokenizer (GPT-4o/4.1/5-class):
 
 | Same `PASS` badge | Source                                    | Tokens |
 | ----------------- | ----------------------------------------- | ------ |
 | ChromaMark pill   | `[!ok PASS]`                              | **5**  |
 | HTML span         | `<span class="pill pill--ok">PASS</span>` | 12     |
 
-A colored callout shows the same ratio — `::: success` / body / `:::` is 10 tokens
-versus 22 for the `<div class="callout…">…</div>` equivalent — and it compounds
-across a status-heavy report.
+A semantic callout shows the same ratio — `::: success` / body / `:::` is 10
+tokens versus 22 for the `<div class="callout…">…</div>` equivalent.
 
 📄 **[Read the spec](./SPEC.md)** · 🔄 **[Compatibility](./docs/compatibility.md)** · 📐 **[Grammar](./docs/grammar.ebnf)** · 🎨 **[Playground](https://cjfravel-dev.github.io/ChromaMark/playground/)** · 🖼️ **[Gallery](https://cjfravel-dev.github.io/ChromaMark/gallery.html)**
 
