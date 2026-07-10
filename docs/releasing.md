@@ -15,6 +15,8 @@ and publishes:
 npm and PyPI use OIDC Trusted Publishing through the `npm` and `pypi` GitHub
 environments. No registry API token is required. Existing package versions are
 skipped, which allows coordinated releases where only some packages changed.
+The workflow can also be dispatched manually to retry npm publishing; PyPI runs
+only for release events.
 
 ## Release checklist
 
