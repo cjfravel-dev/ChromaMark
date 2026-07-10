@@ -9,6 +9,8 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 - Reframed the README around “Markdown for AI-generated reports,” leading with
   semantic state, streaming, graceful truncation, and HTML tradeoffs.
+- Elevated the VS Code Marketplace extension as the primary shared evaluation
+  surface for humans and agents reviewing generated reports.
 
 ### Fixed
 

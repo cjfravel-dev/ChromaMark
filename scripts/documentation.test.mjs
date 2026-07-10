@@ -36,6 +36,12 @@ test('README leads with the Markdown-for-AI-reports category story', () => {
   const readme = read('README.md');
   const lead = readme.slice(0, 7000);
   assert.match(lead, /Markdown for AI-generated reports/);
+  assert.match(lead, /Start with the VS Code extension/);
+  assert.match(lead, /evaluate agent output together/);
+  assert.match(
+    lead,
+    /marketplace\.visualstudio\.com\/items\?itemName=chromamark\.chromamark-vscode/,
+  );
   assert.match(lead, /Markdown was designed for people writing documents/);
   assert.match(lead, /Agent reports aren't prose/);
   assert.match(lead, /Designed for AI from the ground up/);
@@ -46,6 +52,10 @@ test('README leads with the Markdown-for-AI-reports category story', () => {
   assert.ok(
     lead.indexOf('Markdown for AI-generated reports') < lead.indexOf('| Colored block'),
     'category story must precede feature details',
+  );
+  assert.ok(
+    lead.indexOf('Start with the VS Code extension') < lead.indexOf('Markdown was designed'),
+    'VS Code evaluation workflow must precede the broader problem narrative',
   );
 });
 
