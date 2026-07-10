@@ -14,6 +14,7 @@ function fakeUri(path, scheme = 'file') {
 
 const diagnosticApi = {
   DiagnosticSeverity: { Warning: 1 },
+  CodeActionKind: { QuickFix: 'quickfix' },
   Position: class Position {},
   Range: class Range {},
   Diagnostic: class Diagnostic {},
@@ -23,6 +24,7 @@ const diagnosticApi = {
       delete() {},
       dispose() {},
     }),
+    registerCodeActionsProvider: () => ({ dispose() {} }),
   },
 };
 

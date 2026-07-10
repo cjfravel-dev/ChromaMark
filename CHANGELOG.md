@@ -11,6 +11,8 @@ from the [ChromaMark language version](./docs/compatibility.md).
   typed validation/runner APIs, and a language-neutral runner protocol.
 - Python `lint()` parity and a lint-focused `chromamark lint` console command,
   backed by the same CM001–CM005 diagnostic corpus as JavaScript.
+- VS Code quick fixes for CM001–CM005 diagnostics: unwrap backticked constructs,
+  correct tone/block typos, reset invalid meters, and append closing fences.
 - GitHub-native GFM export through renderer/CLI `renderGitHub` APIs and the
   `chromamark github` command, including Alerts, details, tables, tone-aware
   badges, meters, and CriticMarkup degradation.

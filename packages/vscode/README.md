@@ -21,7 +21,9 @@ Live preview and syntax highlighting for [ChromaMark](https://github.com/cjfrave
 - **Syntax highlighting.** An injection grammar highlights ChromaMark constructs
   inside any Markdown document.
 - **Live lint diagnostics.** `.cm` files show ChromaMark authoring mistakes in
-  the Problems panel and editor as you type. Ordinary `.md` files are not linted.
+  the Problems panel and editor as you type. Quick fixes can unwrap backticked
+  constructs, correct tone/block typos, reset invalid meters, and close
+  containers. Ordinary `.md` files are not linted.
 - **`.cm` files.** This extension is treated as Markdown, so it gets
   full editing and preview support.
 

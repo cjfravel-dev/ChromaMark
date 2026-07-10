@@ -141,7 +141,7 @@ const md = new MarkdownIt().use(chromamark);
 
 The [`chromamark-vscode`](./packages/vscode) extension renders ChromaMark in the
 built-in Markdown preview, highlights its syntax, and reports live lint
-diagnostics for `.cm` files. `.cm` files are treated as Markdown. Press
+diagnostics with quick fixes for `.cm` files. `.cm` files are treated as Markdown. Press
 <kbd>F5</kbd> from the repo to try it.
 
 ## For LLMs & agents
