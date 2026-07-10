@@ -6,9 +6,49 @@
 
 import { createRenderer, LANGUAGE_VERSION, render as renderString } from './index.js';
 import { applyTheme, resolveTheme, THEME_PRESETS } from './theme-presets.js';
+import { createStreamingRenderer } from './streaming.js';
 
 export { LANGUAGE_VERSION };
 export { applyTheme, resolveTheme, THEME_PRESETS };
+
+export function createStreamingElement(target, options = {}) {
+  const element = resolve(target);
+  if (!element) throw new Error('stream target was not found');
+  element.innerHTML = '<div data-cm-stream-stable></div><div data-cm-stream-tail></div>';
+  const stable = element.querySelector('[data-cm-stream-stable]');
+  const tail = element.querySelector('[data-cm-stream-tail]');
+  const stream = createStreamingRenderer(options);
+  let appliedStable = '';
+
+  const patch = (snapshot) => {
+    if (snapshot.committedHtml.startsWith(appliedStable)) {
+      stable.insertAdjacentHTML('beforeend', snapshot.committedHtml.slice(appliedStable.length));
+    } else {
+      stable.innerHTML = snapshot.committedHtml;
+    }
+    appliedStable = snapshot.committedHtml;
+    tail.innerHTML = snapshot.tailHtml;
+    return snapshot;
+  };
+
+  return {
+    append(chunk) {
+      return patch(stream.append(chunk));
+    },
+    snapshot() {
+      return stream.snapshot();
+    },
+    finalize() {
+      const final = stream.finalize();
+      if (final.html !== final.committedHtml + final.tailHtml) {
+        stable.innerHTML = '';
+        tail.innerHTML = final.html;
+        appliedStable = '';
+      }
+      return final;
+    },
+  };
+}
 
 const STYLE_ID = 'chromamark-theme';
 const DONE_ATTR = 'data-chromamark-done';
@@ -163,6 +203,7 @@ export const ChromaMark = {
   injectTheme,
   autoRender,
   applyTheme,
+  createStreamingElement,
   resolveTheme,
   THEME_PRESETS,
   createRenderer,

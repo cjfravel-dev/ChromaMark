@@ -2,6 +2,7 @@ import chromamark, {
   LANGUAGE_VERSION,
   colorEnabled,
   createRenderer,
+  createStreamingRenderer,
   lint,
   render,
   renderAnsi,
@@ -35,6 +36,8 @@ const options: RendererOptions = {
   },
 };
 const md = createRenderer(options);
+const stream = createStreamingRenderer({ rendererOptions: options });
+const streamed: string = stream.append('[!pass]').html;
 md.use(chromamark, options);
 md.set({ linkify: false });
 md.enable('table');
@@ -72,5 +75,5 @@ const slimRender: string = SlimChromaMark.render('[!pass]');
 
 void [
   html, ansi, github, cliGithub, diagnostics, page, css, version, enabled,
-  conformance, variables, rendered, all, browserVersion, supplied, slimRender,
+  conformance, variables, streamed, rendered, all, browserVersion, supplied, slimRender,
 ];

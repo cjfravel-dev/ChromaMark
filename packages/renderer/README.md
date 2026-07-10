@@ -32,6 +32,7 @@ TypeScript declarations ship with the Node and browser entry points; no separate
 | `THEME_PRESETS`           | Safe built-in semantic color palettes.                            |
 | `resolveTheme(theme?)`    | Validate a preset/config into known CSS variables.                |
 | `applyTheme(target, theme?)` | Apply known variables to an Element or Document.              |
+| `createStreamingRenderer()` | Append-only incremental HTML session.                           |
 | `lint(src, opts?)`        | Check for common mistakes → array of `{ line, column, rule, … }`. |
 | `LANGUAGE_VERSION`        | ChromaMark language contract implemented by this release.         |
 
@@ -55,6 +56,13 @@ process.stdout.write(renderAnsi('::: success\nAll good [!ok healthy]\n:::'));
 
 Color defaults to `'auto'` — on when stdout is a TTY and [`NO_COLOR`](https://no-color.org)
 is unset. The `colorEnabled(option, env?, isTTY?)` helper is exported too.
+
+### Incremental streaming
+
+`createStreamingRenderer()` commits proven-isolated blocks and reparses only the
+mutable tail; `finalize()` is byte-identical to a normal full render. The browser
+entry adds `createStreamingElement()` for stable-prefix DOM appends and tail-only
+replacement. See the [streaming guide](../../docs/streaming.md).
 
 ### GitHub-native rendering
 

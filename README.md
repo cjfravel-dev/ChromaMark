@@ -191,6 +191,10 @@ tags, no lost content:
 This is the thing HTML can't do gracefully and plain Markdown can't do at all. See
 the streaming contract in [SPEC §12](./SPEC.md).
 
+For live token feeds, the [incremental streaming API](./docs/streaming.md)
+commits stable blocks, reparses only the mutable tail, and patches only that tail
+in the browser while guaranteeing exact final HTML.
+
 ## Safety &amp; sanitization
 
 Agent output is untrusted input, so ChromaMark is safe by default:

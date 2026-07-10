@@ -2,6 +2,7 @@ import {
   LANGUAGE_VERSION,
   type RendererOptions,
   type ThemeInput,
+  type StreamingSnapshot,
 } from './index.js';
 import type MarkdownIt from 'markdown-it';
 
@@ -29,6 +30,11 @@ export interface ChromaMarkBrowserApi {
   injectTheme(document?: Document): void;
   applyTheme(target: Element | Document, theme?: ThemeInput): Element;
   resolveTheme(theme?: ThemeInput): Record<string, string>;
+  createStreamingElement(target: RenderTarget, options?: RendererOptions): {
+    append(chunk: unknown): StreamingSnapshot;
+    snapshot(): StreamingSnapshot;
+    finalize(): StreamingSnapshot;
+  };
   autoRender(options?: BrowserOptions): Array<RenderResult | AsyncRenderResult>;
   createRenderer(options?: RendererOptions): MarkdownIt;
 }
@@ -49,6 +55,11 @@ export function injectTheme(document?: Document): void;
 export function applyTheme(target: Element | Document, theme?: ThemeInput): Element;
 export function resolveTheme(theme?: ThemeInput): Record<string, string>;
 export const THEME_PRESETS: Readonly<Record<string, Readonly<Record<string, string>>>>;
+export function createStreamingElement(target: RenderTarget, options?: RendererOptions): {
+  append(chunk: unknown): StreamingSnapshot;
+  snapshot(): StreamingSnapshot;
+  finalize(): StreamingSnapshot;
+};
 export function autoRender(options?: BrowserOptions): Array<RenderResult | AsyncRenderResult>;
 
 export const ChromaMark: ChromaMarkBrowserApi;
