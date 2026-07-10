@@ -236,23 +236,38 @@ export function run(argv = process.argv.slice(2)) {
 
   try {
     info = statSync(opts.input);
-    rebuild();
   } catch (err) {
     process.stderr.write(`error: ${err.message}\n`);
     return 1;
   }
 
   if (opts.watch && !opts.stdout) {
-    process.stderr.write('watching for changes… (Ctrl+C to stop)\n');
-    const onChange = () => {
+    const onChange = (_eventType, filename) => {
+      if (info.isDirectory() && filename && extname(String(filename)) !== '.cm') return;
       try { rebuild(); } catch (err) { process.stderr.write(`error: ${err.message}\n`); }
     };
+    let watcher;
     try {
-      watch(opts.input, { recursive: info.isDirectory() }, onChange);
-    } catch {
-      watch(opts.input, onChange); // non-recursive fallback (older Node / platforms)
+      try {
+        watcher = watch(opts.input, { recursive: info.isDirectory() }, onChange);
+      } catch {
+        watcher = watch(opts.input, onChange); // non-recursive fallback (older Node / platforms)
+      }
+      process.stderr.write('watching for changes… (Ctrl+C to stop)\n');
+      rebuild();
+    } catch (err) {
+      if (watcher) watcher.close();
+      process.stderr.write(`error: ${err.message}\n`);
+      return 1;
     }
     return 0;
+  }
+
+  try {
+    rebuild();
+  } catch (err) {
+    process.stderr.write(`error: ${err.message}\n`);
+    return 1;
   }
   return 0;
 }
