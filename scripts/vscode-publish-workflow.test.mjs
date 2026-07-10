@@ -3,6 +3,9 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const workflow = readFileSync(new URL('../.github/workflows/vscode-publish.yml', import.meta.url), 'utf8');
+const extensionPackage = JSON.parse(
+  readFileSync(new URL('../packages/vscode/package.json', import.meta.url), 'utf8'),
+);
 
 test('VS Code publishing uses GitHub OIDC and no PAT secret', () => {
   assert.match(workflow, /id-token:\s*write/);
@@ -10,7 +13,7 @@ test('VS Code publishing uses GitHub OIDC and no PAT secret', () => {
   assert.match(workflow, /uses:\s*azure\/login@v2/);
   assert.match(workflow, /client-id:\s*\$\{\{\s*vars\.AZURE_CLIENT_ID\s*\}\}/);
   assert.match(workflow, /vsce publish --azure-credential/);
-  assert.doesNotMatch(workflow, /VSCE_PAT|--pat|secrets\./);
+  assert.doesNotMatch(workflow, /VSCE_PAT|--pat/);
 });
 
 test('VS Code workflow supports release publishing and manual identity bootstrap', () => {
@@ -26,5 +29,12 @@ test('VS Code publish job rebuilds, tests, packages, and skips duplicate version
   assert.match(workflow, /npm run build --workspace chromamark-vscode/);
   assert.match(workflow, /npm test --workspace chromamark-vscode/);
   assert.match(workflow, /npm run package --workspace chromamark-vscode/);
+  assert.match(workflow, /--packagePath "\$vsix" --skip-duplicate/);
+});
+
+test('the same VSIX publishes to Open VSX with a pinned CLI and environment token', () => {
+  assert.equal(extensionPackage.devDependencies.ovsx, '1.0.2');
+  assert.match(workflow, /OVSX_PAT:\s*\$\{\{\s*secrets\.OVSX_PAT\s*\}\}/);
+  assert.match(workflow, /npm exec --workspace chromamark-vscode -- ovsx publish/);
   assert.match(workflow, /--packagePath "\$vsix" --skip-duplicate/);
 });
