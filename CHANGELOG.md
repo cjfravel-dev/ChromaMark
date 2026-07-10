@@ -7,6 +7,8 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ### Added
 
+- Tokenless VS Code Marketplace publishing through GitHub OIDC, an Entra managed
+  identity, and `vsce --azure-credential`.
 - Safe theme preset/resolution/application APIs with GitHub light/dark, ocean,
   sunset, and monochrome palettes plus constrained semantic overrides.
 - Versioned compressed playground share links with legacy base64 compatibility;

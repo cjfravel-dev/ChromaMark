@@ -38,8 +38,19 @@ skipped, which allows coordinated releases where only some packages changed.
 
 ## VS Code Marketplace
 
-The VS Code Marketplace extension is not published by the GitHub Release
-workflow. Build and inspect it separately:
+The `VS Code Marketplace` workflow publishes without a PAT. GitHub OIDC
+federates the protected `vscode-marketplace` environment to a user-assigned
+Azure managed identity, and `vsce --azure-credential` obtains an Entra token at
+runtime.
+
+Publishing a GitHub Release runs this job after rebuilding, testing, and
+packaging the extension. It can also be dispatched manually with:
+
+- `identity` — write the managed identity's Azure DevOps profile ID to the job
+  summary for one-time Marketplace publisher authorization.
+- `publish` — publish the current package version, skipping duplicates.
+
+For local package inspection:
 
 ```bash
 npm run build --workspace chromamark-vscode
@@ -47,5 +58,6 @@ npm test --workspace chromamark-vscode
 npm run package --workspace chromamark-vscode
 ```
 
-Publish the resulting VSIX through the approved Marketplace authentication
-process. Verify the Marketplace listing and version badge after publication.
+The Marketplace publisher `chromamark` must list the managed identity profile
+ID as a Contributor. GitHub environment variables hold only the non-secret
+Azure client, tenant, and subscription IDs.
