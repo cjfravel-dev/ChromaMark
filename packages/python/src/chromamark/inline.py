@@ -160,8 +160,12 @@ def inline_plugin(md, enabled):
     def render_meter(self, tokens, idx, options, env):
         meta = tokens[idx].meta
         custom, tone, style = _tone_attrs(meta)
+        aria = (
+            ' role="progressbar" aria-valuemin="0" aria-valuemax="100"'
+            f' aria-valuenow="{meta["width"]}" aria-valuetext="{escapeHtml(meta["value"])}"'
+        )
         return (
-            f'<span class="cm-meter{custom}"{tone}{style}>'
+            f'<span class="cm-meter{custom}"{tone}{style}{aria}>'
             f'<span class="cm-track"><span class="cm-fill" style="width:{meta["width"]}%"></span></span>'
             f'<span class="cm-val">{escapeHtml(meta["value"])}</span></span>'
         )

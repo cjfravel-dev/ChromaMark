@@ -5785,7 +5785,8 @@ function inlinePlugin(md, enabled) {
   md.renderer.rules.cm_meter = (tokens, idx) => {
     const meta = tokens[idx].meta;
     const { custom, tone, style } = toneAttrs(meta, esc);
-    return `<span class="cm-meter${custom}"${tone}${style}><span class="cm-track"><span class="cm-fill" style="width:${meta.width}%"></span></span><span class="cm-val">${esc(meta.value)}</span></span>`;
+    const aria = ` role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${meta.width}" aria-valuetext="${esc(meta.value)}"`;
+    return `<span class="cm-meter${custom}"${tone}${style}${aria}><span class="cm-track"><span class="cm-fill" style="width:${meta.width}%"></span></span><span class="cm-val">${esc(meta.value)}</span></span>`;
   };
 }
 

@@ -34,12 +34,12 @@
     {
       "name": "custom color constructs",
       "source": "[!color=#6f42c1 beta] [.color=navy text] [=color=orange 3/4]",
-      "html": "<p><span class=\"cm-pill cm-custom\" style=\"--fg:#6f42c1\">beta</span> <span class=\"cm-text cm-custom\" style=\"--fg:navy\">text</span> <span class=\"cm-meter cm-custom\" style=\"--fg:orange\"><span class=\"cm-track\"><span class=\"cm-fill\" style=\"width:75%\"></span></span><span class=\"cm-val\">3/4</span></span></p>\n"
+      "html": "<p><span class=\"cm-pill cm-custom\" style=\"--fg:#6f42c1\">beta</span> <span class=\"cm-text cm-custom\" style=\"--fg:navy\">text</span> <span class=\"cm-meter cm-custom\" style=\"--fg:orange\" role=\"progressbar\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"75\" aria-valuetext=\"3/4\"><span class=\"cm-track\"><span class=\"cm-fill\" style=\"width:75%\"></span></span><span class=\"cm-val\">3/4</span></span></p>\n"
     },
     {
       "name": "colored text and meter",
       "source": "Gate [.danger critical] [=warning 87.25%]",
-      "html": "<p>Gate <span class=\"cm-text\" data-tone=\"danger\">critical</span> <span class=\"cm-meter\" data-tone=\"warning\"><span class=\"cm-track\"><span class=\"cm-fill\" style=\"width:87.25%\"></span></span><span class=\"cm-val\">87.25%</span></span></p>\n"
+      "html": "<p>Gate <span class=\"cm-text\" data-tone=\"danger\">critical</span> <span class=\"cm-meter\" data-tone=\"warning\" role=\"progressbar\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"87.25\" aria-valuetext=\"87.25%\"><span class=\"cm-track\"><span class=\"cm-fill\" style=\"width:87.25%\"></span></span><span class=\"cm-val\">87.25%</span></span></p>\n"
     },
     {
       "name": "callout with inline title",
@@ -104,7 +104,7 @@
     {
       "name": "meter clamps overflow",
       "source": "[=success 125%]",
-      "html": "<p><span class=\"cm-meter\" data-tone=\"success\"><span class=\"cm-track\"><span class=\"cm-fill\" style=\"width:100%\"></span></span><span class=\"cm-val\">125%</span></span></p>\n"
+      "html": "<p><span class=\"cm-meter\" data-tone=\"success\" role=\"progressbar\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"100\" aria-valuetext=\"125%\"><span class=\"cm-track\"><span class=\"cm-fill\" style=\"width:100%\"></span></span><span class=\"cm-val\">125%</span></span></p>\n"
     },
     {
       "name": "meter rejects zero divisor",
@@ -114,7 +114,7 @@
     {
       "name": "meter rounding parity",
       "source": "[=info 1/32] [=info 1/160] [=info 0.125%] [=info 2.125%] [=info 49.995%] [=info 2.675%] [=info 1.005%]",
-      "html": "<p><span class=\"cm-meter\" data-tone=\"info\"><span class=\"cm-track\"><span class=\"cm-fill\" style=\"width:3.13%\"></span></span><span class=\"cm-val\">1/32</span></span> <span class=\"cm-meter\" data-tone=\"info\"><span class=\"cm-track\"><span class=\"cm-fill\" style=\"width:0.63%\"></span></span><span class=\"cm-val\">1/160</span></span> <span class=\"cm-meter\" data-tone=\"info\"><span class=\"cm-track\"><span class=\"cm-fill\" style=\"width:0.13%\"></span></span><span class=\"cm-val\">0.125%</span></span> <span class=\"cm-meter\" data-tone=\"info\"><span class=\"cm-track\"><span class=\"cm-fill\" style=\"width:2.13%\"></span></span><span class=\"cm-val\">2.125%</span></span> <span class=\"cm-meter\" data-tone=\"info\"><span class=\"cm-track\"><span class=\"cm-fill\" style=\"width:49.99%\"></span></span><span class=\"cm-val\">49.995%</span></span> <span class=\"cm-meter\" data-tone=\"info\"><span class=\"cm-track\"><span class=\"cm-fill\" style=\"width:2.67%\"></span></span><span class=\"cm-val\">2.675%</span></span> <span class=\"cm-meter\" data-tone=\"info\"><span class=\"cm-track\"><span class=\"cm-fill\" style=\"width:1%\"></span></span><span class=\"cm-val\">1.005%</span></span></p>\n"
+      "html": "<p><span class=\"cm-meter\" data-tone=\"info\" role=\"progressbar\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"3.13\" aria-valuetext=\"1/32\"><span class=\"cm-track\"><span class=\"cm-fill\" style=\"width:3.13%\"></span></span><span class=\"cm-val\">1/32</span></span> <span class=\"cm-meter\" data-tone=\"info\" role=\"progressbar\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"0.63\" aria-valuetext=\"1/160\"><span class=\"cm-track\"><span class=\"cm-fill\" style=\"width:0.63%\"></span></span><span class=\"cm-val\">1/160</span></span> <span class=\"cm-meter\" data-tone=\"info\" role=\"progressbar\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"0.13\" aria-valuetext=\"0.125%\"><span class=\"cm-track\"><span class=\"cm-fill\" style=\"width:0.13%\"></span></span><span class=\"cm-val\">0.125%</span></span> <span class=\"cm-meter\" data-tone=\"info\" role=\"progressbar\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"2.13\" aria-valuetext=\"2.125%\"><span class=\"cm-track\"><span class=\"cm-fill\" style=\"width:2.13%\"></span></span><span class=\"cm-val\">2.125%</span></span> <span class=\"cm-meter\" data-tone=\"info\" role=\"progressbar\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"49.99\" aria-valuetext=\"49.995%\"><span class=\"cm-track\"><span class=\"cm-fill\" style=\"width:49.99%\"></span></span><span class=\"cm-val\">49.995%</span></span> <span class=\"cm-meter\" data-tone=\"info\" role=\"progressbar\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"2.67\" aria-valuetext=\"2.675%\"><span class=\"cm-track\"><span class=\"cm-fill\" style=\"width:2.67%\"></span></span><span class=\"cm-val\">2.675%</span></span> <span class=\"cm-meter\" data-tone=\"info\" role=\"progressbar\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"1\" aria-valuetext=\"1.005%\"><span class=\"cm-track\"><span class=\"cm-fill\" style=\"width:1%\"></span></span><span class=\"cm-val\">1.005%</span></span></p>\n"
     },
     {
       "name": "meter rejects Unicode digits",
