@@ -5,8 +5,10 @@
  */
 
 import { createRenderer, LANGUAGE_VERSION, render as renderString } from './index.js';
+import { applyTheme, resolveTheme, THEME_PRESETS } from './theme-presets.js';
 
 export { LANGUAGE_VERSION };
+export { applyTheme, resolveTheme, THEME_PRESETS };
 
 const STYLE_ID = 'chromamark-theme';
 const DONE_ATTR = 'data-chromamark-done';
@@ -160,6 +162,9 @@ export const ChromaMark = {
   renderSrc,
   injectTheme,
   autoRender,
+  applyTheme,
+  resolveTheme,
+  THEME_PRESETS,
   createRenderer,
   get theme() {
     return theme;

@@ -6,6 +6,8 @@ import chromamark, {
   render,
   renderAnsi,
   renderGitHub,
+  resolveTheme,
+  type ThemeConfig,
   type RenderGitHubOptions,
   type RendererOptions,
 } from '@chromamark/renderer';
@@ -41,6 +43,11 @@ const html: string = render('[!pass]', options);
 const ansi: string = renderAnsi('[!pass]', { color: 'never', width: 80 });
 const githubOptions: RenderGitHubOptions = { allowHtml: false, rendererOptions: options };
 const github: string = renderGitHub('[!pass]', githubOptions);
+const themeConfig: ThemeConfig = {
+  preset: 'ocean',
+  tones: { success: { foreground: '#123456' } },
+};
+const variables: Record<string, string> = resolveTheme(themeConfig);
 const cliGithub: string = renderGitHubFromCli('[!pass]', githubOptions);
 const diagnostics = lint('[!unknown x]', { disable: ['CM001'] });
 const page: string = compile('[!pass]', { title: 'Report', rendererOptions: options });
@@ -59,5 +66,5 @@ const browserVersion: string = BrowserChromaMark.LANGUAGE_VERSION;
 
 void [
   html, ansi, github, cliGithub, diagnostics, page, css, version, enabled,
-  conformance, rendered, all, browserVersion,
+  conformance, variables, rendered, all, browserVersion,
 ];

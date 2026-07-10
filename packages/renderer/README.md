@@ -29,6 +29,9 @@ TypeScript declarations ship with the Node and browser entry points; no separate
 | `createRenderer(options?)`| A `markdown-it` instance preconfigured with ChromaMark.           |
 | `renderAnsi(src, opts?)`  | ChromaMark string → ANSI-styled text for a terminal.              |
 | `renderGitHub(src, opts?)`| ChromaMark string → GitHub-native GFM.                            |
+| `THEME_PRESETS`           | Safe built-in semantic color palettes.                            |
+| `resolveTheme(theme?)`    | Validate a preset/config into known CSS variables.                |
+| `applyTheme(target, theme?)` | Apply known variables to an Element or Document.              |
 | `lint(src, opts?)`        | Check for common mistakes → array of `{ line, column, rule, … }`. |
 | `LANGUAGE_VERSION`        | ChromaMark language contract implemented by this release.         |
 
@@ -84,6 +87,23 @@ createRenderer({
 });
 ```
 
+### Theme presets
+
+Choose `github-light`, `github-dark`, `ocean`, `sunset`, or `monochrome`, with
+optional validated semantic overrides:
+
+```js
+import { applyTheme } from '@chromamark/renderer';
+
+applyTheme(document, {
+  preset: 'ocean',
+  tones: { success: { foreground: '#123456' } },
+});
+```
+
+Only known tone/neutral slots and safe hex/plain-name colors are accepted; this
+API does not accept arbitrary CSS. See the [theme guide](../../docs/themes.md).
+
 ### Fenced-code highlighting
 
 ChromaMark stays dependency-free and lets callers supply any highlighter through
@@ -125,6 +145,7 @@ ChromaMark.autoRender();
 | `renderAll(selector?, opts?)`  | Render all matching elements.                                          |
 | `renderSrc(target, opts?)`     | Fetch the element's `data-chromamark-src` file and render it in place. |
 | `injectTheme(doc?)`            | Add the theme `<style>` once (idempotent).                             |
+| `applyTheme(target, theme?)`   | Apply a safe preset/config to an Element or Document.                  |
 | `render(src, opts?)`           | ChromaMark string → HTML.                                              |
 | `theme`                        | The theme CSS as a string.                                             |
 | `LANGUAGE_VERSION`           | ChromaMark language contract implemented by the bundle.               |

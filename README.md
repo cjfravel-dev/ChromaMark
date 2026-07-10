@@ -92,6 +92,10 @@ Everything draws from one semantic color vocabulary — `success`/`ok`/`pass`,
 `muted`/`skip` — with a `color=#hex` escape hatch. Colors are **theme-owned**, so
 output adapts to light/dark automatically.
 
+Applications can also use safe built-in presets (`ocean`, `sunset`,
+`monochrome`, and GitHub light/dark) or constrained semantic overrides through
+the [theme API](./docs/themes.md), without accepting arbitrary CSS.
+
 ## Quick start (webpage)
 
 One CDN import and an attribute — the library injects its own theme and renders

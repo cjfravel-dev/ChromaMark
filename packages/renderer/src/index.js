@@ -12,6 +12,7 @@ import containerPlugin from './containers.js';
 export { renderAnsi, colorEnabled } from './ansi.js';
 export { renderGitHub } from './github.js';
 export { lint } from './lint.js';
+export { THEME_PRESETS, resolveTheme, applyTheme } from './theme-presets.js';
 
 /** Version of the ChromaMark language contract implemented by this renderer. */
 export const LANGUAGE_VERSION = '0.1';

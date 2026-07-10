@@ -45,6 +45,20 @@ export interface LintDiagnostic {
   message: string;
 }
 
+export type ThemePresetName = 'github-light' | 'github-dark' | 'ocean' | 'sunset' | 'monochrome';
+export type ThemeSlot = {
+  foreground?: string;
+  background?: string;
+  border?: string;
+};
+export interface ThemeConfig {
+  preset?: ThemePresetName;
+  tones?: Partial<Record<'success' | 'danger' | 'warning' | 'info' | 'tip' | 'muted', ThemeSlot>>;
+  neutral?: Pick<ThemeSlot, 'background' | 'border'>;
+}
+export type ThemeInput = ThemePresetName | ThemeConfig;
+export type ThemeVariables = Record<string, string>;
+
 declare const chromamark: ChromaMarkPlugin;
 
 export default chromamark;
@@ -60,3 +74,6 @@ export function colorEnabled(
   isTTY?: boolean,
 ): boolean;
 export function lint(source: unknown, options?: LintOptions): LintDiagnostic[];
+export const THEME_PRESETS: Readonly<Record<ThemePresetName, Readonly<ThemeVariables>>>;
+export function resolveTheme(theme?: ThemeInput): ThemeVariables;
+export function applyTheme(target: Element | Document, theme?: ThemeInput): Element;

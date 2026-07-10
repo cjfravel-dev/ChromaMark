@@ -62,6 +62,8 @@ test('surface docs describe newly enforced behavior', () => {
   const cli = read('packages/cli/README.md');
   assert.match(renderer, /role="progressbar"/);
   assert.match(renderer, /renderGitHub/);
+  assert.match(renderer, /THEME_PRESETS/);
+  assert.match(renderer, /applyTheme/);
   assert.match(cli, /extra positional arguments/i);
   assert.match(cli, /chromamark github/);
   assert.match(read('packages/python/README.md'), /chromamark lint/);
