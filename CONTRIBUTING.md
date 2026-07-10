@@ -31,6 +31,7 @@ Useful commands:
 ```bash
 npm test --workspace @chromamark/renderer
 npm test --workspace @chromamark/cli
+npm test --workspace @chromamark/conformance
 npm run test:eval
 npm run test:scripts
 npm run build --workspace chromamark-vscode
@@ -64,6 +65,13 @@ npm run build:readme
 ```
 
 CI runs the same command in check mode and rejects drift.
+
+The canonical conformance files live under `conformance/`. After changing
+`cases.json` or `schema.json`, refresh the publishable package copies:
+
+```bash
+npm run build:conformance
+```
 
 ## Language changes
 

@@ -57,6 +57,11 @@ test('renderer CI rejects a stale generated GitHub README', () => {
   assert.match(workflow, /npm run build:readme -- --check/);
 });
 
+test('CI validates and tests the public conformance kit', () => {
+  assert.match(workflow, /npm test --workspace @chromamark\/conformance/);
+  assert.match(workflow, /npm run build:conformance -- --check/);
+});
+
 test('CI runs the repository static quality gates', () => {
   const renderer = job('renderer', 'python');
   const python = job('python', 'coverage');

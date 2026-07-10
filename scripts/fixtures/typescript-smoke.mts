@@ -15,6 +15,11 @@ import BrowserChromaMark, {
   renderElement,
 } from '@chromamark/renderer/browser';
 import { compile, renderGitHub as renderGitHubFromCli, theme } from '@chromamark/cli';
+import {
+  loadCorpus,
+  runConformance,
+  type ConformanceResult,
+} from '@chromamark/conformance';
 
 const options: RendererOptions = {
   pill: true,
@@ -42,10 +47,17 @@ const page: string = compile('[!pass]', { title: 'Report', rendererOptions: opti
 const css: string = theme();
 const version: string = LANGUAGE_VERSION;
 const enabled: boolean = colorEnabled('auto', {}, false);
+const conformance: Promise<ConformanceResult> = runConformance(render, {
+  corpus: loadCorpus(),
+  languageVersion: LANGUAGE_VERSION,
+});
 
 injectTheme(document);
 const rendered: Element | null | Promise<Element | null> = renderElement('#report', options);
 const all = autoRender({ ...options, selector: '.chromamark' });
 const browserVersion: string = BrowserChromaMark.LANGUAGE_VERSION;
 
-void [html, ansi, github, cliGithub, diagnostics, page, css, version, enabled, rendered, all, browserVersion];
+void [
+  html, ansi, github, cliGithub, diagnostics, page, css, version, enabled,
+  conformance, rendered, all, browserVersion,
+];

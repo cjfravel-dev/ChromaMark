@@ -19,6 +19,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - run: npm ci --no-audit --no-fund
+      - run: npm test --workspace @chromamark/conformance
       - run: npm test --workspace @chromamark/renderer
       - run: npm test --workspace @chromamark/cli
       - run: npm run test:eval
@@ -32,6 +33,7 @@ jobs:
           git diff --exit-code -- packages/renderer/dist/
           cmp packages/renderer/theme/chromamark.css packages/python/src/chromamark/theme.css
           npm run build:readme -- --check
+          npm run build:conformance -- --check
           node scripts/build-site.mjs "$RUNNER_TEMP/_site"
           site="$RUNNER_TEMP/_site"
           test -f "$site/assets/favicon.png"

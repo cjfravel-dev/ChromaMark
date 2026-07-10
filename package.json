@@ -12,6 +12,7 @@
   "workspaces": [
     "packages/renderer",
     "packages/cli",
+    "packages/conformance",
     "packages/vscode"
   ],
   "scripts": {
@@ -22,6 +23,7 @@
     "eval": "node eval/run.js",
     "build:site": "node scripts/build-site.mjs",
     "build:readme": "node scripts/build-readme.mjs",
+    "build:conformance": "node scripts/build-conformance-kit.mjs",
     "lint": "eslint ."
   },
   "devDependencies": {

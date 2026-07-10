@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/cjfravel-dev/ChromaMark/main/conformance/schema.json",
+  "title": "ChromaMark conformance corpus",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "languageVersion", "cases"],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "languageVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "source", "html"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string"
+          },
+          "options": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "container": { "type": "boolean" },
+              "details": { "type": "boolean" },
+              "fields": { "type": "boolean" },
+              "pill": { "type": "boolean" },
+              "text": { "type": "boolean" },
+              "meter": { "type": "boolean" },
+              "critic": { "type": "boolean" }
+            }
+          },
+          "html": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

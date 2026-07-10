@@ -43,10 +43,10 @@ The software implementations, tests, build tooling, and other files not listed
 in the scope above are licensed separately under the
 [MIT License](./LICENSE.md).
 
-The conformance corpus in `conformance/` is an executable rendering contract and
-test fixture, not specification prose. It is intentionally licensed under MIT
-with the software so implementations can reuse it without applying ShareAlike
-to their code or test suites.
+The conformance corpus, schema, and runner protocol in `conformance/` are
+executable compatibility materials, not specification prose. They are
+intentionally licensed under MIT with the software so implementations can reuse
+them without applying ShareAlike to their code or test suites.
 
 [cc-by-sa]: https://creativecommons.org/licenses/by-sa/4.0/
 [commonmark-license]: https://github.com/commonmark/commonmark-spec/blob/master/LICENSE
