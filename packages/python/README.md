@@ -2,8 +2,8 @@
 
 Render and build [ChromaMark](https://github.com/cjfravel-dev/ChromaMark) from
 Python — colored blocks, pills, collapsible sections, fields, meters, and inline
-diff on top of Markdown (CommonMark + GFM). Produces the **same HTML** as the JS
-renderer, so the same theme applies, and it displays inline in Jupyter.
+diff on top of Markdown (CommonMark + GFM). Produces the **same HTML** and lint
+diagnostics as the JS implementation, and displays inline in Jupyter.
 
 Built on [markdown-it-py](https://github.com/executablebooks/markdown-it-py).
 
@@ -40,6 +40,28 @@ html = render(source, highlight=lambda code, language, attrs: your_highlighter(c
 
 The callback output is trusted HTML, following markdown-it-py behavior. Escape
 or sanitize output from highlighters that do not guarantee safe HTML.
+
+## Lint
+
+The installed `chromamark` command provides the same CM001–CM005 validation
+workflow as the npm CLI:
+
+```bash
+chromamark lint report.cm
+cat report.cm | chromamark lint
+chromamark lint report.cm --disable CM001,CM003
+```
+
+Diagnostics use `path:line:column` output, clean input exits `0`, findings exit
+`1`, and usage or file errors exit `2`.
+
+The same linter is available as a Python API:
+
+```python
+from chromamark import lint
+
+diagnostics = lint(source, disable=["CM001"])
+```
 
 ## Build (fluent, for agent reports)
 

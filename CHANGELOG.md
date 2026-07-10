@@ -9,6 +9,8 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 - Public `@chromamark/conformance` kit with versioned fixtures, JSON Schema,
   typed validation/runner APIs, and a language-neutral runner protocol.
+- Python `lint()` parity and a lint-focused `chromamark lint` console command,
+  backed by the same CM001–CM005 diagnostic corpus as JavaScript.
 - GitHub-native GFM export through renderer/CLI `renderGitHub` APIs and the
   `chromamark github` command, including Alerts, details, tables, tone-aware
   badges, meters, and CriticMarkup degradation.

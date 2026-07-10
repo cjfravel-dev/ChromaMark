@@ -64,6 +64,7 @@ test('surface docs describe newly enforced behavior', () => {
   assert.match(renderer, /renderGitHub/);
   assert.match(cli, /extra positional arguments/i);
   assert.match(cli, /chromamark github/);
+  assert.match(read('packages/python/README.md'), /chromamark lint/);
   assert.match(read('eval/README.md'), /unknown task IDs/);
   assert.match(read('packages/vscode/README.md'), /live lint diagnostics/i);
 });

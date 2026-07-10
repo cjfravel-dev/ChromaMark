@@ -236,6 +236,12 @@ from chromamark import display_chromamark, ChromaDoc
 display_chromamark("::: success\nRun complete [=success 100%]\n:::")
 ```
 
+Python-only environments also get the cross-runtime lint workflow:
+
+```bash
+chromamark lint report.cm
+```
+
 ## Repository layout
 
 ```
