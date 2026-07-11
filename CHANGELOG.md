@@ -5,6 +5,8 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ## [Unreleased]
 
+## [VS Code 0.2.3] - 2026-07-11
+
 ### Fixed
 
 - VS Code preview-only tabs now refresh when `.cm` or `.md` files change on
