@@ -33,14 +33,38 @@ const diagnosticWorkspace = {
   onDidOpenTextDocument: () => ({ dispose() {} }),
   onDidChangeTextDocument: () => ({ dispose() {} }),
   onDidCloseTextDocument: () => ({ dispose() {} }),
+  createFileSystemWatcher: () => ({
+    onDidChange: () => ({ dispose() {} }),
+    onDidCreate: () => ({ dispose() {} }),
+    dispose() {},
+  }),
 };
 
 /** Load the built bundle with a stubbed `vscode`, run activate(), and return the commands it executed. */
-async function activateWith({ path, scheme = 'file', languageId = 'markdown', config = {} }) {
+async function activateWith({
+  path,
+  scheme = 'file',
+  languageId = 'markdown',
+  config = {},
+  externalChangePath,
+  externalEvent = 'change',
+  outsideWorkspace = false,
+}) {
   const executed = [];
+  const watchers = [];
   const editor = path ? { document: { uri: fakeUri(path, scheme), languageId } } : undefined;
+  class RelativePattern {
+    constructor(base, pattern) {
+      this.base = base;
+      this.pattern = pattern;
+    }
+  }
   const vscodeStub = {
     ...diagnosticApi,
+    RelativePattern,
+    Uri: {
+      joinPath: (uri) => fakeUri(uri.path.slice(0, uri.path.lastIndexOf('/')), uri.scheme),
+    },
     window: {
       activeTextEditor: editor,
       onDidChangeActiveTextEditor: () => ({ dispose() {} }),
@@ -49,6 +73,16 @@ async function activateWith({ path, scheme = 'file', languageId = 'markdown', co
     workspace: {
       ...diagnosticWorkspace,
       getConfiguration: (section) => ({ get: (key) => config[`${section}.${key}`] }),
+      getWorkspaceFolder: () => outsideWorkspace ? undefined : {},
+      createFileSystemWatcher: (pattern) => {
+        const listeners = {};
+        watchers.push({ pattern, listeners });
+        return {
+          onDidChange: (listener) => { listeners.change = listener; return { dispose() {} }; },
+          onDidCreate: (listener) => { listeners.create = listener; return { dispose() {} }; },
+          dispose() {},
+        };
+      },
     },
     commands: { executeCommand: async (cmd) => { executed.push(cmd); }, registerCommand: () => ({ dispose() {} }) },
   };
@@ -64,6 +98,15 @@ async function activateWith({ path, scheme = 'file', languageId = 'markdown', co
   } finally {
     Module._load = origLoad;
   }
+  if (externalChangePath) {
+    const watcher = outsideWorkspace
+      ? watchers.find(({ pattern }) => pattern instanceof RelativePattern)
+      : watchers.find(({ pattern }) => typeof pattern === 'string');
+    assert.ok(watcher, `activate() must watch ${outsideWorkspace ? 'external' : 'workspace'} supported files`);
+    const listener = watcher.listeners[externalEvent];
+    assert.equal(typeof listener, 'function', `activate() must watch supported file ${externalEvent} events`);
+    listener(fakeUri(externalChangePath));
+  }
   await Promise.resolve();
   return executed;
 }
@@ -75,6 +118,35 @@ test('the built bundle exists (run npm run build first)', () => {
 test('.cm with openMode "preview" reopens as the rendered preview', async () => {
   const cmds = await activateWith({ path: '/w/notes.cm', config: { 'chromamark.cm.openMode': 'preview' } });
   assert.deepEqual(cmds, ['markdown.reopenAsPreview']);
+});
+
+test('an external .cm change refreshes a preview-only tab', async () => {
+  const cmds = await activateWith({
+    path: '/w/notes.cm',
+    config: { 'chromamark.cm.openMode': 'preview' },
+    externalChangePath: '/w/notes.cm',
+  });
+  assert.deepEqual(cmds, ['markdown.reopenAsPreview', 'markdown.preview.refresh']);
+});
+
+test('an atomic .cm replacement refreshes a preview-only tab', async () => {
+  const cmds = await activateWith({
+    path: '/w/notes.cm',
+    config: { 'chromamark.cm.openMode': 'preview' },
+    externalChangePath: '/w/notes.cm',
+    externalEvent: 'create',
+  });
+  assert.deepEqual(cmds, ['markdown.reopenAsPreview', 'markdown.preview.refresh']);
+});
+
+test('an external .cm change outside the workspace refreshes a preview-only tab', async () => {
+  const cmds = await activateWith({
+    path: '/tmp/notes.cm',
+    config: { 'chromamark.cm.openMode': 'preview' },
+    externalChangePath: '/tmp/notes.cm',
+    outsideWorkspace: true,
+  });
+  assert.deepEqual(cmds, ['markdown.reopenAsPreview', 'markdown.preview.refresh']);
 });
 
 test('.cm with openMode "sourceAndPreview" opens the preview to the side', async () => {

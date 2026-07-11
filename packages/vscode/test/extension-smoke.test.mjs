@@ -72,6 +72,11 @@ const vscodeStub = {
     onDidOpenTextDocument: () => ({ dispose() {} }),
     onDidChangeTextDocument: () => ({ dispose() {} }),
     onDidCloseTextDocument: () => ({ dispose() {} }),
+    createFileSystemWatcher: () => ({
+      onDidChange: () => ({ dispose() {} }),
+      onDidCreate: () => ({ dispose() {} }),
+      dispose() {},
+    }),
     getConfiguration: () => ({ get: () => undefined }),
   },
   window: {

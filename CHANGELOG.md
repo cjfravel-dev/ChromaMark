@@ -5,6 +5,11 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ## [Unreleased]
 
+### Fixed
+
+- VS Code preview-only tabs now refresh when `.cm` or `.md` files change on
+  disk, including atomic file replacements.
+
 ## [0.4.2] - 2026-07-10
 
 ### Added
