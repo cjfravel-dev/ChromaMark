@@ -78,6 +78,28 @@ async function setOpenMode() {
 export function activate(context) {
   const handled = new Set();
   const diagnosticCollection = vscode.languages.createDiagnosticCollection('chromamark');
+  const refreshPreviews = () => vscode.commands.executeCommand('markdown.preview.refresh');
+  const watchSourceChanges = (watcher) => {
+    watcher.onDidChange(refreshPreviews);
+    watcher.onDidCreate(refreshPreviews);
+    context.subscriptions.push(watcher);
+  };
+
+  const sourceWatcher = vscode.workspace.createFileSystemWatcher('**/*.{cm,md}');
+  watchSourceChanges(sourceWatcher);
+  const externalSourceWatchers = new Map();
+
+  const watchExternalSource = (doc) => {
+    if (vscode.workspace.getWorkspaceFolder(doc.uri)) return;
+    const directory = vscode.Uri.joinPath(doc.uri, '..');
+    const key = directory.toString();
+    if (externalSourceWatchers.has(key)) return;
+    const watcher = vscode.workspace.createFileSystemWatcher(
+      new vscode.RelativePattern(directory, '*.{cm,md}'),
+    );
+    externalSourceWatchers.set(key, watcher);
+    watchSourceChanges(watcher);
+  };
 
   const updateDiagnostics = (doc) => {
     if (!isChromaMarkDoc(doc)) return;
@@ -130,6 +152,7 @@ export function activate(context) {
   const applyOpenMode = async (editor) => {
     const doc = editor && editor.document;
     if (!isSupportedDoc(doc)) return;
+    watchExternalSource(doc);
     const key = doc.uri.toString();
     if (handled.has(key)) return;
     const ext = extensionKey(doc.uri.path);
