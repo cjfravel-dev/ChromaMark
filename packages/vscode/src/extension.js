@@ -82,6 +82,7 @@ export function activate(context) {
   const watchSourceChanges = (watcher) => {
     watcher.onDidChange(refreshPreviews);
     watcher.onDidCreate(refreshPreviews);
+    watcher.onDidDelete(refreshPreviews);
     context.subscriptions.push(watcher);
   };
 

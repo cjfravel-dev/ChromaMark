@@ -75,6 +75,7 @@ const vscodeStub = {
     createFileSystemWatcher: () => ({
       onDidChange: () => ({ dispose() {} }),
       onDidCreate: () => ({ dispose() {} }),
+      onDidDelete: () => ({ dispose() {} }),
       dispose() {},
     }),
     getConfiguration: () => ({ get: () => undefined }),

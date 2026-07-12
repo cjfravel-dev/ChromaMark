@@ -36,6 +36,7 @@ const diagnosticWorkspace = {
   createFileSystemWatcher: () => ({
     onDidChange: () => ({ dispose() {} }),
     onDidCreate: () => ({ dispose() {} }),
+    onDidDelete: () => ({ dispose() {} }),
     dispose() {},
   }),
 };
@@ -47,7 +48,7 @@ async function activateWith({
   languageId = 'markdown',
   config = {},
   externalChangePath,
-  externalEvent = 'change',
+  externalEvents = ['change'],
   outsideWorkspace = false,
 }) {
   const executed = [];
@@ -80,6 +81,7 @@ async function activateWith({
         return {
           onDidChange: (listener) => { listeners.change = listener; return { dispose() {} }; },
           onDidCreate: (listener) => { listeners.create = listener; return { dispose() {} }; },
+          onDidDelete: (listener) => { listeners.delete = listener; return { dispose() {} }; },
           dispose() {},
         };
       },
@@ -103,9 +105,11 @@ async function activateWith({
       ? watchers.find(({ pattern }) => pattern instanceof RelativePattern)
       : watchers.find(({ pattern }) => typeof pattern === 'string');
     assert.ok(watcher, `activate() must watch ${outsideWorkspace ? 'external' : 'workspace'} supported files`);
-    const listener = watcher.listeners[externalEvent];
-    assert.equal(typeof listener, 'function', `activate() must watch supported file ${externalEvent} events`);
-    listener(fakeUri(externalChangePath));
+    for (const event of externalEvents) {
+      const listener = watcher.listeners[event];
+      assert.equal(typeof listener, 'function', `activate() must watch supported file ${event} events`);
+      listener(fakeUri(externalChangePath));
+    }
   }
   await Promise.resolve();
   return executed;
@@ -134,9 +138,23 @@ test('an atomic .cm replacement refreshes a preview-only tab', async () => {
     path: '/w/notes.cm',
     config: { 'chromamark.cm.openMode': 'preview' },
     externalChangePath: '/w/notes.cm',
-    externalEvent: 'create',
+    externalEvents: ['create'],
   });
   assert.deepEqual(cmds, ['markdown.reopenAsPreview', 'markdown.preview.refresh']);
+});
+
+test('deleting and recreating a .cm file refreshes the preview for both events', async () => {
+  const cmds = await activateWith({
+    path: '/w/notes.cm',
+    config: { 'chromamark.cm.openMode': 'preview' },
+    externalChangePath: '/w/notes.cm',
+    externalEvents: ['delete', 'create'],
+  });
+  assert.deepEqual(cmds, [
+    'markdown.reopenAsPreview',
+    'markdown.preview.refresh',
+    'markdown.preview.refresh',
+  ]);
 });
 
 test('an external .cm change outside the workspace refreshes a preview-only tab', async () => {
