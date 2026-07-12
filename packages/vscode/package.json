@@ -2,7 +2,7 @@
   "name": "chromamark-vscode",
   "displayName": "ChromaMark",
   "description": "Live preview, syntax highlighting, lint diagnostics, and quick fixes for ChromaMark.",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "publisher": "chromamark",
   "icon": "icon.png",
   "license": "MIT",

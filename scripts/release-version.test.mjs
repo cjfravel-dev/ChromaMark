@@ -21,7 +21,7 @@ test('v0.4.2 coordinated package versions are aligned', () => {
   assert.equal(renderer.version, '0.4.2');
   assert.equal(cli.version, '0.3.0');
   assert.equal(conformance.version, '0.1.2');
-  assert.equal(vscode.version, '0.2.3');
+  assert.equal(vscode.version, '0.2.4');
   assert.equal(cli.dependencies['@chromamark/renderer'], '^0.4.0');
   assert.equal(vscode.dependencies['@chromamark/renderer'], '^0.4.2');
 
@@ -37,7 +37,11 @@ test('package lock records every coordinated npm version', () => {
   assert.equal(lock.packages['packages/renderer'].version, '0.4.2');
   assert.equal(lock.packages['packages/cli'].version, '0.3.0');
   assert.equal(lock.packages['packages/conformance'].version, '0.1.2');
-  assert.equal(lock.packages['packages/vscode'].version, '0.2.3');
+  assert.equal(lock.packages['packages/vscode'].version, '0.2.4');
+});
+
+test('changelog contains the VS Code v0.2.4 release', () => {
+  assert.match(text('CHANGELOG.md'), /^## \[VS Code 0\.2\.4\] - 2026-07-11$/m);
 });
 
 test('changelog contains the VS Code v0.2.3 release', () => {
