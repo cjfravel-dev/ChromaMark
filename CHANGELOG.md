@@ -5,6 +5,8 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ## [Unreleased]
 
+## [VS Code 0.2.4] - 2026-07-11
+
 ### Fixed
 
 - VS Code previews now invalidate when a `.cm` or `.md` source is deleted before
