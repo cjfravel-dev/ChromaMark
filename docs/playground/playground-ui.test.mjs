@@ -12,3 +12,12 @@ test('playground wires theme presets, custom editor, and external samples', () =
   assert.match(html, /from '\.\/samples\.mjs'/);
   assert.match(html, /applyPlaygroundTheme/);
 });
+
+test('playground wires the streaming preview and share fallback modules', () => {
+  assert.match(html, /id="stream"/);
+  assert.match(html, /from '\.\/stream-driver\.mjs'/);
+  assert.match(html, /from '\.\/share-fallback\.mjs'/);
+  assert.match(html, /chunkText/);
+  assert.match(html, /createStreamingElement/);
+  assert.match(html, /chooseShareTarget/);
+});

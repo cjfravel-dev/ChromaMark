@@ -24,6 +24,7 @@
     "build:site": "node scripts/build-site.mjs",
     "build:readme": "node scripts/build-readme.mjs",
     "build:conformance": "node scripts/build-conformance-kit.mjs",
+    "build:agents": "node scripts/build-agents-skill.mjs",
     "lint": "eslint ."
   },
   "devDependencies": {

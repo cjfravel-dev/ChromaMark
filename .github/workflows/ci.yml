@@ -37,12 +37,15 @@ jobs:
           cmp packages/renderer/theme/chromamark.css packages/python/src/chromamark/theme.css
           npm run build:readme -- --check
           npm run build:conformance -- --check
+          npm run build:agents -- --check
           node scripts/build-site.mjs "$RUNNER_TEMP/_site"
           site="$RUNNER_TEMP/_site"
           test -f "$site/assets/favicon.png"
           test -f "$site/playground/share-codec.mjs"
           test -f "$site/playground/samples.mjs"
           test -f "$site/playground/theme-controls.mjs"
+          test -f "$site/playground/stream-driver.mjs"
+          test -f "$site/playground/share-fallback.mjs"
           for p in index.html spec.html gallery.html playground/index.html; do
             grep -q 'rel="icon"' "$site/$p"
           done
