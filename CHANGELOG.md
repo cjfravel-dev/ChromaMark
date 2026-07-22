@@ -5,6 +5,15 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ## [Unreleased]
 
+### Added
+
+- Playground: a **Stream** button replays the current report token-by-token
+  through the streaming renderer, demonstrating stable partial rendering.
+- Playground: when a shareable URL grows too long to encode reliably, the share
+  button now falls back to opening a prefilled GitHub issue with the source.
+- An installable `chromamark-authoring` agent skill, generated from
+  `docs/llms.txt`, discoverable via `npx skills add cjfravel-dev/ChromaMark`.
+
 ## [VS Code 0.2.4] - 2026-07-11
 
 ### Fixed

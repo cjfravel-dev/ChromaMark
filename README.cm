@@ -202,6 +202,16 @@ syntax in a few hundred tokens. One gotcha worth repeating: **don't wrap pills i
 backticks** — `` `[!pass]` `` renders as literal code, not a pill. Guard against
 that (and other silent mistakes) in CI with [`chromamark lint`](#command-line).
 
+Coding assistants that understand skills can install the authoring reference
+directly from this repo:
+
+```
+npx skills add cjfravel-dev/ChromaMark
+```
+
+This adds a self-activating `chromamark-authoring` skill (generated from
+`docs/llms.txt`) that teaches the agent when and how to write `.cm`.
+
 ## Built for streaming
 
 Agents emit token-by-token and sometimes get cut off mid-thought. ChromaMark is

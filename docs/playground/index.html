@@ -54,6 +54,7 @@
   <span class="spacer"></span>
   <select id="examples" title="Load an example"></select>
   <select id="report-theme" title="Preview theme" aria-label="Preview theme"></select>
+  <button id="stream" type="button" title="Replay this report as a token stream" aria-pressed="false">&#9654; Stream</button>
   <button id="share" type="button" title="Copy a shareable link">Copy link</button>
   <button id="theme" type="button" title="Toggle theme">&#9680; Theme</button>
 </header>
@@ -75,6 +76,8 @@
 import { encodeShare, decodeShare } from './share-codec.mjs';
 import { SAMPLES } from './samples.mjs';
 import { presetNames, applyPlaygroundTheme } from './theme-controls.mjs';
+import { chunkText } from './stream-driver.mjs';
+import { chooseShareTarget } from './share-fallback.mjs';
 
 (async function () {
   var CM = window.ChromaMark;
@@ -90,10 +93,12 @@ import { presetNames, applyPlaygroundTheme } from './theme-controls.mjs';
 
   var timer;
   var shareRevision = 0;
+  var streaming = false;
   function renderNow() {
     out.innerHTML = CM && CM.render ? CM.render(src.value) : '(renderer failed to load)';
   }
   function onInput() {
+    if (streaming) return;
     clearTimeout(timer);
     var revision = ++shareRevision;
     timer = setTimeout(async function () {
@@ -105,6 +110,41 @@ import { presetNames, applyPlaygroundTheme } from './theme-controls.mjs';
       } catch (e) {}
     }, 150);
   }
+
+  var streamBtn = document.getElementById('stream');
+  function runStream() {
+    if (!CM || !CM.createStreamingElement) { renderNow(); return; }
+    streaming = true;
+    streamBtn.setAttribute('aria-pressed', 'true');
+    streamBtn.textContent = '\u25A0 Stop';
+    src.readOnly = true;
+    var chunks = chunkText(src.value);
+    var stream = CM.createStreamingElement(out, {});
+    var i = 0;
+    var interval = setInterval(function () {
+      if (!streaming) { clearInterval(interval); return; }
+      if (i < chunks.length) {
+        stream.append(chunks[i++]);
+      } else {
+        clearInterval(interval);
+        if (stream.finalize) stream.finalize();
+        stopStream();
+      }
+    }, 55);
+    streamBtn._interval = interval;
+  }
+  function stopStream() {
+    streaming = false;
+    if (streamBtn._interval) clearInterval(streamBtn._interval);
+    streamBtn.setAttribute('aria-pressed', 'false');
+    streamBtn.textContent = '\u25B6 Stream';
+    src.readOnly = false;
+    renderNow();
+  }
+  streamBtn.addEventListener('click', function () {
+    if (streaming) stopStream();
+    else runStream();
+  });
 
   Object.keys(SAMPLES).forEach(function (name) {
     var o = document.createElement('option');
@@ -134,9 +174,15 @@ import { presetNames, applyPlaygroundTheme } from './theme-controls.mjs';
     r.setAttribute('data-theme', r.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
   });
   document.getElementById('share').addEventListener('click', function () {
-    var url = location.href;
-    if (navigator.clipboard) navigator.clipboard.writeText(url);
     var btn = document.getElementById('share');
+    var target = chooseShareTarget({ url: location.href, source: src.value });
+    if (target.kind === 'issue') {
+      window.open(target.url, '_blank', 'noopener');
+      var was = btn.textContent; btn.textContent = 'Too long \u2192 issue';
+      setTimeout(function () { btn.textContent = was; }, 1600);
+      return;
+    }
+    if (navigator.clipboard) navigator.clipboard.writeText(target.url);
     var old = btn.textContent; btn.textContent = 'Copied!';
     setTimeout(function () { btn.textContent = old; }, 1200);
   });

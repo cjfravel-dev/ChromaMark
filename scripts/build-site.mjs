@@ -29,7 +29,7 @@ copyFileSync(
   join(root, 'docs/playground/share-codec.mjs'),
   join(out, 'playground/share-codec.mjs'),
 );
-for (const module of ['samples.mjs', 'theme-controls.mjs']) {
+for (const module of ['samples.mjs', 'theme-controls.mjs', 'stream-driver.mjs', 'share-fallback.mjs']) {
   copyFileSync(join(root, 'docs/playground', module), join(out, 'playground', module));
 }
 
