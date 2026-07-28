@@ -6,10 +6,21 @@ import { TARGETS } from './build-output-style.mjs';
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 const prompt = read('docs/agent-setup/prompt.md');
 
-test('installer explains the default-emission goal and safe degradation', () => {
-  assert.match(prompt, /emit \*\*ChromaMark\*\* by\s+default/i);
+test('installer explains surface-aware emission and plain-GFM fallback', () => {
+  assert.match(prompt, /prefer \*\*ChromaMark\*\*/i);
   assert.match(prompt, /superset of\s+GitHub-Flavored Markdown/i);
-  assert.match(prompt, /degrades/i);
+  assert.match(prompt, /fall back to plain GFM/i);
+});
+
+test('installer offers global (user-level) destinations', () => {
+  for (const dest of [
+    '~/.copilot/copilot-instructions.md',
+    '~/.claude/CLAUDE.md',
+    '~/.codeium/windsurf/memories/global_rules.md',
+    '~/.codex/AGENTS.md',
+  ]) {
+    assert.ok(prompt.includes(dest), `installer must offer global destination ${dest}`);
+  }
 });
 
 test('installer references every generated output-style file by raw URL', () => {

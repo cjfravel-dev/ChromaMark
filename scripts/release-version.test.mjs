@@ -10,14 +10,14 @@ function text(path) {
   return readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 }
 
-test('v0.4.3 coordinated package versions are aligned', () => {
+test('v0.4.4 coordinated package versions are aligned', () => {
   const root = json('package.json');
   const renderer = json('packages/renderer/package.json');
   const cli = json('packages/cli/package.json');
   const conformance = json('packages/conformance/package.json');
   const vscode = json('packages/vscode/package.json');
 
-  assert.equal(root.version, '0.4.3');
+  assert.equal(root.version, '0.4.4');
   assert.equal(renderer.version, '0.4.2');
   assert.equal(cli.version, '0.3.0');
   assert.equal(conformance.version, '0.1.2');
@@ -32,8 +32,8 @@ test('v0.4.3 coordinated package versions are aligned', () => {
 
 test('package lock records every coordinated npm version', () => {
   const lock = json('package-lock.json');
-  assert.equal(lock.version, '0.4.3');
-  assert.equal(lock.packages[''].version, '0.4.3');
+  assert.equal(lock.version, '0.4.4');
+  assert.equal(lock.packages[''].version, '0.4.4');
   assert.equal(lock.packages['packages/renderer'].version, '0.4.2');
   assert.equal(lock.packages['packages/cli'].version, '0.3.0');
   assert.equal(lock.packages['packages/conformance'].version, '0.1.2');
@@ -46,6 +46,12 @@ test('changelog contains the VS Code v0.2.4 release', () => {
 
 test('changelog contains the VS Code v0.2.3 release', () => {
   assert.match(text('CHANGELOG.md'), /^## \[VS Code 0\.2\.3\] - 2026-07-11$/m);
+});
+
+test('changelog contains the coordinated v0.4.4 release', () => {
+  const changelog = text('CHANGELOG.md');
+  assert.match(changelog, /^## \[0\.4\.4\] - \d{4}-\d{2}-\d{2}$/m);
+  assert.match(changelog, /^\[0\.4\.4\]: .*\/releases\/tag\/v0\.4\.4$/m);
 });
 
 test('changelog contains the coordinated v0.4.3 release', () => {
