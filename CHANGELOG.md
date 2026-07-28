@@ -5,8 +5,22 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ## [Unreleased]
 
+## [0.4.3] - 2026-07-27
+
 ### Added
 
+- Agent adoption: a one-shot **setup prompt** at
+  `https://cjfravel-dev.github.io/ChromaMark/agent-setup/prompt.md` that an agent
+  fetches and runs itself to install the ChromaMark output-style directive into
+  its host's always-on instructions (Copilot, Claude Code, Cursor, Windsurf,
+  Codex/generic) and the authoring skill — so it emits ChromaMark by default.
+- Agent adoption: an always-on **ChromaMark output-style directive**, generated
+  from `docs/llms.txt` into each major host's native "always-applied
+  instructions" format (`AGENTS.md`, `.github/copilot-instructions.md`,
+  `CLAUDE.md`, `.cursor/rules/*.mdc`, `.windsurf/rules`) via
+  `npm run build:output-style`. Unlike the on-demand authoring skill, this makes
+  agents emit ChromaMark **by default**; being a strict GFM superset, it stays
+  safe (degrades to plain Markdown) on any surface.
 - Playground: a **Stream** button replays the current report token-by-token
   through the streaming renderer, demonstrating stable partial rendering.
 - Playground: when a shareable URL grows too long to encode reliably, the share
@@ -156,6 +170,7 @@ from the [ChromaMark language version](./docs/compatibility.md).
 [#38]: https://github.com/cjfravel-dev/ChromaMark/pull/38
 [#39]: https://github.com/cjfravel-dev/ChromaMark/pull/39
 [#40]: https://github.com/cjfravel-dev/ChromaMark/pull/40
+[0.4.3]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.4.3
 [0.4.2]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.4.2
 [0.4.1]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.4.1
 [0.4.0]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.4.0
