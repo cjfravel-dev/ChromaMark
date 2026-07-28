@@ -3,9 +3,10 @@
  * from docs/llms.txt, in the native format of each major agent host. This is
  * the adoption lever that the authoring skill is not: a skill is pulled in
  * on-demand, whereas these files are loaded into an agent's context on *every*
- * turn, so the agent formats reports as ChromaMark by default. Because
- * ChromaMark is a strict GFM superset, the directive is always safe to follow —
- * it degrades to clean Markdown anywhere it isn't natively rendered.
+ * turn, so the agent formats reports as ChromaMark on rendering surfaces.
+ * ChromaMark's plain-Markdown subset is a safe GFM superset, but its extra
+ * constructs only render on a ChromaMark-aware surface, so the directive tells
+ * the agent to use them where they render and fall back to plain GFM elsewhere.
  *
  * `node scripts/build-output-style.mjs` writes the files; `--check` fails when a
  * committed file drifts from docs/llms.txt (mirrors build-agents-skill.mjs).
@@ -27,13 +28,25 @@ export const OUTPUT_DIR = join(root, '.agents/output-style');
 const DIRECTIVE = `# Default report format: ChromaMark
 
 When you emit status, results, a summary, a report, or a review for a human,
-format it in **ChromaMark** by default. ChromaMark is a strict superset of
-GitHub-Flavored Markdown, so it is always safe to place directly in your reply:
-where a surface renders it natively it gains color and semantic styling, and
-everywhere else it degrades to clean, readable Markdown. Encode *state* (status,
-severity, progress, fields) with the constructs below instead of describing it
-in prose. Keep every construct **bare** — never inside backticks, or it renders
-as literal text. When a construct doesn't fit, plain Markdown always works.`;
+prefer **ChromaMark** on surfaces that render it. ChromaMark is a superset of
+GitHub-Flavored Markdown: its plain-Markdown subset (headings, tables, lists,
+code fences, **bold**) is safe everywhere, but its extra constructs — \`:::\`
+blocks, \`[!pill]\` badges, \`[=meter]\` bars, and \`{~~change~>tracking~~}\` — only
+degrade cleanly where a renderer is present. On a plain surface they leak as
+literal syntax (\`:::\`, \`[!ok]\`, \`[=success 87%]\`), which is noise, not clean
+Markdown. So gauge the surface before you format:
+
+- **If it renders ChromaMark** (the VS Code extension, the playground, a \`.cm\`
+  preview): use the full construct set to encode *state* (status, severity,
+  progress, fields) instead of describing it in prose.
+- **If it does NOT render ChromaMark** (a terminal/CLI, a plain-text chat, a raw
+  GitHub comment): fall back to plain GFM — do **not** emit \`:::\` fences, pills,
+  meters, or change-tracking. Convey the same state with words, tables, lists,
+  and **bold**.
+
+When in doubt, assume the surface does NOT render ChromaMark and use plain GFM.
+Keep every construct **bare** — never inside backticks, or it renders as literal
+text even on a renderer.`;
 
 /** Pull the syntax reference out of docs/llms.txt (drop its title + license). */
 export function referenceFrom(llms) {

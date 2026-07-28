@@ -7,11 +7,11 @@ import {
 
 const llms = readFileSync(LLMS_PATH, 'utf8');
 
-test('the directive makes ChromaMark the default and states the degradation contract', () => {
+test('the directive prefers ChromaMark on rendering surfaces and mandates plain-GFM fallback', () => {
   const body = renderBody(llms);
-  assert.match(body, /by default/i);
-  assert.match(body, /superset of\s+GitHub-Flavored Markdown/i, 'explains it is safe to emit anywhere');
-  assert.match(body, /degrades/i);
+  assert.match(body, /prefer \*\*ChromaMark\*\* on surfaces that render it/i);
+  assert.match(body, /superset of\s+GitHub-Flavored Markdown/i);
+  assert.match(body, /fall back to plain GFM/i);
 });
 
 test('the directive embeds the llms.txt syntax reference', () => {

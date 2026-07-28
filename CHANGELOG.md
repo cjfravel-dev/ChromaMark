@@ -5,6 +5,17 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ## [Unreleased]
 
+## [0.4.4] - 2026-07-28
+
+### Fixed
+
+- Agent adoption: the output-style directive and setup prompt no longer claim
+  ChromaMark's constructs "degrade to clean, readable Markdown" everywhere. On
+  surfaces that don't render ChromaMark (terminals/CLIs, plain-text chat, raw
+  GitHub comments) the `:::` blocks, `[!pill]` badges, `[=meter]` bars, and
+  change-tracking leak as literal syntax. The directive now instructs agents to
+  use ChromaMark only where it renders and fall back to plain GFM otherwise.
+
 ### Added
 
 - Adopted [Spec Kit](https://github.com/github/spec-kit) for spec-driven, AI-native
@@ -12,6 +23,10 @@ from the [ChromaMark language version](./docs/compatibility.md).
   encoding the project's durable principles, plus `/speckit.*` agent commands
   installed for GitHub Copilot, Claude Code, and Cursor. See CONTRIBUTING for the
   workflow.
+- Agent adoption: the setup prompt now offers **global (user-level) install
+  destinations** (e.g. `~/.copilot/copilot-instructions.md`, `~/.claude/CLAUDE.md`)
+  in addition to per-project paths, so ChromaMark can be adopted once for all
+  projects instead of per repository.
 
 ## [0.4.3] - 2026-07-27
 
@@ -178,6 +193,7 @@ from the [ChromaMark language version](./docs/compatibility.md).
 [#38]: https://github.com/cjfravel-dev/ChromaMark/pull/38
 [#39]: https://github.com/cjfravel-dev/ChromaMark/pull/39
 [#40]: https://github.com/cjfravel-dev/ChromaMark/pull/40
+[0.4.4]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.4.4
 [0.4.3]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.4.3
 [0.4.2]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.4.2
 [0.4.1]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.4.1
