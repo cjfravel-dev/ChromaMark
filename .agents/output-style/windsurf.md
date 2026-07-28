@@ -1,0 +1,99 @@
+---
+trigger: always_on
+---
+
+# Default report format: ChromaMark
+
+When you emit status, results, a summary, a report, or a review for a human,
+format it in **ChromaMark** by default. ChromaMark is a strict superset of
+GitHub-Flavored Markdown, so it is always safe to place directly in your reply:
+where a surface renders it natively it gains color and semantic styling, and
+everywhere else it degrades to clean, readable Markdown. Encode *state* (status,
+severity, progress, fields) with the constructs below instead of describing it
+in prose. Keep every construct **bare** — never inside backticks, or it renders
+as literal text. When a construct doesn't fit, plain Markdown always works.
+
+## ChromaMark syntax
+
+ChromaMark is Markdown (CommonMark + GFM) plus a handful of constructs for rich
+agent→human reports. Emit it as plain text. Everything below is the ENTIRE extra
+syntax beyond normal Markdown; if in doubt, plain Markdown always works.
+
+## Colored blocks (callouts)
+
+    ::: <tone> [title]
+    body (Markdown, may nest)
+    :::
+
+- tones: `success` `info` `tip` `warning` `danger` `muted`
+- aliases: `ok`/`pass`→success, `error`/`fail`→danger, `warn`→warning, `note`→info, `hint`→tip, `skip`→muted
+- color-only block: `::: block color=#6f42c1 Title`
+- NEST with MORE colons on the outer fence: `:::: … ::: … ::: … ::::`
+
+## Collapsible section
+
+    ::: details [open] [tone] Summary
+    hidden body
+    :::
+
+## Key/value fields
+
+    ::: fields
+    Region: eastus
+    Status: [!ok healthy]
+    :::
+
+## Inline: pills, colored text, meters
+
+- pill/badge: `[!success PASS]` `[!fail 3 of 88]` `[!warn 12]` `[!info 87%]` `[!muted SKIP]`
+  - no label ⇒ token name, uppercased: `[!pass]` → PASS
+- colored text (tint, no badge): `[.danger critical]`
+- meter/progress bar: `[=success 87%]` `[=info 3/10]`  (value is `NN%` or `A/B`)
+- custom color: `[!color=#6f42c1 beta]` or bare hex `[!#6f42c1 beta]`
+
+## Inline change tracking (CriticMarkup)
+
+Use these to SHOW an edit, suggestion, or before→after — mark the change, don't
+just describe it in prose:
+
+- `{++added++}` insert · `{--removed--}` delete · `{~~old~>new~~}` replace
+- `{==highlight==}` · `{>>comment<<}`
+
+Emit change-tracking BARE, in the sentence — never inside backticks:
+- ✅  Rename {~~expected~>actual~~} in the assertion.
+- ❌  Rename `{~~expected~>actual~~}` in the assertion.  ← backticks = literal code
+
+## Rules & gotchas
+
+- Strict syntax superset: tables, lists, code fences, **bold**, etc. all work.
+- ⚠️ NEVER put a ChromaMark construct inside backticks or a code span — this includes pills, meters, colored text, AND change-tracking. `` `[!pass]` `` and `` `{~~a~>b~~}` `` render as literal code. Emit them bare: `[!pass]`, `{~~a~>b~~}`. Backticks are only for real code/filenames.
+- Pills work inside table cells and headings.
+- Block titles and details summaries render inline too — pills, colored text, meters, and markdown all work there (raw HTML follows the renderer policy and is escaped by default).
+- Prefer the 6 semantic tones (they adapt to light/dark) over `color=#hex`.
+- Unknown/unsupported constructs degrade to readable literal text.
+- File extension `.cm`; fenced-code info tag is `chromamark`.
+
+## Example report
+
+    ## Deploy — service-recon @ 25d7426
+
+    :::: success Deploy succeeded in 3m12s
+    ::: fields
+    Region: eastus
+    Replicas: 3/3 [!ok healthy]
+    Coverage: [=success 87%]
+    :::
+    ::::
+
+    | Stage | Result          |
+    | ----- | --------------- |
+    | unit  | [!pass 247]     |
+    | integ | [!fail 3 of 88] |
+
+    ::: details danger Integration failures (3)
+    FAILED test_recon_merge_precedence
+    :::
+
+    Suggested fix: {~~expected~>actual~~} in the merge assertion.
+
+    Overall: [!warn SHIP WITH CAUTION]

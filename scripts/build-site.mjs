@@ -73,10 +73,16 @@ const landing = `<!DOCTYPE html>
     <a class="btn primary" href="playground/">Playground</a>
     <a class="btn" href="spec.html">Spec</a>
     <a class="btn" href="gallery.html">Gallery</a>
+    <a class="btn" href="agent-setup/prompt.md">Agent setup</a>
     <a class="btn" href="https://github.com/cjfravel-dev/ChromaMark">GitHub</a>
   </nav>
 </body></html>
 `;
 writeFileSync(join(out, 'index.html'), landing);
+
+// Publish the agent-setup installer prompt at a stable URL so agents can fetch
+// and self-verify it (https://cjfravel-dev.github.io/ChromaMark/agent-setup/prompt.md).
+mkdirSync(join(out, 'agent-setup'), { recursive: true });
+copyFileSync(join(root, 'docs/agent-setup/prompt.md'), join(out, 'agent-setup/prompt.md'));
 
 console.log(`built site → ${out}`);
