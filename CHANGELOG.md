@@ -5,6 +5,14 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ## [Unreleased]
 
+### Added
+
+- Adopted [Spec Kit](https://github.com/github/spec-kit) for spec-driven, AI-native
+  development: a ChromaMark **constitution** (`.specify/memory/constitution.md`)
+  encoding the project's durable principles, plus `/speckit.*` agent commands
+  installed for GitHub Copilot, Claude Code, and Cursor. See CONTRIBUTING for the
+  workflow.
+
 ## [0.4.3] - 2026-07-27
 
 ### Added
