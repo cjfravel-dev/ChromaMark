@@ -5,18 +5,11 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ## [Unreleased]
 
-### Fixed
+## [0.6.0] - 2026-08-08
 
-- Editing a document side by side with the preview no longer jolts the source
-  editor. Both preview scripts reflowed the page shortly after each incremental
-  re-render — the row-group toggle was revealed with `display`, widening the
-  first cell of every parent row, and the outline animated a 256px document
-  reflow on every rebuild rather than only when the reader collapsed it. VS
-  Code's preview scroll sync reveals column 0 on the editor whenever the
-  preview scrolls, so those late layout shifts yanked the horizontal scroll
-  back to the start of the line on every keystroke with word wrap off. The
-  toggle now reserves its box and only changes `visibility`, and the outline
-  transition applies only to a deliberate collapse.
+Released as `@chromamark/renderer` 0.6.0, `@chromamark/conformance` 0.3.0,
+`@chromamark/cli` 0.3.2, `chromamark` (PyPI) 0.4.0, and the VS Code extension
+0.4.0.
 
 ### Changed
 
@@ -30,7 +23,24 @@ from the [ChromaMark language version](./docs/compatibility.md).
   collapsed while all of its rows were on screen. `SPEC.md` §8.5 and the shared
   conformance corpus are updated together.
 
-## [VS Code 0.3.1] - 2026-08-08
+### Fixed
+
+- The row-group toggle no longer reflows the table when it appears. It was
+  revealed by switching `display` from `none` to `inline-block` once the
+  enhancer marked a table ready, so the first cell of every parent row widened
+  after enhancement. It now always reserves its box and only `visibility`
+  changes. This matters most in incremental previews, where the reserved box
+  keeps each re-render from shifting the page — see the VS Code notes below.
+- The DOM enhancer had no test coverage at all, which is how a broken toggle
+  shipped in the VS Code extension. It now has behavioral tests covering the
+  default state, subtree collapsing, per-group state across a parent reopening,
+  untouched plain tables, and repeat enhancement.
+
+## [VS Code 0.4.0] - 2026-08-08
+
+### Changed
+
+- Table row groups are expanded by default, matching the renderer change above.
 
 ### Fixed
 
@@ -41,10 +51,18 @@ from the [ChromaMark language version](./docs/compatibility.md).
   no visible control to expand them and nested rows appeared to vanish. The
   stylesheet now styles the button's own `::before`, and a new guard fails the
   build whenever a stylesheet references a class the renderer never emits.
-- The DOM enhancer had no test coverage at all, which is how the broken toggle
-  shipped. It now has behavioral tests covering the default state, subtree
-  collapsing, per-group state across a parent reopening, untouched plain
-  tables, and repeat enhancement.
+- Editing a document side by side with the preview no longer jolts the source
+  editor. Both preview scripts reflowed the page shortly after each incremental
+  re-render — the row-group toggle was revealed with `display`, widening the
+  first cell of every parent row, and the outline animated a 256px document
+  reflow on every rebuild rather than only when the reader collapsed it. VS
+  Code's preview scroll sync reveals column 0 on the editor whenever the
+  preview scrolls, so those late layout shifts yanked the horizontal scroll
+  back to the start of the line on every keystroke with word wrap off. The
+  toggle now reserves its box and only changes `visibility`, and the outline
+  transition applies only to a deliberate collapse. The underlying reveal is a
+  VS Code behavior; setting `markdown.preview.scrollEditorWithPreview` to
+  `false` disables the sync entirely.
 
 ## [0.5.0] - 2026-08-08
 
@@ -275,6 +293,7 @@ Released as `@chromamark/renderer` 0.5.0, `@chromamark/conformance` 0.2.0,
 [#38]: https://github.com/cjfravel-dev/ChromaMark/pull/38
 [#39]: https://github.com/cjfravel-dev/ChromaMark/pull/39
 [#40]: https://github.com/cjfravel-dev/ChromaMark/pull/40
+[0.6.0]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.6.0
 [0.5.0]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.5.0
 [0.4.4]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.4.4
 [0.4.3]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.4.3
