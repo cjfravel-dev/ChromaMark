@@ -14,7 +14,7 @@ export { THEME_PRESETS, resolveTheme, applyTheme } from './theme-presets.js';
 export { createStreamingRenderer } from './streaming.js';
 
 /** Version of the ChromaMark language contract implemented by this renderer. */
-export const LANGUAGE_VERSION = '0.1';
+export const LANGUAGE_VERSION = '0.2';
 
 export default chromamark;
 

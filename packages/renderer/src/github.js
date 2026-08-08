@@ -236,7 +236,7 @@ function collectTableRows(node) {
   const visit = (current) => {
     for (const child of current.children) {
       if (child.type === 'tr') {
-        rows.push(child.children
+        const cells = child.children
           .filter((cell) => cell.type === 'th' || cell.type === 'td')
           .map((cell) => {
             const style = cell.token.attrGet('style') || '';
@@ -245,7 +245,11 @@ function collectTableRows(node) {
               inline: cell.children.find((part) => part.type === 'inline'),
               align: match ? match[1] : null,
             };
-          }));
+          });
+        // GitHub cannot hide table rows without scripting, so a row group keeps
+        // every row and restores the literal marker to show the nesting.
+        cells.depth = Number(child.token.attrGet('data-cm-depth') || 0);
+        rows.push(cells);
       } else if (child.children) {
         visit(child);
       }
@@ -265,7 +269,12 @@ function renderTable(node) {
   const rows = collectTableRows(node);
   if (!rows.length) return '';
   const width = Math.max(...rows.map((row) => row.length));
-  const line = (row) => `| ${Array.from({ length: width }, (_, index) => tableCell(row[index])).join(' | ')} |`;
+  const line = (row) =>
+    `| ${Array.from({ length: width }, (_, index) => {
+      const text = tableCell(row[index]);
+      const depth = row.depth || 0;
+      return index === 0 && depth > 0 ? `${'↳'.repeat(depth)} ${text}` : text;
+    }).join(' | ')} |`;
   const delimiter = (cell) => {
     if (cell && cell.align === 'left') return ':---';
     if (cell && cell.align === 'center') return ':---:';

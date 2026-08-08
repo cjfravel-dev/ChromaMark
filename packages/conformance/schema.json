@@ -38,7 +38,8 @@
               "pill": { "type": "boolean" },
               "text": { "type": "boolean" },
               "meter": { "type": "boolean" },
-              "critic": { "type": "boolean" }
+              "critic": { "type": "boolean" },
+              "rows": { "type": "boolean" }
             }
           },
           "html": {

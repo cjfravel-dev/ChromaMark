@@ -12,7 +12,7 @@ def test_well_formed_document_has_no_diagnostics():
     assert lint(source) == []
 
 
-def test_lint_reports_all_five_rules_with_js_compatible_shapes():
+def test_lint_reports_all_rules_with_js_compatible_shapes():
     source = "\n".join([
         "See `[!pass]`.",
         "Build [!succes 3]",
@@ -37,6 +37,34 @@ def test_lint_matches_inline_and_container_edge_cases():
     assert rules("[=success high]") == ["CM004"]
     assert rules("::: success Deploy\nnever closed") == ["CM005"]
     assert lint(":::: success\n::: fields\nRegion: eastus\n:::\n::::") == []
+
+
+def test_lint_reports_row_group_marker_mixing_and_depth_clamping():
+    source = "| ID |\n| --- |\n| 1 |\n| ↳> 2 |\n| >>> 3 |"
+    diagnostics = lint(source)
+    assert diagnostics == [
+        {
+            "line": 4,
+            "column": 2,
+            "severity": "warning",
+            "rule": "CM007",
+            "message": "this row is 2 levels deep but the row above is 0; it renders at depth 1",
+        },
+        {
+            "line": 4,
+            "column": 3,
+            "severity": "warning",
+            "rule": "CM006",
+            "message": 'this row group mixes the "↳" and ">" markers; pick one for consistency',
+        },
+        {
+            "line": 5,
+            "column": 2,
+            "severity": "warning",
+            "rule": "CM007",
+            "message": "this row is 3 levels deep but the row above is 1; it renders at depth 2",
+        },
+    ]
 
 
 def test_lint_ignores_escaped_markdown_links_and_fenced_code():

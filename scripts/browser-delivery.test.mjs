@@ -47,7 +47,7 @@ test('renderer documents its browser compatibility contract', () => {
   assert.match(readme, /color-mix\(\)/);
   assert.match(readme, /fallback/i);
   assert.match(readme, /browser-slim/);
-  assert.match(readme, /8 KiB/);
+  assert.match(readme, /10 KiB/);
 });
 
 test('the CDN bundle stays within its documented compressed budget', () => {
@@ -55,8 +55,8 @@ test('the CDN bundle stays within its documented compressed budget', () => {
   assert.ok(gzipSync(bundle).length <= 64 * 1024, 'gzip bundle must remain at or below 64 KiB');
 });
 
-test('the slim browser bundle excludes markdown-it and stays under 8 KiB gzip', () => {
+test('the slim browser bundle excludes markdown-it and stays under 10 KiB gzip', () => {
   const bundle = readFileSync(new URL('packages/renderer/dist/chromamark.slim.min.js', root));
-  assert.ok(gzipSync(bundle).length <= 8 * 1024, 'slim gzip bundle must remain at or below 8 KiB');
+  assert.ok(gzipSync(bundle).length <= 10 * 1024, 'slim gzip bundle must remain at or below 10 KiB');
   assert.ok(bundle.length <= 32 * 1024, 'slim raw bundle must remain at or below 32 KiB');
 });

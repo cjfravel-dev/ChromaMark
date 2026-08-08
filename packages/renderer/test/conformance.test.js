@@ -7,7 +7,7 @@ const { render } = renderer;
 
 test('shared conformance corpus renders the expected HTML in JavaScript', async (t) => {
   const corpus = loadCorpus();
-  assert.equal(corpus.languageVersion, '0.1');
+  assert.equal(corpus.languageVersion, '0.2');
   assert.equal(renderer.LANGUAGE_VERSION, corpus.languageVersion);
 
   const result = await runConformance(render, {

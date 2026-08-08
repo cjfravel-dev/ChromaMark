@@ -1,6 +1,7 @@
 import inlinePlugin from './inline.js';
 import criticPlugin from './critic.js';
 import containerPlugin from './containers.js';
+import rowGroupPlugin from './rowgroups.js';
 
 const DEFAULTS = {
   container: true,
@@ -10,6 +11,7 @@ const DEFAULTS = {
   text: true,
   meter: true,
   critic: true,
+  rows: true,
 };
 
 export default function chromamark(md, options = {}) {
@@ -18,6 +20,7 @@ export default function chromamark(md, options = {}) {
     inlinePlugin(md, { pill: opts.pill, text: opts.text, meter: opts.meter });
   }
   if (opts.critic) criticPlugin(md);
+  if (opts.rows) rowGroupPlugin(md);
   if (opts.container || opts.details || opts.fields) {
     containerPlugin(md, {
       callout: opts.container,

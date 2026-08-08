@@ -10,6 +10,7 @@ const OPTION_NAMES = new Set([
   'text',
   'meter',
   'critic',
+  'rows',
 ]);
 const CORPUS_NAMES = new Set(['version', 'languageVersion', 'cases']);
 const FIXTURE_NAMES = new Set(['name', 'source', 'options', 'html']);

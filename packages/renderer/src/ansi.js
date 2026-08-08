@@ -193,6 +193,10 @@ function renderTable(ctx, node) {
             if (inline) tagLinkHrefs(inline.children);
             return inline ? renderInline(ctx, inline.children) : '';
           });
+        // A terminal cannot collapse, so a row group degrades to indentation:
+        // every row stays visible, nested under its parent.
+        const depth = Number(c.token.attrGet('data-cm-depth') || 0);
+        if (depth > 0 && cells.length) cells[0] = `${'  '.repeat(depth - 1)}↳ ${cells[0]}`;
         rows.push(cells);
       } else if (c.children) collect(c);
     }

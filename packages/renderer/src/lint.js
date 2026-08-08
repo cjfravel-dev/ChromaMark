@@ -7,6 +7,8 @@
  *   CM003  an unknown block kind (the ::: fence will render as literal text)
  *   CM004  a meter value that is not NN% or A/B (B ≠ 0)
  *   CM005  a container that is opened but never closed
+ *   CM006  a table row group that mixes the "↳" and ">" markers
+ *   CM007  a table row nested deeper than one level below the row above it
  *
  * Each diagnostic is { line, column, severity, rule, message } with 1-based
  * positions. Positions are approximate for constructs inside multi-line code
@@ -166,6 +168,8 @@ function scanInline(line, row, diags) {
 const FENCE_CODE = /^ {0,3}(`{3,}|~{3,})/;
 const FENCE_CODE_CLOSE = /^ {0,3}(`{3,}|~{3,})\s*$/;
 const CONTAINER = /^( {0,3})(:{3,})(.*)$/;
+const TABLE_ROW = /^ {0,3}\|(.*)$/;
+const ROW_MARKERS = /^\s*((?:[\u21b3>][ \t]*)+)/;
 
 /**
  * Lint ChromaMark source.
@@ -181,6 +185,7 @@ export function lint(src, options = {}) {
   let inCode = false;
   let fenceCh = '';
   let fenceLen = 0;
+  let rowDepth = -1;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -218,6 +223,31 @@ export function lint(src, options = {}) {
       } else {
         openStack.push({ line: row, colons, kind });
       }
+    }
+
+    const table = TABLE_ROW.exec(line);
+    if (table) {
+      const first = table[1].split('|')[0];
+      const markers = ROW_MARKERS.exec(first);
+      const raw = markers ? (markers[1].match(/[\u21b3>]/g) || []).length : 0;
+      if (markers && /\u21b3/.test(markers[1]) && markers[1].includes('>')) {
+        diags.push({
+          line: row, column: line.indexOf(markers[1]) + 1, severity: 'warning', rule: 'CM006',
+          message: 'this row group mixes the "↳" and ">" markers; pick one for consistency',
+        });
+      }
+      const depth = rowDepth < 0 ? 0 : Math.min(raw, rowDepth + 1);
+      if (raw > depth) {
+        diags.push({
+          line: row, column: line.indexOf('|') + 2, severity: 'warning', rule: 'CM007',
+          message:
+            `this row is ${raw} levels deep but the row above is ${Math.max(rowDepth, 0)}; ` +
+            `it renders at depth ${depth}`,
+        });
+      }
+      rowDepth = depth;
+    } else if (!line.trim()) {
+      rowDepth = -1;
     }
 
     scanInline(line, row, diags);

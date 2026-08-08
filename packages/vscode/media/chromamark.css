@@ -85,3 +85,42 @@ body.vscode-dark, body.vscode-high-contrast {
 .crit-del { background:var(--cm-danger-bg); color:var(--cm-danger-fg); text-decoration:line-through; border-radius:3px; padding:0 2px; }
 .crit-mark { background:var(--cm-warning-bg); border-radius:3px; padding:0 2px; }
 .crit-comment { color:var(--cm-muted-fg); font-style:italic; }
+
+/* ---- Collapsible table rows ---- */
+.cm-row-toggle {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin-right: 6px;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  line-height: 1;
+  vertical-align: baseline;
+  display: none;
+}
+[data-cm-rowgroups="ready"] .cm-row-toggle { display: inline-block; }
+.cm-row-toggle .cm-row-toggle-icon::before {
+  content: "\25B8";
+  display: inline-block;
+  transition: transform 0.15s ease;
+  opacity: 0.7;
+}
+.cm-row-toggle[aria-expanded="true"] .cm-row-toggle-icon::before { transform: rotate(90deg); }
+.cm-row-toggle .cm-row-toggle-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+.cm-row-child > td:first-child { padding-left: calc(6px + var(--cm-row-indent, 1.25em)); }
+.cm-row[data-cm-depth="2"] > td:first-child { --cm-row-indent: 2.5em; }
+.cm-row[data-cm-depth="3"] > td:first-child { --cm-row-indent: 3.75em; }
+.cm-row[data-cm-depth="4"] > td:first-child { --cm-row-indent: 5em; }
+.cm-row[hidden] { display: none; }

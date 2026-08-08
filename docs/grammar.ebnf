@@ -24,7 +24,7 @@
    Every extension below is designed to degrade to readable CommonMark text, so
    a plain Markdown engine renders the literal source without loss.
 
-   Language version: 0.1
+   Language version: 0.2
 
    Case. Kinds, tones, and aliases are matched case-insensitively.
 
@@ -119,9 +119,6 @@ ctext           ::= char*                              (* treated as plain text 
 (* ---------------------------------------------------------------------------
    Block extension: table row groups  (collapsible rows)
    ---------------------------------------------------------------------------
-   PROPOSED for language version 0.2; NOT part of the 0.1 contract. A 0.1
-   implementation correctly treats these markers as literal cell text.
-
    A GFM table row whose FIRST cell opens with a run of row markers is a child
    row. Depth is the number of markers, and a depth-N row attaches to the
    nearest preceding row of depth N-1, which becomes the group's toggle.

@@ -18,7 +18,7 @@ function setup(bodyHtml) {
 }
 
 test('browser API exposes the implemented ChromaMark language version', () => {
-  assert.equal(browserApi.LANGUAGE_VERSION, '0.1');
+  assert.equal(browserApi.LANGUAGE_VERSION, '0.2');
   assert.equal(browserApi.ChromaMark.LANGUAGE_VERSION, browserApi.LANGUAGE_VERSION);
 });
 

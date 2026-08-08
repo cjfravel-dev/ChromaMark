@@ -1,7 +1,7 @@
 # ChromaMark Specification
 
 > **Base dialect:** CommonMark + GFM (tables, strikethrough, autolinks)
-> **Language version:** 0.1
+> **Language version:** 0.2
 > **License:** [CC BY-SA 4.0](./LICENSE-SPEC.md)
 > **File extensions:** `.cm` · **Info-string / fence tag:** `chromamark`
 >
@@ -255,13 +255,6 @@ The field was {--flights--}{++query_parameters++} and is {==worth reviewing==}
 before merge.
 
 ### 8.5 · Collapsible table rows — `↳`
-
-::: warning Proposed for language version 0.2 — not part of 0.1
-This construct is specified but **not yet part of the 0.1 contract**. It has no
-conformance cases and no reference implementation yet; a 0.1 renderer correctly
-leaves these rows as literal text. The status note is removed and the language
-version bumped once the implementations conform.
-:::
 
 Agent reports are full of parent/child relationships that a flat GFM table
 cannot express: a summary task and its sub-tasks, a failing suite and its cases,

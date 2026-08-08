@@ -44,6 +44,22 @@ syntax beyond normal Markdown; if in doubt, plain Markdown always works.
     hidden body
     :::
 
+## Collapsible table rows
+
+Fold sub-rows into the row above them — for sub-tasks, failing cases, dependents:
+
+    | ID | Diff | Task |
+    | --- | --- | --- |
+    | 200 | [!warn MEDIUM] | Pickpocket anyone 200 times |
+    | ↳ 195 | [!ok EASY] | Pickpocket from a man or woman |
+    | ↳↳ 196 | [!ok EASY] | …10 times |
+
+- A run of `↳` starting a row's FIRST cell makes it a child of the nearest
+  preceding shallower row; marker count is depth, so `↳↳` nests one deeper.
+- ASCII `>` / `>>` is an accepted alias — don't mix the two forms in one table.
+- Markers only count in the first cell. Collapsed by default where supported;
+  every row stays visible (marker shown literally) where it isn't.
+
 ## Key/value fields
 
     ::: fields

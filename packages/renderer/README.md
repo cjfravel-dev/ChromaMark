@@ -195,7 +195,7 @@ ChromaMarkSlim.renderAll();
 ```
 
 The global bundle is `dist/chromamark.slim.min.js` (`window.ChromaMarkSlim`).
-It is capped at **32 KiB raw / 8 KiB gzip**. Call `configureRenderer(fn)` instead
+It is capped at **32 KiB raw / 10 KiB gzip**. Call `configureRenderer(fn)` instead
 when using another compatible parser/renderer.
 
 ### Load ChromaMark from an external file
