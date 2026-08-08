@@ -117,6 +117,30 @@ ctext           ::= char*                              (* treated as plain text 
 
 
 (* ---------------------------------------------------------------------------
+   Block extension: table row groups  (collapsible rows)
+   ---------------------------------------------------------------------------
+   PROPOSED for language version 0.2; NOT part of the 0.1 contract. A 0.1
+   implementation correctly treats these markers as literal cell text.
+
+   A GFM table row whose FIRST cell opens with a run of row markers is a child
+   row. Depth is the number of markers, and a depth-N row attaches to the
+   nearest preceding row of depth N-1, which becomes the group's toggle.
+   "↳" (#x21B3) and ASCII ">" are equivalent; mixing forms within one run is
+   valid but diagnosed. The marker run is stripped from the rendered cell.
+
+   Markers are significant ONLY at the start of a row's first cell; anywhere
+   else they are ordinary text.
+
+   Degradation: a row deeper than one level below its predecessor clamps to the
+   deepest legal depth, and a child row with no eligible parent becomes an
+   ordinary row. Rows are never dropped, reordered, or hidden by these rules.
+   --------------------------------------------------------------------------- *)
+
+row-group-cell  ::= row-marker+ inline-run       (* first cell of a child row *)
+row-marker      ::= ( "↳" | ">" ) S*             (* depth = count of markers *)
+
+
+(* ---------------------------------------------------------------------------
    Color vocabulary
    ---------------------------------------------------------------------------
    Prefer the six semantic tones — they adapt to the reader's light/dark theme.

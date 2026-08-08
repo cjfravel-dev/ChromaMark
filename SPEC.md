@@ -60,13 +60,14 @@ ChromaMark extends CommonMark + GFM. Everything in the
 autolinks) works unchanged. Raw HTML follows the renderer's policy: the
 reference convenience renderers disable it for safe handling of untrusted
 agent output, while the plugins honor their host Markdown renderer's setting.
-ChromaMark reserves three previously inert lexical niches:
+ChromaMark reserves four previously inert lexical niches:
 
 | Sigil            | ChromaMark meaning        | In plain CommonMark it was… |
 | ---------------- | ------------------------- | --------------------------- |
 | `:::` at line start | container fence        | literal text                |
 | `[!` … `]`       | inline pill / text / meter | literal text               |
 | `{++`, `{--`, `{~~`, `{==` | CriticMarkup diff | literal text                |
+| `↳` / `>` starting a table's first cell | row-group depth | literal text |
 
 Because each was previously meaningless, no existing document changes meaning.
 
@@ -253,6 +254,58 @@ change-tracking, ChromaMark adopts **[CriticMarkup](http://criticmarkup.com/)**
 The field was {--flights--}{++query_parameters++} and is {==worth reviewing==}
 before merge.
 
+### 8.5 · Collapsible table rows — `↳`
+
+::: warning Proposed for language version 0.2 — not part of 0.1
+This construct is specified but **not yet part of the 0.1 contract**. It has no
+conformance cases and no reference implementation yet; a 0.1 renderer correctly
+leaves these rows as literal text. The status note is removed and the language
+version bumped once the implementations conform.
+:::
+
+Agent reports are full of parent/child relationships that a flat GFM table
+cannot express: a summary task and its sub-tasks, a failing suite and its cases,
+a resource and its dependents. A **row group** lets rows fold into the row above
+them.
+
+A row whose **first cell** begins with a run of `↳` is a _child row_. It attaches
+to the nearest preceding row one level shallower, which becomes the group's
+toggle. Child rows are collapsed by default.
+
+```chromamark
+| ID  | Diff             | Task                          |
+| --- | ---------------- | ----------------------------- |
+| 200 | [!warn MEDIUM]   | Pickpocket anyone 200 times   |
+| ↳ 195 | [!success EASY] | Pickpocket from a man or woman |
+| ↳↳ 196 | [!success EASY] | …10 times                    |
+| 198 | [!success EASY]  | Steal from any stall 10 times |
+```
+
+- **Depth is marker count.** `↳` is depth 1, `↳↳` depth 2, and so on.
+- **ASCII `>` is an accepted alias**, so `>` and `>>` mean exactly what `↳` and
+  `↳↳` mean. Agents emit ASCII more reliably; humans paste `↳`. Mixing the two
+  forms in one run parses by count but is a lint warning.
+- Whitespace between markers is insignificant: `↳ ↳` equals `↳↳`.
+- The marker run is **stripped** from the rendered cell; the remaining cell
+  content renders as normal inline content.
+- Markers are only significant in the **first cell**. A `>` starting any other
+  cell is ordinary text, so prose and blockquote-ish content stay unaffected.
+
+**State.** Collapsing a row hides its entire subtree. Each group tracks its own
+state, so expanding a parent reveals its direct children in whatever state they
+already had — a nested group stays collapsed until it is opened too.
+
+**Malformed depth degrades, never errors.** A row deeper than one level below its
+predecessor clamps to the deepest legal depth, and a child row with no eligible
+parent becomes an ordinary row. Both emit lint warnings. This matters because
+the common author of these tables is a language model: a miscounted marker must
+yield a slightly flatter table, never a dropped or unreachable row.
+
+Fallback: a renderer without row-group support shows **every row**, in document
+order, with its literal `↳` prefix intact — which already reads as indentation.
+As with every other construct, nothing is hidden by a renderer that does not
+understand it (principle 3).
+
 ## 9 · Nesting
 
 Containers nest. Use **more colons** for the outer fence so boundaries are
@@ -291,6 +344,7 @@ Pills, text, and meters nest freely inside any block, list, heading, or table ce
 | Colored text  | `[.danger x]`       | literal text `[.danger x]`                    |
 | Meter         | `[=success 87%]`    | literal text `[=success 87%]`                 |
 | Fields        | `::: fields`        | literal `:::` lines of `key: value`           |
+| Table row group | `\| ↳ 195 \| …`    | all rows shown; literal `↳` reads as indent   |
 
 Nothing is ever _hidden_ or _lost_ when unsupported — a non-ChromaMark engine
 shows the literal source, which stays readable. Renderers MAY present richer
@@ -304,6 +358,8 @@ self-delimiting, a renderer can:
 - Begin a colored block the instant it sees the `:::` opener line.
 - Draw a pill as soon as `]` arrives (typically within one or two tokens).
 - Render a collapsible's summary immediately, filling the body as it streams.
+- Emit a table row as it arrives: a row group's toggle is its parent row, which
+  always precedes its children, so no row is buffered waiting for a subtree.
 
 No construct requires seeing its end before it can begin styling.
 
@@ -338,14 +394,16 @@ value        = number , [ "%" ] | number , "/" , number ;
 critic       = "{++" , text , "++}" | "{--" , text , "--}"
              | "{~~" , text , "~>" , text , "~~}" | "{==" , text , "==}"
              | "{>>" , text , "<<}" ;
+
+row-marker   = ( "↳" | ">" ) , { ws , ( "↳" | ">" ) } ;   (* depth = marker count *)
 ```
 
 ## 14 · Conformance levels
 
 ::: fields
 Level 0 — Text: valid CommonMark+GFM; degrades all ChromaMark constructs. Any existing renderer.
-Level 1 — Static: renders colored blocks, pills, text, meters, fields; collapsibles shown expanded.
-Level 2 — Interactive: adds real collapse/expand and streaming styling.
+Level 1 — Static: renders colored blocks, pills, text, meters, fields; collapsibles shown expanded, table row groups shown flat.
+Level 2 — Interactive: adds real collapse/expand — for both collapsibles and table row groups — and streaming styling.
 :::
 
 ## 15 · Reference implementations

@@ -5,6 +5,16 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ## [Unreleased]
 
+### Added
+
+- Specification: **collapsible table row groups**, proposed for language version
+  `0.2`. A row whose first cell begins with a run of `↳` (or ASCII `>`) becomes a
+  child of the nearest preceding shallower row, which acts as the group's toggle;
+  repeat the marker to nest. Malformed depth clamps instead of dropping rows, and
+  unsupported renderers show every row with its literal marker. Specified only —
+  the conformance corpus and the reference implementations are still to come, so
+  the language version stays `0.1` for now.
+
 ## [0.4.4] - 2026-07-28
 
 ### Fixed

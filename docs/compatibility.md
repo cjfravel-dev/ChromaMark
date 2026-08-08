@@ -46,3 +46,20 @@ Every behavior change must update the specification and shared conformance
 corpus in the same pull request. Changes that affect only one implementation
 are defects unless the compatibility documentation explicitly records an
 upstream engine difference.
+
+Specifying a construct as **proposed** for a future language version is not a
+behavior change: it adds no conformance cases, changes no rendered output, and
+leaves the current contract intact. Such a construct is marked as proposed in
+`SPEC.md` and `grammar.ebnf`, and existing renderers stay correct by leaving its
+syntax as literal text. It becomes part of the contract only when the
+conformance cases and the reference implementations land, at which point the
+proposed markers are removed and the language version is bumped.
+
+## Proposed for 0.2
+
+| Construct | Status |
+| --- | --- |
+| Collapsible table row groups (`↳` / `>` in a table's first cell) | Specified; conformance corpus and implementations pending |
+
+Until that work lands, the language version remains `0.1` and no implementation
+is expected to render row groups as collapsible.
