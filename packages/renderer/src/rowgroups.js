@@ -98,6 +98,6 @@ export default function rowGroupPlugin(md) {
   });
 
   md.renderer.rules.cm_row_toggle = () =>
-    '<button class="cm-row-toggle" type="button" aria-expanded="false"' +
+    '<button class="cm-row-toggle" type="button" aria-expanded="true"' +
     ' aria-label="Toggle nested rows"></button>';
 }

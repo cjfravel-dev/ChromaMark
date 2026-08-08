@@ -96,7 +96,7 @@ def row_group_plugin(md):
 
     def render_toggle(tokens, idx, options, env):
         return (
-            '<button class="cm-row-toggle" type="button" aria-expanded="false"'
+            '<button class="cm-row-toggle" type="button" aria-expanded="true"'
             ' aria-label="Toggle nested rows"></button>'
         )
 

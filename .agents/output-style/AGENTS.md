@@ -57,8 +57,9 @@ Fold sub-rows into the row above them — for sub-tasks, failing cases, dependen
 - A run of `↳` starting a row's FIRST cell makes it a child of the nearest
   preceding shallower row; marker count is depth, so `↳↳` nests one deeper.
 - ASCII `>` / `>>` is an accepted alias — don't mix the two forms in one table.
-- Markers only count in the first cell. Collapsed by default where supported;
-  every row stays visible (marker shown literally) where it isn't.
+- Markers only count in the first cell. Expanded by default; readers fold a
+  group away by clicking its toggle. Every row stays visible (marker shown
+  literally) where row groups aren't supported.
 
 ## Key/value fields
 
