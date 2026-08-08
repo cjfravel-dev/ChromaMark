@@ -24,6 +24,10 @@ test('v0.6.0 coordinated package versions are aligned', () => {
   assert.equal(vscode.version, '0.4.0');
   assert.equal(cli.dependencies['@chromamark/renderer'], '^0.6.0');
   assert.equal(vscode.dependencies['@chromamark/renderer'], '^0.6.0');
+  // An exact pin that lags the workspace version makes `npm ci` resolve the
+  // published corpus from the registry instead of linking this repo's, so the
+  // renderer would be checked against a stale corpus.
+  assert.equal(renderer.devDependencies['@chromamark/conformance'], conformance.version);
 
   const pyproject = text('packages/python/pyproject.toml');
   assert.match(pyproject, /^version = "0\.4\.0"$/m);

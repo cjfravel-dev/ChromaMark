@@ -68,7 +68,7 @@
     "markdown-it": "^14.1.0"
   },
   "devDependencies": {
-    "@chromamark/conformance": "0.2.0",
+    "@chromamark/conformance": "0.3.0",
     "esbuild": "^0.25.12",
     "jsdom": "^26.1.0"
   }
