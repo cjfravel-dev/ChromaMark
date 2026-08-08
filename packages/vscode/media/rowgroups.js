@@ -4,7 +4,8 @@
  *
  * The renderer emits every row visible on purpose, so a preview without this
  * script still shows the whole table. This adds the interactive layer: groups
- * start collapsed and a parent's toggle shows or hides its subtree.
+ * start expanded, matching that static output, and a parent's toggle shows or
+ * hides its subtree.
  *
  * Visibility is derived rather than toggled row by row — a row shows only when
  * every ancestor is expanded — so a nested group keeps its own state and stays
@@ -14,7 +15,7 @@
   'use strict';
   if (typeof document === 'undefined') return;
 
-  var EXPANDED = '__cmRowExpanded';
+  var COLLAPSED = '__cmRowCollapsed';
   var observer;
   var timer;
 
@@ -35,7 +36,7 @@
 
       var toggle = row.querySelector('td > .cm-row-toggle');
       if (toggle) {
-        var expanded = row[EXPANDED] === true;
+        var expanded = row[COLLAPSED] !== true;
         toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
         collapsed[depth] = !expanded;
       }
@@ -65,7 +66,7 @@
       while (row && !(row.classList && row.classList.contains('cm-row'))) row = row.parentNode;
       if (!row) return;
       event.preventDefault();
-      row[EXPANDED] = row[EXPANDED] !== true;
+      row[COLLAPSED] = row[COLLAPSED] !== true;
       apply(table);
     });
   }

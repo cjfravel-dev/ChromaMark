@@ -263,7 +263,8 @@ them.
 
 A row whose **first cell** begins with a run of `↳` is a _child row_. It attaches
 to the nearest preceding row one level shallower, which becomes the group's
-toggle. Child rows are collapsed by default.
+toggle. Child rows are **expanded by default**, matching the static output, so
+a reader sees the whole table until they choose to fold part of it away.
 
 ```chromamark
 | ID  | Diff             | Task                          |
@@ -285,8 +286,9 @@ toggle. Child rows are collapsed by default.
   cell is ordinary text, so prose and blockquote-ish content stay unaffected.
 
 **State.** Collapsing a row hides its entire subtree. Each group tracks its own
-state, so expanding a parent reveals its direct children in whatever state they
-already had — a nested group stays collapsed until it is opened too.
+state, so collapsing and reopening a parent restores its direct children in
+whatever state they already had — a nested group the reader collapsed stays
+collapsed when its parent reopens.
 
 **Malformed depth degrades, never errors.** A row deeper than one level below its
 predecessor clamps to the deepest legal depth, and a child row with no eligible

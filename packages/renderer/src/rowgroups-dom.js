@@ -3,15 +3,15 @@
  *
  * The renderer deliberately emits every row visible, so a page that never runs
  * this script still shows the whole table — nothing is hidden with no way to
- * get it back. This adds the interactive layer: groups start collapsed, and a
- * parent's toggle shows or hides its subtree.
+ * get it back. This adds the interactive layer: groups start expanded, matching
+ * that static output, and a parent's toggle shows or hides its subtree.
  *
  * Visibility is derived, never toggled row by row: a row is visible only when
  * every ancestor above it is expanded, so a nested group keeps its own state
  * and stays collapsed when its parent reopens.
  */
 
-const EXPANDED = new WeakMap();
+const COLLAPSED = new WeakMap();
 
 function rowsOf(table) {
   return Array.from(table.querySelectorAll('tr.cm-row'));
@@ -31,7 +31,7 @@ function apply(table) {
 
     const toggle = row.querySelector(':scope > td > .cm-row-toggle');
     if (toggle) {
-      const expanded = EXPANDED.get(row) === true;
+      const expanded = COLLAPSED.get(row) !== true;
       toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
       collapsed[depth] = !expanded;
     }
@@ -63,7 +63,7 @@ export function enhanceRowGroups(root) {
       const row = toggle.closest('tr.cm-row');
       if (!row) return;
       event.preventDefault();
-      EXPANDED.set(row, EXPANDED.get(row) !== true);
+      COLLAPSED.set(row, COLLAPSED.get(row) !== true);
       apply(table);
     });
 

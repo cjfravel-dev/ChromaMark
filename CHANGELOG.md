@@ -5,6 +5,18 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ## [Unreleased]
 
+### Changed
+
+- **Table row groups are now expanded by default.** They previously started
+  collapsed, which meant opening a document silently hid every nested row
+  behind a control the reader had to find first. Expanding by default matches
+  the static output — the renderer already emits every row visible — so the
+  interactive layer no longer removes content on load, and folding a group away
+  is a deliberate act. The emitted toggle now reports `aria-expanded="true"`,
+  which also fixes an accessibility inconsistency: it previously claimed to be
+  collapsed while all of its rows were on screen. `SPEC.md` §8.5 and the shared
+  conformance corpus are updated together.
+
 ## [VS Code 0.3.1] - 2026-08-08
 
 ### Fixed
@@ -16,6 +28,10 @@ from the [ChromaMark language version](./docs/compatibility.md).
   no visible control to expand them and nested rows appeared to vanish. The
   stylesheet now styles the button's own `::before`, and a new guard fails the
   build whenever a stylesheet references a class the renderer never emits.
+- The DOM enhancer had no test coverage at all, which is how the broken toggle
+  shipped. It now has behavioral tests covering the default state, subtree
+  collapsing, per-group state across a parent reopening, untouched plain
+  tables, and repeat enhancement.
 
 ## [0.5.0] - 2026-08-08
 
