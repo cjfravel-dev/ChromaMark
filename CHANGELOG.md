@@ -5,6 +5,19 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ## [Unreleased]
 
+### Fixed
+
+- Editing a document side by side with the preview no longer jolts the source
+  editor. Both preview scripts reflowed the page shortly after each incremental
+  re-render — the row-group toggle was revealed with `display`, widening the
+  first cell of every parent row, and the outline animated a 256px document
+  reflow on every rebuild rather than only when the reader collapsed it. VS
+  Code's preview scroll sync reveals column 0 on the editor whenever the
+  preview scrolls, so those late layout shifts yanked the horizontal scroll
+  back to the start of the line on every keystroke with word wrap off. The
+  toggle now reserves its box and only changes `visibility`, and the outline
+  transition applies only to a deliberate collapse.
+
 ### Changed
 
 - **Table row groups are now expanded by default.** They previously started

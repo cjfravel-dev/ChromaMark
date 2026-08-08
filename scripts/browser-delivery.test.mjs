@@ -39,6 +39,39 @@ test('stylesheets only style classes the renderer actually emits', () => {
   }
 });
 
+test('the row-group toggle reserves its box so revealing it never reflows a row', () => {
+  for (const path of [
+    'packages/renderer/theme/chromamark.css',
+    'packages/vscode/media/chromamark.css',
+  ]) {
+    const css = read(path);
+    const base = /\.cm-row-toggle\s*\{([^}]+)\}/.exec(css);
+    assert.ok(base, `${path} must define .cm-row-toggle`);
+    // Hiding with display:none would collapse the box, so the control would
+    // reflow the first cell of every parent row each time the enhancer runs.
+    // Incremental previews re-render on every keystroke and the host scroll
+    // sync jumps on layout shifts, so only visibility may change.
+    assert.doesNotMatch(base[1], /display\s*:\s*none/);
+    assert.match(base[1], /visibility\s*:\s*hidden/);
+    const ready = /\[data-cm-rowgroups="ready"\]\s*\.cm-row-toggle\s*\{([^}]+)\}/.exec(css);
+    assert.ok(ready, `${path} must reveal .cm-row-toggle when ready`);
+    assert.match(ready[1], /visibility\s*:\s*visible/);
+    assert.doesNotMatch(ready[1], /display\s*:/);
+  }
+});
+
+test('the preview outline only animates its reflow on deliberate collapse', () => {
+  const css = read('packages/vscode/media/toc.css');
+  const layout = /body\.cm-has-toc\s*\{([^}]+)\}/.exec(css);
+  assert.ok(layout, 'toc.css must define body.cm-has-toc');
+  // Transitioning here would animate a 256px document reflow after every
+  // incremental preview rebuild, not just when the reader collapses it.
+  assert.doesNotMatch(layout[1], /transition/);
+  assert.match(css, /body\.cm-toc-animate\s*\{[^}]*transition/);
+  const script = read('packages/vscode/media/toc.js');
+  assert.match(script, /classList\.add\('cm-toc-animate'\)/);
+});
+
 test('custom colors retain visible styling without color-mix support', () => {
   for (const path of [
     'packages/renderer/theme/chromamark.css',

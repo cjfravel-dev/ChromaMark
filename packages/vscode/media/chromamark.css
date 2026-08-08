@@ -87,6 +87,10 @@ body.vscode-dark, body.vscode-high-contrast {
 .crit-comment { color:var(--cm-muted-fg); font-style:italic; }
 
 /* ---- Collapsible table rows ---- */
+/* The control keeps its box at all times and only becomes visible once the
+   enhancer marks the table ready. Reserving the space matters in incremental
+   previews: revealing it later would reflow the first cell of every parent row
+   on each re-render, and any layout shift makes the host scroll-sync jump. */
 .cm-row-toggle {
   appearance: none;
   background: none;
@@ -98,9 +102,10 @@ body.vscode-dark, body.vscode-high-contrast {
   font: inherit;
   line-height: 1;
   vertical-align: baseline;
-  display: none;
+  display: inline-block;
+  visibility: hidden;
 }
-[data-cm-rowgroups="ready"] .cm-row-toggle { display: inline-block; }
+[data-cm-rowgroups="ready"] .cm-row-toggle { visibility: visible; }
 .cm-row-toggle::before {
   content: "\25B8";
   display: inline-block;

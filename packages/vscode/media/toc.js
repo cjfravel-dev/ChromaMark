@@ -68,6 +68,7 @@
       btn.title = 'Show outline';
       btn.textContent = '\u2630';
       btn.addEventListener('click', function () {
+        document.body.classList.add('cm-toc-animate');
         document.body.classList.remove('cm-toc-collapsed');
       });
       document.body.appendChild(btn);
@@ -100,6 +101,7 @@
     toggle.title = 'Hide outline';
     toggle.textContent = '\u2039';
     toggle.addEventListener('click', function () {
+      document.body.classList.add('cm-toc-animate');
       document.body.classList.add('cm-toc-collapsed');
     });
     head.appendChild(title);

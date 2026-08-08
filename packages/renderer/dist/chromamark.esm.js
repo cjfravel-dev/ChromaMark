@@ -134,13 +134,15 @@ var chromamark_default = `/*
 /* ---- Collapsible table rows ---- */
 .cm-row-toggle {
   appearance:none; background:none; border:0; padding:0; margin-right:6px; cursor:pointer;
-  color:inherit; font:inherit; line-height:1; display:none;
+  color:inherit; font:inherit; line-height:1; display:inline-block; visibility:hidden;
 }
 .cm-row-toggle::before { content:"\\25B8"; display:inline-block; opacity:.7; transition:transform .15s ease; }
 .cm-row-toggle[aria-expanded="true"]::before { transform:rotate(90deg); }
 /* Until the enhancer runs there is nothing to toggle, so the control stays
-   hidden and every row remains visible (conformance level 1). */
-[data-cm-rowgroups="ready"] .cm-row-toggle { display:inline-block; }
+   invisible and every row remains visible (conformance level 1). It keeps its
+   box so revealing it never reflows the row \u2014 incremental previews re-render
+   constantly, and a late layout shift makes host scroll-sync jump. */
+[data-cm-rowgroups="ready"] .cm-row-toggle { visibility:visible; }
 .cm-row-child > td:first-child { padding-left:calc(6px + var(--cm-row-indent, 1.25em)); }
 .cm-row[data-cm-depth="2"] > td:first-child { --cm-row-indent:2.5em; }
 .cm-row[data-cm-depth="3"] > td:first-child { --cm-row-indent:3.75em; }

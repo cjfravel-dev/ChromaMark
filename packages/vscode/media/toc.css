@@ -3,8 +3,13 @@
  * active VS Code theme via --vscode-* variables exposed in the preview webview.
  */
 
+/* The outline only animates when the reader collapses or reopens it. Animating
+   on every rebuild would reflow the whole document for 150ms after each
+   incremental preview update, and the host scroll-sync jumps on layout shifts. */
 body.cm-has-toc {
   padding-left: 256px;
+}
+body.cm-toc-animate {
   transition: padding-left 0.15s ease;
 }
 body.cm-has-toc.cm-toc-collapsed {
