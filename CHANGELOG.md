@@ -5,6 +5,12 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-08-08
+
+Released as `@chromamark/renderer` 0.5.0, `@chromamark/conformance` 0.2.0,
+`@chromamark/cli` 0.3.1, `chromamark` (PyPI) 0.3.0, and the VS Code extension
+0.3.0.
+
 ### Added
 
 - **Collapsible table row groups** — ChromaMark language version `0.2`. A table
@@ -36,6 +42,14 @@ from the [ChromaMark language version](./docs/compatibility.md).
 - The slim browser bundle's documented gzip budget is now **10 KiB** (was 8 KiB)
   to make room for collapsible table row groups. The raw 32 KiB cap and the
   64 KiB budget for the full bundle are unchanged.
+
+## [VS Code 0.3.0] - 2026-08-08
+
+### Added
+
+- Collapsible table row groups render in the Markdown preview, including the
+  toggle control and nested-depth indentation, and the injection grammar
+  highlights the `↳`/`>` row markers.
 
 ## [0.4.4] - 2026-07-28
 
@@ -220,6 +234,7 @@ from the [ChromaMark language version](./docs/compatibility.md).
 [#38]: https://github.com/cjfravel-dev/ChromaMark/pull/38
 [#39]: https://github.com/cjfravel-dev/ChromaMark/pull/39
 [#40]: https://github.com/cjfravel-dev/ChromaMark/pull/40
+[0.5.0]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.5.0
 [0.4.4]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.4.4
 [0.4.3]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.4.3
 [0.4.2]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.4.2
