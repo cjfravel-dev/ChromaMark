@@ -18,11 +18,6 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ### Added
 
-- Adopted [Spec Kit](https://github.com/github/spec-kit) for spec-driven, AI-native
-  development: a ChromaMark **constitution** (`.specify/memory/constitution.md`)
-  encoding the project's durable principles, plus `/speckit.*` agent commands
-  installed for GitHub Copilot, Claude Code, and Cursor. See CONTRIBUTING for the
-  workflow.
 - Agent adoption: the setup prompt now offers **global (user-level) install
   destinations** (e.g. `~/.copilot/copilot-instructions.md`, `~/.claude/CLAUDE.md`)
   in addition to per-project paths, so ChromaMark can be adopted once for all

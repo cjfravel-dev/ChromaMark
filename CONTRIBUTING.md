@@ -90,21 +90,6 @@ Changes to accepted syntax, degradation, safety, or rendered output require:
 See the [compatibility policy](./docs/compatibility.md) for the authority and
 versioning rules.
 
-## Spec-driven development
-
-This repository is set up for spec-driven development with
-[Spec Kit](https://github.com/github/spec-kit). The project's governing
-principles live in [`.specify/memory/constitution.md`](./.specify/memory/constitution.md)
-and take precedence over ad-hoc preference; plans and reviews should verify
-compliance.
-
-Spec Kit commands are installed for GitHub Copilot, Claude Code, and Cursor as
-`/speckit.*` agent commands (constitution, specify, clarify, plan, tasks,
-analyze, implement, …). Feature specs are scaffolded under `specs/`. Install or
-upgrade the CLI with `uv tool install specify-cli`; run commands from your
-coding agent, not by hand. The generated agent docs (`docs/llms.txt` and the
-files built from it) remain subordinate to the constitution.
-
 ## Pull requests
 
 Keep each pull request focused and explain the behavior change, RED/GREEN test
