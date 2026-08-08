@@ -12,7 +12,7 @@ test('the published corpus validates and has unique named cases', () => {
   const corpus = loadCorpus();
   assert.deepEqual(validateCorpus(corpus), []);
   assert.equal(corpus.version, 1);
-  assert.equal(corpus.languageVersion, '0.1');
+  assert.equal(corpus.languageVersion, '0.2');
   assert.ok(corpus.cases.length > 0);
   assert.equal(new Set(corpus.cases.map((fixture) => fixture.name)).size, corpus.cases.length);
 });

@@ -1,6 +1,5 @@
 from chromamark import create_renderer, render
 
-
 TOGGLE = (
     '<button class="cm-row-toggle" type="button" aria-expanded="false"'
     ' aria-label="Toggle nested rows"></button>'
