@@ -19,13 +19,13 @@ test('docs/grammar.ebnf exists', () => {
   assert.ok(existsSync(GRAMMAR), 'expected docs/grammar.ebnf');
 });
 
-test('specification documents language version 0.1 and its compatibility policy', () => {
+test('specification documents language version 0.2 and its compatibility policy', () => {
   const spec = readFileSync(SPEC, 'utf8');
-  assert.match(spec, /\*\*Language version:\*\* 0\.1/);
+  assert.match(spec, /\*\*Language version:\*\* 0\.2/);
   assert.doesNotMatch(spec, /normative EBNF/);
   const compatibility = readFileSync(COMPATIBILITY, 'utf8');
   assert.match(compatibility, /^# ChromaMark compatibility policy/m);
-  assert.match(compatibility, /Language version `0\.1`/);
+  assert.match(compatibility, /Language version `0\.2`/);
   assert.match(compatibility, /Package versions are independent/);
 });
 

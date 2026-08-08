@@ -5,6 +5,38 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ## [Unreleased]
 
+### Added
+
+- **Collapsible table row groups** — ChromaMark language version `0.2`. A table
+  row whose first cell begins with a run of `↳` (ASCII `>` is an accepted alias)
+  becomes a child of the nearest preceding shallower row, which acts as the
+  group's toggle; repeat the marker to nest. Markers are only significant in the
+  first cell and are stripped from the rendered cell.
+  - Backward compatible: those markers were previously literal text in a table
+    cell, so every `0.1` document keeps its meaning, and a table containing no
+    markers renders byte for byte as before.
+  - Malformed depth degrades instead of failing — a row deeper than one level
+    below its predecessor clamps, and a child row with no eligible parent becomes
+    an ordinary row. New lint rules `CM006` (mixed `↳`/`>` markers) and `CM007`
+    (clamped depth) flag both.
+  - Degradation: the HTML keeps every row visible and the optional DOM enhancer
+    adds real collapsing, `renderGitHub()` keeps every row and restores the `↳`
+    prefix (GitHub cannot hide rows without scripting), the ANSI renderer indents
+    child rows, and a plain Markdown engine shows the literal marker.
+  - Implemented in the JavaScript renderer, the Python package, and the VS Code
+    preview, with shared conformance cases covering all of it.
+
+### Changed
+
+- The `@chromamark/renderer` dev dependency on `@chromamark/conformance` pinned
+  the published `0.1.0` instead of resolving the workspace copy, so the renderer
+  suite silently tested the last published corpus rather than the one in this
+  repository. The pin now matches the workspace version, so the local corpus is
+  used.
+- The slim browser bundle's documented gzip budget is now **10 KiB** (was 8 KiB)
+  to make room for collapsible table row groups. The raw 32 KiB cap and the
+  64 KiB budget for the full bundle are unchanged.
+
 ## [0.4.4] - 2026-07-28
 
 ### Fixed

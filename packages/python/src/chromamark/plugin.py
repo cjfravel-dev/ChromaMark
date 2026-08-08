@@ -1,8 +1,9 @@
-"""ChromaMark markdown-it-py plugin: applies the container, inline, and critic rules."""
+"""ChromaMark markdown-it-py plugin: applies ChromaMark syntax rules."""
 
 from .containers import container_plugin
 from .critic import critic_plugin
 from .inline import inline_plugin
+from .rowgroups import row_group_plugin
 
 _DEFAULTS = {
     "container": True,
@@ -12,6 +13,7 @@ _DEFAULTS = {
     "text": True,
     "meter": True,
     "critic": True,
+    "rows": True,
 }
 
 
@@ -23,6 +25,8 @@ def chromamark_plugin(md, **options):
         inline_plugin(md, {"pill": opts["pill"], "text": opts["text"], "meter": opts["meter"]})
     if opts["critic"]:
         critic_plugin(md)
+    if opts["rows"]:
+        row_group_plugin(md)
     if opts["container"] or opts["details"] or opts["fields"]:
         container_plugin(md, {
             "callout": opts["container"],

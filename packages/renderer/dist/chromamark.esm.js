@@ -130,6 +130,21 @@ var chromamark_default = `/*
 .crit-del { background:var(--cm-danger-bg); color:var(--cm-danger-fg); text-decoration:line-through; border-radius:3px; padding:0 2px; }
 .crit-mark { background:var(--cm-warning-bg); border-radius:3px; padding:0 2px; }
 .crit-comment { color:var(--cm-muted-fg); font-style:italic; }
+
+/* ---- Collapsible table rows ---- */
+.cm-row-toggle {
+  appearance:none; background:none; border:0; padding:0; margin-right:6px; cursor:pointer;
+  color:inherit; font:inherit; line-height:1; display:none;
+}
+.cm-row-toggle::before { content:"\\25B8"; display:inline-block; opacity:.7; transition:transform .15s ease; }
+.cm-row-toggle[aria-expanded="true"]::before { transform:rotate(90deg); }
+/* Until the enhancer runs there is nothing to toggle, so the control stays
+   hidden and every row remains visible (conformance level 1). */
+[data-cm-rowgroups="ready"] .cm-row-toggle { display:inline-block; }
+.cm-row-child > td:first-child { padding-left:calc(6px + var(--cm-row-indent, 1.25em)); }
+.cm-row[data-cm-depth="2"] > td:first-child { --cm-row-indent:2.5em; }
+.cm-row[data-cm-depth="3"] > td:first-child { --cm-row-indent:3.75em; }
+.cm-row[hidden] { display:none; }
 `;
 
 // ../../node_modules/markdown-it/lib/common/utils.mjs
@@ -6060,6 +6075,78 @@ function containerPlugin(md, enabled) {
   };
 }
 
+// src/rowgroups.js
+var MARKER_RUN = /^(?:[\u21b3>][ \t]*)+/;
+function parseRowMarkers(text2) {
+  const match2 = MARKER_RUN.exec(String(text2 != null ? text2 : ""));
+  if (!match2) return null;
+  return {
+    depth: (match2[0].match(/[\u21b3>]/g) || []).length,
+    rest: text2.slice(match2[0].length)
+  };
+}
+function annotate(state, tokens, rows, parsed) {
+  const depths = [];
+  let previous = -1;
+  parsed.forEach((entry, index) => {
+    const depth = previous < 0 ? 0 : Math.min(entry ? entry.depth : 0, previous + 1);
+    depths.push(depth);
+    previous = depth;
+    if (entry && entry.depth > 0 && rows[index].inline !== -1) {
+      tokens[rows[index].inline].content = entry.rest;
+    }
+  });
+  for (let index = rows.length - 1; index >= 0; index--) {
+    const depth = depths[index];
+    const isParent = index + 1 < rows.length && depths[index + 1] > depth;
+    let cls = "cm-row";
+    if (isParent) cls += " cm-row-parent";
+    if (depth > 0) cls += " cm-row-child";
+    const tr = tokens[rows[index].tr];
+    tr.attrSet("class", cls);
+    tr.attrSet("data-cm-depth", String(depth));
+    if (isParent && rows[index].inline !== -1) {
+      const toggle = new state.Token("cm_row_toggle", "", 0);
+      toggle.hidden = true;
+      tokens.splice(rows[index].inline, 0, toggle);
+    }
+  }
+}
+function rowGroupPlugin(md) {
+  md.core.ruler.after("block", "cm_rowgroups", (state) => {
+    const tokens = state.tokens;
+    let rows = [];
+    let body = false;
+    const flush = () => {
+      const parsed = rows.map(
+        (row) => row.inline === -1 ? null : parseRowMarkers(tokens[row.inline].content)
+      );
+      if (parsed.some((entry) => entry && entry.depth > 0)) annotate(state, tokens, rows, parsed);
+      rows = [];
+    };
+    for (let i = 0; i < tokens.length; i++) {
+      const type = tokens[i].type;
+      if (type === "tbody_open") body = true;
+      else if (type === "tbody_close") {
+        body = false;
+        flush();
+      } else if (type === "tr_open" && body) {
+        let inline2 = -1;
+        for (let j = i + 1; j < tokens.length && tokens[j].type !== "tr_close"; j++) {
+          if (tokens[j].type === "inline") {
+            inline2 = j;
+            break;
+          }
+        }
+        rows.push({ tr: i, inline: inline2 });
+      }
+    }
+    flush();
+    return true;
+  });
+  md.renderer.rules.cm_row_toggle = () => '<button class="cm-row-toggle" type="button" aria-expanded="false" aria-label="Toggle nested rows"></button>';
+}
+
 // src/plugin.js
 var DEFAULTS = {
   container: true,
@@ -6068,7 +6155,8 @@ var DEFAULTS = {
   pill: true,
   text: true,
   meter: true,
-  critic: true
+  critic: true,
+  rows: true
 };
 function chromamark(md, options = {}) {
   const opts = { ...DEFAULTS, ...options };
@@ -6076,6 +6164,7 @@ function chromamark(md, options = {}) {
     inlinePlugin(md, { pill: opts.pill, text: opts.text, meter: opts.meter });
   }
   if (opts.critic) criticPlugin(md);
+  if (opts.rows) rowGroupPlugin(md);
   if (opts.container || opts.details || opts.fields) {
     containerPlugin(md, {
       callout: opts.container,
@@ -6338,7 +6427,7 @@ function createStreamingRenderer(options = {}) {
 }
 
 // src/index.js
-var LANGUAGE_VERSION = "0.1";
+var LANGUAGE_VERSION = "0.2";
 function createRenderer(options = {}) {
   const { highlight = null, ...pluginOptions } = options;
   const md = new lib_default({ html: false, linkify: true, typographer: false, highlight });
@@ -6347,6 +6436,51 @@ function createRenderer(options = {}) {
 }
 function render(src, options = {}) {
   return createRenderer(options).render(String(src != null ? src : ""));
+}
+
+// src/rowgroups-dom.js
+var EXPANDED = /* @__PURE__ */ new WeakMap();
+function rowsOf(table2) {
+  return Array.from(table2.querySelectorAll("tr.cm-row"));
+}
+var depthOf = (row) => Number(row.getAttribute("data-cm-depth") || 0);
+function apply(table2) {
+  const rows = rowsOf(table2);
+  const collapsed = [];
+  for (const row of rows) {
+    const depth = depthOf(row);
+    collapsed.length = depth;
+    const hidden = collapsed.some(Boolean);
+    row.hidden = hidden;
+    const toggle = row.querySelector(":scope > td > .cm-row-toggle");
+    if (toggle) {
+      const expanded = EXPANDED.get(row) === true;
+      toggle.setAttribute("aria-expanded", expanded ? "true" : "false");
+      collapsed[depth] = !expanded;
+    }
+  }
+}
+function enhanceRowGroups(root) {
+  const scope = root || (typeof document === "undefined" ? null : document);
+  if (!scope || typeof scope.querySelectorAll !== "function") return 0;
+  const tables = Array.from(scope.querySelectorAll("table")).filter(
+    (table2) => table2.querySelector("tr.cm-row-parent") !== null
+  );
+  for (const table2 of tables) {
+    if (table2.getAttribute("data-cm-rowgroups") === "ready") continue;
+    table2.setAttribute("data-cm-rowgroups", "ready");
+    table2.addEventListener("click", (event) => {
+      const toggle = event.target && event.target.closest ? event.target.closest(".cm-row-toggle") : null;
+      if (!toggle || !table2.contains(toggle)) return;
+      const row = toggle.closest("tr.cm-row");
+      if (!row) return;
+      event.preventDefault();
+      EXPANDED.set(row, EXPANDED.get(row) !== true);
+      apply(table2);
+    });
+    apply(table2);
+  }
+  return tables.length;
 }
 
 // src/browser-core.js
@@ -6447,10 +6581,12 @@ function renderElement(target, options) {
     out.className = "chromamark-output";
     out.innerHTML = html;
     if (el.parentNode) el.parentNode.insertBefore(out, el.nextSibling);
+    enhanceRowGroups(out);
     return out;
   }
   el.innerHTML = html;
   el.classList.add("chromamark-output");
+  enhanceRowGroups(el);
   return el;
 }
 function renderSrc(target, options) {
@@ -6472,6 +6608,7 @@ function renderSrc(target, options) {
   }).then((text2) => {
     el.innerHTML = render(text2, options);
     el.classList.add("chromamark-output");
+    enhanceRowGroups(el);
     return el;
   }).catch((err) => fail(`ChromaMark: failed to load ${url} (${err && err.message || err})`));
 }
@@ -6493,6 +6630,7 @@ var ChromaMark = {
   autoRender,
   applyTheme,
   createStreamingElement,
+  enhanceRowGroups,
   resolveTheme,
   THEME_PRESETS,
   createRenderer,
@@ -6524,6 +6662,7 @@ export {
   configureTheme,
   createStreamingElement,
   browser_default as default,
+  enhanceRowGroups,
   injectTheme,
   render2 as render,
   renderAll,

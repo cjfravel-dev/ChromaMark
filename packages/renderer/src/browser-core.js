@@ -7,8 +7,10 @@
 import { createRenderer, LANGUAGE_VERSION, render as renderString } from './index.js';
 import { applyTheme, resolveTheme, THEME_PRESETS } from './theme-presets.js';
 import { createStreamingRenderer } from './streaming.js';
+import { enhanceRowGroups } from './rowgroups-dom.js';
 
 export { LANGUAGE_VERSION };
+export { enhanceRowGroups };
 export { applyTheme, resolveTheme, THEME_PRESETS };
 
 export function createStreamingElement(target, options = {}) {
@@ -138,10 +140,12 @@ export function renderElement(target, options) {
     // A detached holder has no parent to receive a sibling; return the
     // rendered node anyway so the caller can place it, rather than crashing.
     if (el.parentNode) el.parentNode.insertBefore(out, el.nextSibling);
+    enhanceRowGroups(out);
     return out;
   }
   el.innerHTML = html;
   el.classList.add('chromamark-output');
+  enhanceRowGroups(el);
   return el;
 }
 
@@ -177,6 +181,7 @@ export function renderSrc(target, options) {
     .then((text) => {
       el.innerHTML = renderString(text, options);
       el.classList.add('chromamark-output');
+      enhanceRowGroups(el);
       return el;
     })
     .catch((err) => fail(`ChromaMark: failed to load ${url} (${(err && err.message) || err})`));
@@ -204,6 +209,7 @@ export const ChromaMark = {
   autoRender,
   applyTheme,
   createStreamingElement,
+  enhanceRowGroups,
   resolveTheme,
   THEME_PRESETS,
   createRenderer,

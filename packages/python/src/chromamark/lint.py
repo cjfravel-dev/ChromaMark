@@ -23,6 +23,8 @@ _CONSTRUCT_IN_CODE = re.compile(r"\[[!.=]|\{(?:\+\+|--|~~|==|>>)")
 _FENCE_CODE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
 _FENCE_CODE_CLOSE = re.compile(r"^ {0,3}(`{3,}|~{3,})[" + WSR + r"]*\Z")
 _CONTAINER = re.compile(r"^( {0,3})(:{3,})(.*)\Z")
+_TABLE_ROW = re.compile(r"^ {0,3}\|(.*)\Z")
+_ROW_MARKERS = re.compile(r"^[" + WSR + r"]*((?:[\u21b3>][ \t]*)+)")
 _PERCENT = re.compile(r"^[0-9]+(?:\.[0-9]+)?[" + WSR + r"]*%\Z")
 _FRACTION = re.compile(
     r"^([0-9]+(?:\.[0-9]+)?)[" + WSR + r"]*/[" + WSR + r"]*([0-9]+(?:\.[0-9]+)?)\Z"
@@ -175,7 +177,7 @@ def _scan_inline(line: str, row: int, diagnostics: List[LintDiagnostic]) -> None
 
 
 def lint(source: object, disable: Optional[Iterable[str]] = None) -> List[LintDiagnostic]:
-    """Return CM001-CM005 diagnostics with one-based line and column positions."""
+    """Return ChromaMark diagnostics with one-based line and column positions."""
     disabled = set(disable or ())
     lines = str("" if source is None else source).split("\n")
     diagnostics: List[LintDiagnostic] = []
@@ -183,6 +185,7 @@ def lint(source: object, disable: Optional[Iterable[str]] = None) -> List[LintDi
     in_code = False
     fence_character = ""
     fence_length = 0
+    row_depth = -1
 
     for index, line in enumerate(lines):
         row = index + 1
@@ -221,6 +224,35 @@ def lint(source: object, disable: Optional[Iterable[str]] = None) -> List[LintDi
                 })
             else:
                 open_stack.append({"line": row, "colons": colons, "kind": kind})
+
+        table = _TABLE_ROW.match(line)
+        if table:
+            first = table.group(1).split("|")[0]
+            markers = _ROW_MARKERS.match(first)
+            raw = len(re.findall(r"[\u21b3>]", markers.group(1))) if markers else 0
+            if markers and "\u21b3" in markers.group(1) and ">" in markers.group(1):
+                diagnostics.append({
+                    "line": row,
+                    "column": line.index(markers.group(1)) + 1,
+                    "severity": "warning",
+                    "rule": "CM006",
+                    "message": 'this row group mixes the "↳" and ">" markers; pick one for consistency',
+                })
+            depth = 0 if row_depth < 0 else min(raw, row_depth + 1)
+            if raw > depth:
+                diagnostics.append({
+                    "line": row,
+                    "column": line.index("|") + 2,
+                    "severity": "warning",
+                    "rule": "CM007",
+                    "message": (
+                        f"this row is {raw} levels deep but the row above is {max(row_depth, 0)}; "
+                        f"it renders at depth {depth}"
+                    ),
+                })
+            row_depth = depth
+        elif not line.strip(WS):
+            row_depth = -1
 
         _scan_inline(line, row, diagnostics)
 

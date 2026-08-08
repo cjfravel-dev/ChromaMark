@@ -15,6 +15,7 @@ uses GitHub-native structures and remains readable on other Markdown engines.
 | custom-color callout | `NOTE` Alert |
 | details | `<details>` with `<summary>`; `open` is preserved |
 | fields | `Field` / `Value` GFM table |
+| table row group | every row kept, child rows prefixed with `↳` per depth (GitHub cannot hide rows without scripting) |
 | pill | tone icon plus `<kbd>` badge |
 | colored text | plain inline text |
 | meter | ten-cell Unicode progress bar plus authored value |

@@ -68,7 +68,8 @@
       "./media/toc.css"
     ],
     "markdown.previewScripts": [
-      "./media/toc.js"
+      "./media/toc.js",
+      "./media/rowgroups.js"
     ],
     "configuration": {
       "title": "ChromaMark",

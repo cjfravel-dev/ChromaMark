@@ -2,7 +2,7 @@
 
 > Licensed under [CC BY-SA 4.0](../LICENSE-SPEC.md).
 
-Language version `0.1` is normatively defined by [`SPEC.md`](../SPEC.md).
+Language version `0.2` is normatively defined by [`SPEC.md`](../SPEC.md).
 [`grammar.ebnf`](./grammar.ebnf) is its formal syntax companion, and the shared
 [`conformance` corpus](../conformance/) is the executable rendering contract.
 An implementation that disagrees with these sources has a defect; implementation
@@ -26,7 +26,7 @@ versions while implementing the same language contract.
 
 ## Compatibility requirements
 
-An implementation claiming ChromaMark `0.1` compatibility must:
+An implementation claiming ChromaMark `0.2` compatibility must:
 
 1. Preserve CommonMark + GFM syntax and behavior. Raw HTML follows the host
    renderer's policy.
@@ -46,3 +46,18 @@ Every behavior change must update the specification and shared conformance
 corpus in the same pull request. Changes that affect only one implementation
 are defects unless the compatibility documentation explicitly records an
 upstream engine difference.
+
+Specifying a construct as **proposed** for a future language version is not a
+behavior change: it adds no conformance cases, changes no rendered output, and
+leaves the current contract intact. Such a construct is marked as proposed in
+`SPEC.md` and `grammar.ebnf`, and existing renderers stay correct by leaving its
+syntax as literal text. It becomes part of the contract only when the
+conformance cases and the reference implementations land, at which point the
+proposed markers are removed and the language version is bumped.
+
+## Version history
+
+| Version | Change |
+| --- | --- |
+| `0.2` | Adds collapsible table row groups (`↳` / `>` starting a table's first cell). Backward compatible: the markers were previously literal text, so every `0.1` document keeps its meaning. |
+| `0.1` | Initial contract: colored blocks, pills, collapsibles, fields, colored text, meters, CriticMarkup. |

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "languageVersion": "0.1",
+  "languageVersion": "0.2",
   "cases": [
     {
       "name": "clean nested",
@@ -92,7 +92,9 @@
     {
       "name": "disabled rule",
       "source": "See `[!pass]` and [!succes 3]",
-      "disable": ["CM001"],
+      "disable": [
+        "CM001"
+      ],
       "diagnostics": [
         {
           "line": 1,
@@ -118,26 +120,64 @@
     },
     {
       "name": "canonical meter whitespace",
-      "source": "[=info 87%\ufeff]",
+      "source": "[=info 87%﻿]",
       "diagnostics": []
     },
     {
       "name": "BOM-only container closer",
-      "source": ":::\ufeff",
+      "source": ":::﻿",
       "diagnostics": []
     },
     {
       "name": "NEL-prefixed container kind",
-      "source": ":::\u0085details",
+      "source": ":::details",
       "diagnostics": [
         {
           "line": 1,
           "column": 4,
           "severity": "warning",
           "rule": "CM003",
-          "message": "unknown block kind \"\u0085details\"; this \":::\" fence renders as literal text"
+          "message": "unknown block kind \"details\"; this \":::\" fence renders as literal text"
         }
       ]
+    },
+    {
+      "name": "row group mixed markers",
+      "source": "| a | b |\n| --- | --- |\n| 1 | x |\n| ↳> 2 | y |\n",
+      "diagnostics": [
+        {
+          "line": 4,
+          "column": 2,
+          "severity": "warning",
+          "rule": "CM007",
+          "message": "this row is 2 levels deep but the row above is 0; it renders at depth 1"
+        },
+        {
+          "line": 4,
+          "column": 3,
+          "severity": "warning",
+          "rule": "CM006",
+          "message": "this row group mixes the \"↳\" and \">\" markers; pick one for consistency"
+        }
+      ]
+    },
+    {
+      "name": "row group depth clamp",
+      "source": "| a | b |\n| --- | --- |\n| 1 | x |\n| ↳↳↳ 2 | y |\n",
+      "diagnostics": [
+        {
+          "line": 4,
+          "column": 2,
+          "severity": "warning",
+          "rule": "CM007",
+          "message": "this row is 3 levels deep but the row above is 0; it renders at depth 1"
+        }
+      ]
+    },
+    {
+      "name": "row group clean",
+      "source": "| a | b |\n| --- | --- |\n| 1 | x |\n| ↳ 2 | y |\n| ↳↳ 3 | z |\n",
+      "diagnostics": []
     }
   ]
 }

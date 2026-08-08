@@ -24,7 +24,7 @@
    Every extension below is designed to degrade to readable CommonMark text, so
    a plain Markdown engine renders the literal source without loss.
 
-   Language version: 0.1
+   Language version: 0.2
 
    Case. Kinds, tones, and aliases are matched case-insensitively.
 
@@ -114,6 +114,27 @@ substitution    ::= "{~~" ctext "~>" ctext "~~}"
 highlight       ::= "{==" ctext "==}"
 comment         ::= "{>>" ctext "<<}"
 ctext           ::= char*                              (* treated as plain text *)
+
+
+(* ---------------------------------------------------------------------------
+   Block extension: table row groups  (collapsible rows)
+   ---------------------------------------------------------------------------
+   A GFM table row whose FIRST cell opens with a run of row markers is a child
+   row. Depth is the number of markers, and a depth-N row attaches to the
+   nearest preceding row of depth N-1, which becomes the group's toggle.
+   "↳" (#x21B3) and ASCII ">" are equivalent; mixing forms within one run is
+   valid but diagnosed. The marker run is stripped from the rendered cell.
+
+   Markers are significant ONLY at the start of a row's first cell; anywhere
+   else they are ordinary text.
+
+   Degradation: a row deeper than one level below its predecessor clamps to the
+   deepest legal depth, and a child row with no eligible parent becomes an
+   ordinary row. Rows are never dropped, reordered, or hidden by these rules.
+   --------------------------------------------------------------------------- *)
+
+row-group-cell  ::= row-marker+ inline-run       (* first cell of a child row *)
+row-marker      ::= ( "↳" | ">" ) S*             (* depth = count of markers *)
 
 
 (* ---------------------------------------------------------------------------
