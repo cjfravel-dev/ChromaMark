@@ -137,4 +137,5 @@
 .cm-row-child > td:first-child { padding-left:calc(6px + var(--cm-row-indent, 1.25em)); }
 .cm-row[data-cm-depth="2"] > td:first-child { --cm-row-indent:2.5em; }
 .cm-row[data-cm-depth="3"] > td:first-child { --cm-row-indent:3.75em; }
+.cm-row[data-cm-depth="4"] > td:first-child { --cm-row-indent:5em; }
 .cm-row[hidden] { display:none; }

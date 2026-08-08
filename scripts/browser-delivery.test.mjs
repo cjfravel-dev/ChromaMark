@@ -15,6 +15,30 @@ function customColorRule(css) {
   return match[1];
 }
 
+test('stylesheets only style classes the renderer actually emits', () => {
+  const corpus = JSON.parse(read('conformance/cases.json'));
+  const emitted = new Set();
+  for (const fixture of corpus.cases) {
+    for (const match of fixture.html.matchAll(/class="([^"]+)"/g)) {
+      for (const name of match[1].split(/\s+/)) emitted.add(name);
+    }
+  }
+  for (const path of [
+    'packages/renderer/theme/chromamark.css',
+    'packages/vscode/media/chromamark.css',
+  ]) {
+    const referenced = new Set(
+      [...read(path).matchAll(/\.(cm-[a-z0-9-]+|crit-[a-z0-9-]+)/g)].map((match) => match[1]),
+    );
+    const orphans = [...referenced].filter((name) => !emitted.has(name));
+    assert.deepEqual(
+      orphans,
+      [],
+      `${path} styles classes the renderer never emits: ${orphans.join(', ')}`,
+    );
+  }
+});
+
 test('custom colors retain visible styling without color-mix support', () => {
   for (const path of [
     'packages/renderer/theme/chromamark.css',

@@ -5,6 +5,18 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ## [Unreleased]
 
+## [VS Code 0.3.1] - 2026-08-08
+
+### Fixed
+
+- Collapsible table row groups were unusable in the Markdown preview: the
+  extension stylesheet still targeted the `.cm-row-toggle-icon` span that the
+  renderer stopped emitting when the toggle markup was simplified to use an
+  `aria-label`. The toggle rendered with no content, so groups collapsed with
+  no visible control to expand them and nested rows appeared to vanish. The
+  stylesheet now styles the button's own `::before`, and a new guard fails the
+  build whenever a stylesheet references a class the renderer never emits.
+
 ## [0.5.0] - 2026-08-08
 
 Released as `@chromamark/renderer` 0.5.0, `@chromamark/conformance` 0.2.0,
