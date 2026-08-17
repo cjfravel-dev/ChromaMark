@@ -14,8 +14,9 @@
 
 import * as vscode from 'vscode';
 import { renderEditable } from './blocks.mjs';
+import { resolveToggleAction, VIEW_TYPE } from './toggle.mjs';
 
-export const VIEW_TYPE = 'chromamark.editableEditor';
+export { VIEW_TYPE };
 const SETTING = 'experimental.editableEditor';
 
 function nonce() {
@@ -124,23 +125,69 @@ class EditableEditorProvider {
 export function registerEditableEditor(context) {
   let registration;
 
+  const enabled = () =>
+    vscode.workspace.getConfiguration('chromamark').get(SETTING) === true;
+
   const sync = () => {
-    const enabled = vscode.workspace.getConfiguration('chromamark').get(SETTING) === true;
-    if (enabled && !registration) {
+    if (enabled() && !registration) {
       registration = vscode.window.registerCustomEditorProvider(
         VIEW_TYPE,
         new EditableEditorProvider(context),
         { webviewOptions: { retainContextWhenHidden: true }, supportsMultipleEditorsPerDocument: true },
       );
       context.subscriptions.push(registration);
-    } else if (!enabled && registration) {
+    } else if (!enabled() && registration) {
       registration.dispose();
       registration = undefined;
     }
   };
 
   sync();
-  return vscode.workspace.onDidChangeConfiguration((event) => {
-    if (event.affectsConfiguration(`chromamark.${SETTING}`)) sync();
-  });
+  return vscode.Disposable.from(
+    vscode.workspace.onDidChangeConfiguration((event) => {
+      if (event.affectsConfiguration(`chromamark.${SETTING}`)) sync();
+    }),
+    vscode.commands.registerCommand('chromamark.toggleRenderedEditing', () =>
+      toggleRenderedEditing({ enabled, sync }),
+    ),
+  );
+}
+
+/** The `Uri` of the active tab and editor, whichever the active surface exposes. */
+function activeTabInput() {
+  const group = vscode.window.tabGroups.activeTabGroup;
+  const tab = group && group.activeTab;
+  return (tab && tab.input) || {};
+}
+
+/**
+ * Switches the active `.cm` file between the normal editor and the editable
+ * editor. Invoking it is a deliberate opt-in, so it turns the experimental
+ * setting on rather than failing with an explanation the user cannot act on.
+ */
+async function toggleRenderedEditing({ enabled, sync }) {
+  const editor = vscode.window.activeTextEditor;
+  const activeUri = editor && editor.document ? editor.document.uri : undefined;
+  const { action, uri } = resolveToggleAction(activeTabInput(), activeUri);
+
+  if (action === 'none') {
+    vscode.window.showInformationMessage('ChromaMark: open a .cm file to edit it in the rendered view.');
+    return;
+  }
+  if (action === 'showSource') {
+    await vscode.commands.executeCommand('markdown.showSource');
+    return toggleRenderedEditing({ enabled, sync });
+  }
+  if (action === 'toSource') {
+    await vscode.commands.executeCommand('vscode.openWith', uri, 'default');
+    return;
+  }
+
+  if (!enabled()) {
+    await vscode.workspace
+      .getConfiguration('chromamark')
+      .update(SETTING, true, vscode.ConfigurationTarget.Global);
+    sync();
+  }
+  await vscode.commands.executeCommand('vscode.openWith', uri, VIEW_TYPE);
 }

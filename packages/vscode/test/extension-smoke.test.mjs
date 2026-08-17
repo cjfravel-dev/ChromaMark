@@ -34,6 +34,9 @@ const remoteCmDocument = {
 
 const vscodeStub = {
   DiagnosticSeverity: { Warning: 1 },
+  Disposable: {
+    from: (...items) => ({ dispose: () => items.forEach((i) => i && i.dispose && i.dispose()) }),
+  },
   Uri: { joinPath: (base, ...parts) => ({ path: [base.path, ...parts].join('/') }) },
   Position: class Position {
     constructor(line, character) { this.line = line; this.character = character; }

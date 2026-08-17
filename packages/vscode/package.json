@@ -43,6 +43,12 @@
         "command": "chromamark.setOpenMode",
         "title": "Set Open Mode...",
         "category": "ChromaMark"
+      },
+      {
+        "command": "chromamark.toggleRenderedEditing",
+        "title": "Toggle Rendered Editing",
+        "category": "ChromaMark",
+        "icon": "$(edit)"
       }
     ],
     "languages": [
@@ -122,7 +128,22 @@
         ],
         "priority": "option"
       }
-    ]
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "chromamark.toggleRenderedEditing",
+          "when": "resourceExtname == .cm || activeWebviewPanelId =~ /markdown.preview/",
+          "group": "navigation@-1"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "chromamark.toggleRenderedEditing",
+          "when": "resourceExtname == .cm || activeWebviewPanelId =~ /markdown.preview/"
+        }
+      ]
+    }
   },
   "dependencies": {
     "@chromamark/renderer": "^0.6.0"

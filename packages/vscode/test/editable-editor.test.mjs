@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
 import { renderEditable, blockRanges, replaceLines } from '../src/blocks.mjs';
 import { blockToMarkdown, headingLevel } from '../src/inline-md.mjs';
+import { resolveToggleAction } from '../src/toggle.mjs';
 
 const dom = new JSDOM('<!doctype html><html><body></body></html>');
 const { document } = dom.window;
@@ -199,4 +200,38 @@ test('a full edit cycle leaves the rest of the document untouched', () => {
     'only the edited block changes',
   );
   assert.deepEqual(blockRanges([]).length, 0);
+});
+
+// --- toggle dispatch -------------------------------------------------------
+
+const uri = { path: '/w/report.cm' };
+
+test('toggling from a source editor opens the editable editor', () => {
+  assert.deepEqual(resolveToggleAction({ uri }, uri), { action: 'toEditable', uri });
+});
+
+test('toggling from the editable editor goes back to the normal editor', () => {
+  const input = { uri, viewType: 'chromamark.editableEditor' };
+  assert.deepEqual(resolveToggleAction(input, undefined), { action: 'toSource', uri });
+});
+
+test('a preview with a source editor beside it toggles that document', () => {
+  // The preview tab carries no URI, so the side-by-side source editor supplies it.
+  const input = { viewType: 'mainThreadWebview-markdown.preview' };
+  assert.deepEqual(resolveToggleAction(input, uri), { action: 'toEditable', uri });
+});
+
+test('a preview alone asks VS Code to reveal the source first', () => {
+  const input = { viewType: 'mainThreadWebview-markdown.preview' };
+  assert.deepEqual(resolveToggleAction(input, undefined), { action: 'showSource' });
+});
+
+test('the editable editor is recognized through VS Code view-type prefixing', () => {
+  const input = { uri, viewType: 'mainThreadCustomEditor-chromamark.editableEditor' };
+  assert.equal(resolveToggleAction(input, undefined).action, 'toSource');
+});
+
+test('a tab with nothing to edit reports no action', () => {
+  assert.deepEqual(resolveToggleAction({}, undefined), { action: 'none' });
+  assert.deepEqual(resolveToggleAction(undefined, undefined), { action: 'none' });
 });

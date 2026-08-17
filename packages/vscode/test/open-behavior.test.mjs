@@ -12,6 +12,12 @@ function fakeUri(path, scheme = 'file') {
   return { scheme, path, toString: () => `${scheme}://${path}` };
 }
 
+const disposableApi = {
+  Disposable: {
+    from: (...items) => ({ dispose: () => items.forEach((i) => i && i.dispose && i.dispose()) }),
+  },
+};
+
 const diagnosticApi = {
   DiagnosticSeverity: { Warning: 1 },
   CodeActionKind: { QuickFix: 'quickfix' },
@@ -62,6 +68,7 @@ async function activateWith({
   }
   const vscodeStub = {
     ...diagnosticApi,
+    ...disposableApi,
     RelativePattern,
     Uri: {
       joinPath: (uri) => fakeUri(uri.path.slice(0, uri.path.lastIndexOf('/')), uri.scheme),
@@ -220,6 +227,7 @@ async function invokeSetOpenMode({ picks }) {
   const ConfigurationTarget = { Global: 1, Workspace: 2, WorkspaceFolder: 3 };
   const vscodeStub = {
     ...diagnosticApi,
+    ...disposableApi,
     ConfigurationTarget,
     window: {
       activeTextEditor: undefined,
