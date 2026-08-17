@@ -22,4 +22,16 @@ await build({
   logLevel: 'info',
 });
 
-console.log('built dist/extension.js');
+// The webview script is bundled separately: it runs in the webview, not the
+// extension host, and shares the `inline-md.mjs` serializer with the tests.
+await build({
+  entryPoints: [join(here, 'src/webview/editor.js')],
+  bundle: true,
+  platform: 'browser',
+  format: 'iife',
+  target: ['es2020'],
+  outfile: join(here, 'dist/editor.js'),
+  logLevel: 'info',
+});
+
+console.log('built dist/extension.js and dist/editor.js');

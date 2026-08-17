@@ -21,6 +21,7 @@
 import * as vscode from 'vscode';
 import chromamark, { lint } from '@chromamark/renderer';
 import { quickFixes } from './code-actions.mjs';
+import { registerEditableEditor } from './editable-editor.mjs';
 import { extensionKey, isSupportedExtension, commandForMode, openModeChoices, extensionChoices } from './open-mode.mjs';
 
 function isSupportedUri(uri) {
@@ -186,6 +187,7 @@ export function activate(context) {
       { providedCodeActionKinds: [vscode.CodeActionKind.QuickFix] },
     ),
     vscode.commands.registerCommand('chromamark.setOpenMode', setOpenMode),
+    registerEditableEditor(context),
     vscode.window.onDidChangeActiveTextEditor(applyOpenMode),
     vscode.window.tabGroups.onDidChangeTabs(forgetClosed),
     vscode.workspace.onDidOpenTextDocument(updateDiagnostics),

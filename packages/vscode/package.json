@@ -103,9 +103,26 @@
           ],
           "default": "sourceAndPreview",
           "markdownDescription": "How Markdown (`.md`) files open."
+        },
+        "chromamark.experimental.editableEditor": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Enable the experimental **ChromaMark Editor**, which edits the rendered document in place. Open a `.cm` file with it from **View: Reopen Editor With...**; the Markdown preview stays the default."
         }
       }
-    }
+    },
+    "customEditors": [
+      {
+        "viewType": "chromamark.editableEditor",
+        "displayName": "ChromaMark Editor (experimental)",
+        "selector": [
+          {
+            "filenamePattern": "*.cm"
+          }
+        ],
+        "priority": "option"
+      }
+    ]
   },
   "dependencies": {
     "@chromamark/renderer": "^0.6.0"

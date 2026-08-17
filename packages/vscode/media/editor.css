@@ -1,0 +1,76 @@
+/*
+ * Styles for the experimental editable editor webview. The rendered document
+ * itself is styled by `chromamark.css`, which is shared with the Markdown
+ * preview; this file only adds the editing affordances.
+ */
+
+body.cm-editable {
+  padding: 16px 32px 64px;
+  font-family: var(--vscode-markdown-font-family, var(--vscode-font-family));
+  font-size: var(--vscode-markdown-font-size, var(--vscode-font-size));
+  color: var(--vscode-foreground);
+}
+
+body.cm-editable [data-cm-block] {
+  border-radius: 4px;
+  outline: 1px solid transparent;
+  transition: outline-color 90ms ease-out;
+}
+
+/* Only hint at editability on hover — a permanent box on every block turns the
+   rendered document into a form. */
+body.cm-editable [data-cm-block]:hover {
+  outline-color: var(--vscode-editorWidget-border, rgba(128, 128, 128, 0.35));
+}
+
+body.cm-editable .cm-editing {
+  outline: 1px solid var(--vscode-focusBorder);
+  outline-offset: 2px;
+}
+
+body.cm-editable [data-cm-mode='source']:hover {
+  cursor: text;
+}
+
+.cm-source-editor {
+  display: block;
+  width: 100%;
+  min-height: 3em;
+  box-sizing: border-box;
+  padding: 6px 8px;
+  resize: vertical;
+  color: var(--vscode-input-foreground);
+  background: var(--vscode-input-background);
+  border: 1px solid var(--vscode-focusBorder);
+  border-radius: 4px;
+  font-family: var(--vscode-editor-font-family, monospace);
+  font-size: var(--vscode-editor-font-size, 13px);
+  line-height: 1.5;
+}
+
+#cm-status {
+  position: fixed;
+  right: 16px;
+  bottom: 12px;
+  max-width: 60ch;
+  padding: 4px 10px;
+  border-radius: 4px;
+  color: var(--vscode-editorWidget-foreground, var(--vscode-foreground));
+  background: var(--vscode-editorWidget-background);
+  border: 1px solid var(--vscode-editorWidget-border, transparent);
+  font-size: 0.85em;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease-out;
+}
+
+#cm-status:not(:empty) {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.cm-editable [data-cm-block],
+  #cm-status {
+    transition: none;
+  }
+}

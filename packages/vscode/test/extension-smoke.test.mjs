@@ -10,6 +10,8 @@ const distPath = fileURLToPath(new URL('../dist/extension.js', import.meta.url))
 
 const diagnostics = [];
 const codeActionProviders = [];
+const customEditors = [];
+let configuration = {};
 const cmDocument = {
   languageId: 'markdown',
   uri: { scheme: 'file', path: '/workspace/report.cm', toString: () => 'file:///workspace/report.cm' },
@@ -32,6 +34,7 @@ const remoteCmDocument = {
 
 const vscodeStub = {
   DiagnosticSeverity: { Warning: 1 },
+  Uri: { joinPath: (base, ...parts) => ({ path: [base.path, ...parts].join('/') }) },
   Position: class Position {
     constructor(line, character) { this.line = line; this.character = character; }
   },
@@ -78,15 +81,36 @@ const vscodeStub = {
       onDidDelete: () => ({ dispose() {} }),
       dispose() {},
     }),
-    getConfiguration: () => ({ get: () => undefined }),
+    getConfiguration: () => ({ get: (key) => configuration[key] }),
+    onDidChangeConfiguration: () => ({ dispose() {} }),
   },
   window: {
     activeTextEditor: undefined,
     onDidChangeActiveTextEditor: () => ({ dispose() {} }),
     tabGroups: { all: [], onDidChangeTabs: () => ({ dispose() {} }) },
+    registerCustomEditorProvider: (viewType, provider, options) => {
+      customEditors.push({ viewType, provider, options });
+      return { dispose() {} };
+    },
   },
   commands: { executeCommand: async () => {}, registerCommand: () => ({ dispose() {} }) },
 };
+
+/** Activates the built bundle with `vscode` stubbed out, returning its API. */
+function activateBundle() {
+  const origLoad = Module._load;
+  Module._load = function (request, ...args) {
+    if (request === 'vscode') return vscodeStub;
+    return origLoad.call(this, request, ...args);
+  };
+  try {
+    const require = createRequire(import.meta.url);
+    delete require.cache[distPath];
+    return require(distPath).activate({ subscriptions: [], extensionUri: { path: '/ext' } });
+  } finally {
+    Module._load = origLoad;
+  }
+}
 
 test('the built extension bundle activates and wires ChromaMark into markdown-it', () => {
   assert.ok(existsSync(distPath), 'dist/extension.js must be built (npm run build) before this test');
@@ -131,4 +155,17 @@ test('the built extension bundle activates and wires ChromaMark into markdown-it
   assert.equal(actions[0].edit.replacements[0].range.start.character, 8);
   assert.equal(actions[0].edit.replacements[0].range.end.character, 14);
   assert.equal(actions[0].edit.replacements[0].text, 'success');
+});
+
+test('the experimental editor stays unregistered until the setting opts in', () => {
+  customEditors.length = 0;
+  configuration = {};
+  activateBundle();
+  assert.equal(customEditors.length, 0, 'the Markdown preview must stay the only rendered view by default');
+
+  configuration = { 'experimental.editableEditor': true };
+  activateBundle();
+  assert.equal(customEditors.length, 1);
+  assert.equal(customEditors[0].viewType, 'chromamark.editableEditor');
+  assert.equal(typeof customEditors[0].provider.resolveCustomTextEditor, 'function');
 });
