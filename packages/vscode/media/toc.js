@@ -18,20 +18,32 @@
   var rebuildTimer;
 
   // The preview webview is torn down and rebuilt whenever the file changes on
-  // disk, so the collapsed choice lives in localStorage instead of the DOM.
+  // disk, so the collapsed choice lives in localStorage instead of the DOM. It
+  // is also mirrored in memory: if storage is unavailable the choice still
+  // survives the in-session rebuilds driven by the MutationObserver below.
+  var collapsedPreference;
+
+  // Returns true/false when a choice is known, or undefined for "no preference"
+  // — never coerce an unreadable or unset value into "open".
   function readCollapsed() {
+    if (typeof collapsedPreference === 'boolean') return collapsedPreference;
+    var stored;
     try {
-      return window.localStorage.getItem(STORAGE_KEY) === '1';
+      stored = window.localStorage.getItem(STORAGE_KEY);
     } catch {
-      return false;
+      return undefined;
     }
+    if (stored !== '0' && stored !== '1') return undefined;
+    collapsedPreference = stored === '1';
+    return collapsedPreference;
   }
 
   function saveCollapsed(collapsed) {
+    collapsedPreference = collapsed;
     try {
       window.localStorage.setItem(STORAGE_KEY, collapsed ? '1' : '0');
     } catch {
-      /* storage unavailable; state simply is not remembered */
+      /* storage unavailable; the in-memory mirror still covers this session */
     }
   }
 
@@ -42,7 +54,9 @@
   }
 
   function restoreCollapsed() {
-    document.body.classList.toggle('cm-toc-collapsed', readCollapsed());
+    var collapsed = readCollapsed();
+    if (typeof collapsed !== 'boolean') return;
+    document.body.classList.toggle('cm-toc-collapsed', collapsed);
   }
 
   function slugify(text, used) {

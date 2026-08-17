@@ -133,7 +133,7 @@ test('reopened outline stays open when the preview reloads', () => {
   }
 });
 
-test('outline works when storage is unavailable', () => {
+test('outline works when storage is unavailable', async () => {
   const denied = {
     getItem() { throw new Error('denied'); },
     setItem() { throw new Error('denied'); },
@@ -144,6 +144,19 @@ test('outline works when storage is unavailable', () => {
     document.querySelector('#cm-toc .cm-toc-toggle')
       .dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
     assert.ok(document.body.classList.contains('cm-toc-collapsed'));
+
+    // An incremental preview update rebuilds the outline in the same session.
+    // Without storage the choice can only come from memory, and a rebuild must
+    // not coerce the unreadable preference back into "open".
+    [...document.querySelectorAll('h2, p')].forEach((n) => n.remove());
+    document.body.insertAdjacentHTML('afterbegin', headingsHtml(5));
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    assert.equal(document.querySelectorAll('#cm-toc .cm-toc-link').length, 5, 'outline rebuilt');
+    assert.ok(
+      document.body.classList.contains('cm-toc-collapsed'),
+      'a rebuild should keep the in-session collapsed state when storage is denied',
+    );
   } finally {
     dom.window.close();
   }
