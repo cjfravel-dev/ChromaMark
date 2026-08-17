@@ -413,3 +413,34 @@ test('handing off across a real edit lands on the intended block', () => {
   assert.ok(landed, 'the remembered block still resolves after the document changed');
   assert.equal(landed.className.includes('cm-block'), true, 'and it is the callout, not its neighbour');
 });
+
+// --- webview safety --------------------------------------------------------
+//
+// The webview assigns rendered HTML to `innerHTML`, which is only safe because
+// the renderer escapes author markup and the page's CSP forbids inline script.
+// Both are load-bearing, so both are pinned here.
+
+test('raw HTML in a document is escaped rather than rendered', () => {
+  const { html } = renderEditable(
+    ['<img src=x onerror=alert(1)>', '', '<script>alert(2)</script>'].join('\n'),
+  );
+
+  assert.match(html, /&lt;img src=x onerror=alert\(1\)&gt;/);
+  assert.doesNotMatch(html, /<img/i);
+  assert.doesNotMatch(html, /<script/i);
+});
+
+test('raw HTML inside a container title or body is escaped too', () => {
+  const { html } = renderEditable(
+    ['::: info <b>title</b>', '<iframe src=x></iframe>', ':::'].join('\n'),
+  );
+
+  assert.match(html, /&lt;b&gt;title&lt;\/b&gt;/);
+  assert.doesNotMatch(html, /<iframe/i);
+});
+
+test('script-bearing link targets are not turned into links', () => {
+  const { html } = renderEditable('[x](javascript:alert(1))');
+  assert.doesNotMatch(html, /<a /, 'the target is left as plain text, not a link');
+  assert.doesNotMatch(html, /href=/);
+});

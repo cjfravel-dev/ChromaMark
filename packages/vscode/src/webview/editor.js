@@ -45,6 +45,12 @@ function sourceFor(element) {
   return sourceLines.slice(start, end).join('\n');
 }
 
+// The HTML assigned here is never author-controlled markup: it comes from the
+// extension host, which renders it with markdown-it configured `html: false`, so
+// raw HTML and `javascript:` links in a `.cm` file arrive escaped as text. The
+// webview also runs under a `default-src 'none'` CSP whose only `script-src` is
+// a per-load nonce, so even markup that reached the DOM could not execute. Both
+// properties are pinned by tests in `test/editable-editor.test.mjs`.
 function render(html) {
   if (html == null) return;
   pendingHtml = html;

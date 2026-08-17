@@ -172,3 +172,37 @@ test('the experimental editor stays unregistered until the setting opts in', () 
   assert.equal(customEditors[0].viewType, 'chromamark.editableEditor');
   assert.equal(typeof customEditors[0].provider.resolveCustomTextEditor, 'function');
 });
+
+test('the editor webview forbids inline script and allows only a per-load nonce', () => {
+  // The webview assigns rendered HTML to innerHTML, which is only safe because
+  // nothing inline can run. Escaping is pinned in editable-editor.test.mjs.
+  customEditors.length = 0;
+  configuration = { 'experimental.editableEditor': true };
+  activateBundle();
+
+  const panel = {
+    webview: {
+      cspSource: 'vscode-resource:',
+      asWebviewUri: (uri) => `vscode-resource:${uri.path}`,
+      onDidReceiveMessage: () => ({ dispose() {} }),
+      postMessage: () => {},
+      options: {},
+      html: '',
+    },
+    onDidDispose: () => ({ dispose() {} }),
+  };
+  customEditors[0].provider.resolveCustomTextEditor(cmDocument, panel, {});
+
+  const csp = /Content-Security-Policy" content="([^"]*)"/.exec(panel.webview.html)[1];
+  assert.match(csp, /default-src 'none'/);
+  assert.doesNotMatch(csp, /unsafe-inline|unsafe-eval/, 'inline script would defeat the nonce');
+
+  const nonce = /script-src 'nonce-([A-Za-z0-9]+)'/.exec(csp)[1];
+  assert.equal(nonce.length, 32);
+  assert.match(panel.webview.html, new RegExp(`<script nonce="${nonce}"`));
+
+  panel.webview.html = '';
+  customEditors[0].provider.resolveCustomTextEditor(cmDocument, panel, {});
+  const second = /script-src 'nonce-([A-Za-z0-9]+)'/.exec(panel.webview.html)[1];
+  assert.notEqual(second, nonce, 'each load gets its own nonce');
+});
