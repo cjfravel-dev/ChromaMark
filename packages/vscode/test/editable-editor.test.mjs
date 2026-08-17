@@ -4,6 +4,7 @@ import { JSDOM } from 'jsdom';
 import { renderEditable, blockRanges, replaceLines } from '../src/blocks.mjs';
 import { blockToMarkdown, headingLevel } from '../src/inline-md.mjs';
 import { resolveToggleAction } from '../src/toggle.mjs';
+import { shiftTarget, findTarget, targetOf } from '../src/handoff.mjs';
 
 const dom = new JSDOM('<!doctype html><html><body></body></html>');
 const { document } = dom.window;
@@ -331,4 +332,84 @@ test('rewriting every block with its own source leaves the document byte-identic
   }
 
   assert.equal(out, source);
+});
+
+// --- edit handoff ----------------------------------------------------------
+
+test('a block below an edit that grew shifts down by the added lines', () => {
+  const target = { start: 20, index: 4 };
+  const edit = { start: 2, end: 5, lineCount: 6 };
+  assert.deepEqual(shiftTarget(target, edit), { start: 23, index: 4 });
+});
+
+test('a block below an edit that shrank shifts up', () => {
+  assert.deepEqual(
+    shiftTarget({ start: 20, index: 4 }, { start: 2, end: 8, lineCount: 2 }),
+    { start: 16, index: 4 },
+  );
+});
+
+test('a block above an edit does not move', () => {
+  assert.deepEqual(
+    shiftTarget({ start: 1, index: 0 }, { start: 10, end: 12, lineCount: 40 }),
+    { start: 1, index: 0 },
+  );
+});
+
+test('an edit that keeps its line count moves nothing', () => {
+  assert.deepEqual(
+    shiftTarget({ start: 9, index: 3 }, { start: 2, end: 5, lineCount: 3 }),
+    { start: 9, index: 3 },
+  );
+});
+
+test('shiftTarget tolerates a missing target or edit', () => {
+  assert.equal(shiftTarget(null, { start: 0, end: 1, lineCount: 1 }), null);
+  assert.deepEqual(shiftTarget({ start: 4, index: 1 }, null), { start: 4, index: 1 });
+});
+
+test('a handoff resolves by source position, surviving renumbered blocks', () => {
+  const host = document.createElement('div');
+  host.innerHTML = renderEditable('# A\n\nB\n\nC').html;
+  const [, second] = [...host.querySelectorAll('[data-cm-block]')];
+  const target = targetOf(second);
+
+  assert.deepEqual(target, { start: 2, index: 1 });
+  assert.equal(findTarget(host, target), second);
+});
+
+test('a handoff falls back to the ordinal when the line no longer exists', () => {
+  const host = document.createElement('div');
+  host.innerHTML = renderEditable('# A\n\nB').html;
+  const found = findTarget(host, { start: 999, index: 1 });
+
+  assert.ok(found, 'a shifted line that no longer resolves still finds the block');
+  assert.equal(found.getAttribute('data-cm-block'), '1');
+});
+
+test('a handoff that matches nothing resolves to null rather than throwing', () => {
+  const host = document.createElement('div');
+  host.innerHTML = renderEditable('# A').html;
+  assert.equal(findTarget(host, { start: 999, index: 99 }), null);
+  assert.equal(findTarget(host, null), null);
+});
+
+test('handing off across a real edit lands on the intended block', () => {
+  // Editing block 1 into more lines, then opening block 3: the naive position
+  // would land on whatever moved into its place.
+  const source = ['# Title', '', 'Intro.', '', '::: info Note', 'body', ':::'].join('\n');
+  const host = document.createElement('div');
+  host.innerHTML = renderEditable(source).html;
+  const callout = targetOf([...host.querySelectorAll('[data-cm-block]')][2]);
+
+  const edit = { start: 2, end: 3, lineCount: 3 };
+  const shifted = shiftTarget(callout, edit);
+  const updated = replaceLines(source, edit.start, edit.end, 'Intro,\nnow spanning\nthree lines.');
+
+  const after = document.createElement('div');
+  after.innerHTML = renderEditable(updated).html;
+  const landed = findTarget(after, shifted);
+
+  assert.ok(landed, 'the remembered block still resolves after the document changed');
+  assert.equal(landed.className.includes('cm-block'), true, 'and it is the callout, not its neighbour');
 });

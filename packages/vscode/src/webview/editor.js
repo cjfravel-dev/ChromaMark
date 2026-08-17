@@ -8,6 +8,7 @@
  */
 
 import { blockToMarkdown, headingLevel } from '../inline-md.mjs';
+import { shiftTarget, findTarget, targetOf } from '../handoff.mjs';
 
 const vscode = acquireVsCodeApi();
 
@@ -17,6 +18,11 @@ const status = document.getElementById('cm-status');
 let sourceLines = [];
 let editing = null;
 let pendingHtml = null;
+// The block to open once an in-flight edit has round-tripped, and whether we are
+// still waiting for that round trip.
+let handoff = null;
+let awaitingUpdate = false;
+let inFlightEdit = null;
 
 function setStatus(message) {
   status.textContent = message || '';
@@ -54,10 +60,16 @@ function commit(text) {
   const { start, end } = lineRange(element);
   editing = null;
   setStatus('');
+
   if (text == null || text === original) {
     render(pendingHtml);
+    openHandoff();
     return;
   }
+  const edit = { start, end, lineCount: text.split('\n').length };
+  handoff = shiftTarget(handoff, edit);
+  inFlightEdit = edit;
+  awaitingUpdate = true;
   vscode.postMessage({ type: 'edit', start, end, text });
 }
 
@@ -66,6 +78,16 @@ function cancel() {
   editing = null;
   setStatus('');
   render(pendingHtml);
+  openHandoff();
+}
+
+/** Opens the block the reader asked for while the previous edit was committing. */
+function openHandoff() {
+  const target = handoff;
+  handoff = null;
+  if (!target || editing) return;
+  const element = findTarget(root, target);
+  if (element) beginEdit(element);
 }
 
 /** Rich editing: the rendered element itself becomes editable. */
@@ -99,6 +121,7 @@ function commitRich() {
     editing = null;
     setStatus('That edit could not be written back as ChromaMark — reverted.');
     render(pendingHtml);
+    openHandoff();
     return;
   }
   commit(text);
@@ -116,15 +139,53 @@ function beginEdit(element) {
   else editSource(element);
 }
 
-document.addEventListener('click', (event) => {
-  if (editing) return;
+/** Whether a node is inside the surface currently being edited. */
+function insideEditor(node) {
+  if (!editing) return false;
+  const surface = editing.mode === 'rich' ? editing.element : editing.area;
+  return surface === node || surface.contains(node);
+}
+
+// Committing on blur alone loses the click that caused it: the document changes,
+// the view re-renders, and the block the reader was reaching for is a different
+// node by the time the click arrives. Pressing down outside the editor is the
+// first moment we know a handoff is coming, so the intent is recorded here,
+// before anything commits.
+document.addEventListener('mousedown', (event) => {
+  if (!editing || insideEditor(event.target)) return;
+  const element = blockOf(event.target);
+  handoff = element && element !== editing.element ? targetOf(element) : null;
+  commitEditing();
+}, true);
+
+// Editing always takes a double click. A single click is how you select text,
+// follow a link, or fold a details section, and making some blocks open on the
+// first click and others on the second is worse than asking for two everywhere.
+document.addEventListener('dblclick', (event) => {
   const target = event.target;
   if (target.closest && target.closest('a')) return;
   // A details summary is a control, not text: clicking it should still fold the
   // section away. Its body remains the way in to editing.
   if (target.closest && target.closest('summary')) return;
+
   const element = blockOf(target);
-  if (element) beginEdit(element);
+  if (!element) return;
+  if (editing) {
+    // Double-clicking inside the open editor is a word selection, not a request
+    // to reopen it.
+    if (insideEditor(target)) return;
+    handoff = targetOf(element);
+    commitEditing();
+    return;
+  }
+  // The mousedown handler may already have committed a previous edit, leaving
+  // this node detached and its replacement not yet rendered. It records the
+  // handoff itself, already adjusted, so an existing one is never overwritten.
+  if (awaitingUpdate || !root.contains(element)) {
+    if (!handoff) handoff = shiftTarget(targetOf(element), inFlightEdit);
+  } else {
+    beginEdit(element);
+  }
 });
 
 document.addEventListener('keydown', (event) => {
@@ -150,17 +211,20 @@ document.addEventListener('keydown', (event) => {
   }
 });
 
-document.addEventListener('focusout', (event) => {
-  if (!editing) return;
-  const target = editing.mode === 'rich' ? editing.element : editing.area;
-  if (event.target === target) commitEditing();
+// Losing focus to something outside the webview (another editor, the terminal)
+// still saves; clicks inside are already handled on mousedown.
+window.addEventListener('blur', () => {
+  if (editing) commitEditing();
 });
 
 window.addEventListener('message', (event) => {
   const message = event.data;
   if (!message || message.type !== 'update') return;
   sourceLines = String(message.source).split('\n');
+  awaitingUpdate = false;
+  inFlightEdit = null;
   render(message.html);
+  openHandoff();
 });
 
 // Browsers style bold/italic with CSS spans unless told to emit real elements,

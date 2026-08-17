@@ -15,6 +15,9 @@ body.cm-editable [data-cm-block] {
   border-radius: 4px;
   outline: 1px solid transparent;
   transition: outline-color 90ms ease-out;
+  /* Editing is always a double click, so a single click stays free for
+     selecting text; the cursor should not promise otherwise. */
+  cursor: default;
 }
 
 /* Only hint at editability on hover — a permanent box on every block turns the
@@ -26,10 +29,6 @@ body.cm-editable [data-cm-block]:hover {
 body.cm-editable .cm-editing {
   outline: 1px solid var(--vscode-focusBorder);
   outline-offset: 2px;
-}
-
-body.cm-editable [data-cm-mode='source']:hover {
-  cursor: text;
 }
 
 .cm-source-editor {
