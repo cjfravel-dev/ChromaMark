@@ -38,15 +38,33 @@ function boot(source) {
   };
   update(source);
 
-  const fire = (node, type) =>
-    node.dispatchEvent(new window.MouseEvent(type, { bubbles: true, cancelable: true }));
+  const fire = (node, type, detail) =>
+    node.dispatchEvent(
+      new window.MouseEvent(type, { bubbles: true, cancelable: true, detail }),
+    );
+  // Browsers number the presses of a multi-click through `detail`, and the
+  // editor reads it to tell "put this away" from "take me to that block".
+  const click = (node, detail = 1) => {
+    fire(node, 'mousedown', detail);
+    fire(node, 'mouseup', detail);
+    fire(node, 'click', detail);
+  };
   const doubleClick = (node) => {
-    fire(node, 'mousedown');
-    fire(node, 'click');
-    fire(node, 'dblclick');
+    click(node, 1);
+    click(node, 2);
+    fire(node, 'dblclick', 2);
   };
 
-  return { dom, window, document: window.document, posted, update, doubleClick, source: () => current };
+  return {
+    dom,
+    window,
+    document: window.document,
+    posted,
+    update,
+    click,
+    doubleClick,
+    source: () => current,
+  };
 }
 
 const blocks = (document) => [...document.querySelectorAll('[data-cm-block]')];
@@ -66,10 +84,10 @@ const DOC = [
 ].join('\n');
 
 test('a single click does not start editing', () => {
-  const { dom, document, window } = boot(DOC);
+  const { dom, document, click } = boot(DOC);
   try {
     const paragraph = blocks(document)[1];
-    paragraph.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+    click(paragraph);
 
     assert.equal(document.querySelector('.cm-source-editor'), null);
     assert.notEqual(paragraph.getAttribute('contenteditable'), 'true');
@@ -118,7 +136,47 @@ test('a double click opens a callout as source', () => {
   }
 });
 
-test('moving from one block to another commits the first and opens the second', () => {
+test('a single click on another block only puts the current edit away', () => {
+  const { dom, document, posted, update, doubleClick, click } = boot(DOC);
+  try {
+    const table = blocks(document).find((el) => el.tagName === 'TABLE');
+    doubleClick(table);
+    document.querySelector('.cm-source-editor').value = '| a | b |\n| - | - |\n| 9 | 9 |';
+
+    const callout = blocks(document).find((el) => el.className.includes('cm-block'));
+    click(callout);
+
+    const edit = posted.find((m) => m.type === 'edit');
+    assert.ok(edit, 'the table edit is still saved');
+    update(replaceLines(DOC, edit.start, edit.end, edit.text));
+
+    assert.equal(
+      document.querySelector('.cm-source-editor'),
+      null,
+      'but the block that was clicked stays closed until it is double clicked',
+    );
+  } finally {
+    dom.window.close();
+  }
+});
+
+test('a single click elsewhere while editing a paragraph closes it too', () => {
+  const { dom, document, doubleClick, click } = boot(DOC);
+  try {
+    const paragraph = blocks(document)[1];
+    doubleClick(paragraph);
+    assert.equal(paragraph.getAttribute('contenteditable'), 'true');
+
+    click(blocks(document).find((el) => el.tagName === 'TABLE'));
+
+    assert.equal(document.querySelector('[contenteditable="true"]'), null);
+    assert.equal(document.querySelector('.cm-source-editor'), null);
+  } finally {
+    dom.window.close();
+  }
+});
+
+test('double-clicking another block commits the first and opens the second', () => {
   const { dom, document, posted, update, doubleClick } = boot(DOC);
   try {
     const table = blocks(document).find((el) => el.tagName === 'TABLE');

@@ -153,7 +153,11 @@ function insideEditor(node) {
 // before anything commits.
 document.addEventListener('mousedown', (event) => {
   if (!editing || insideEditor(event.target)) return;
-  const element = blockOf(event.target);
+  // A single click outside only puts the current edit away — moving on to
+  // another block is still a deliberate double click. `detail` is 2 on the
+  // second press of a double click, the last moment before the commit
+  // re-renders the block being reached for.
+  const element = event.detail >= 2 ? blockOf(event.target) : null;
   handoff = element && element !== editing.element ? targetOf(element) : null;
   commitEditing();
 }, true);
@@ -181,11 +185,14 @@ document.addEventListener('dblclick', (event) => {
   // The mousedown handler may already have committed a previous edit, leaving
   // this node detached and its replacement not yet rendered. It records the
   // handoff itself, already adjusted, so an existing one is never overwritten.
-  if (awaitingUpdate || !root.contains(element)) {
+  if (awaitingUpdate) {
     if (!handoff) handoff = shiftTarget(targetOf(element), inFlightEdit);
-  } else {
-    beginEdit(element);
+    return;
   }
+  // A commit that changed nothing re-renders straight away, so the node under
+  // the cursor may already have been replaced by an identical one.
+  const live = root.contains(element) ? element : findTarget(root, targetOf(element));
+  if (live) beginEdit(live);
 });
 
 document.addEventListener('keydown', (event) => {
