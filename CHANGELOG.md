@@ -5,6 +5,22 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-08-17
+
+Released as `@chromamark/renderer` 0.6.1 and the VS Code extension 0.5.0. The
+CLI, conformance kit, and Python package are unchanged.
+
+### Fixed
+
+- Attributes set on container, `::: fields`, and `::: details` tokens are no
+  longer dropped. Those three render rules built their HTML by hand and skipped
+  markdown-it's attribute rendering, so anything a plugin or integration
+  attached to the token silently vanished from the output — only the blocks
+  using the default renderer, such as tables, kept theirs. Output is unchanged
+  for documents that set no attributes.
+
+## [VS Code 0.5.0] - 2026-08-17
+
 ### Added
 
 - **Rendered editing for `.cm` files in VS Code (experimental).** The preview
@@ -24,15 +40,6 @@ from the [ChromaMark language version](./docs/compatibility.md).
   Editing** and a title-bar button switch a file between rendered and source
   editing, enabling the setting on first use. The rendered preview remains the
   default way `.cm` files open.
-
-### Fixed
-
-- Attributes set on container, `::: fields`, and `::: details` tokens are no
-  longer dropped. Those three render rules built their HTML by hand and skipped
-  markdown-it's attribute rendering, so anything a plugin or integration
-  attached to the token silently vanished from the output — only the blocks
-  using the default renderer, such as tables, kept theirs. Output is unchanged
-  for documents that set no attributes.
 
 ## [0.6.1] - 2026-08-16
 
@@ -341,6 +348,7 @@ Released as `@chromamark/renderer` 0.5.0, `@chromamark/conformance` 0.2.0,
 [#38]: https://github.com/cjfravel-dev/ChromaMark/pull/38
 [#39]: https://github.com/cjfravel-dev/ChromaMark/pull/39
 [#40]: https://github.com/cjfravel-dev/ChromaMark/pull/40
+[0.7.0]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.7.0
 [0.6.1]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.6.1
 [0.6.0]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.6.0
 [0.5.0]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.5.0

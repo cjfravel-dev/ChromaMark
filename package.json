@@ -1,6 +1,6 @@
 {
   "name": "chromamark",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "private": true,
   "description": "ChromaMark — semantic, stream-safe Markdown for AI-generated reports.",
   "license": "MIT",
