@@ -118,8 +118,12 @@ function beginEdit(element) {
 
 document.addEventListener('click', (event) => {
   if (editing) return;
-  if (event.target.closest && event.target.closest('a')) return;
-  const element = blockOf(event.target);
+  const target = event.target;
+  if (target.closest && target.closest('a')) return;
+  // A details summary is a control, not text: clicking it should still fold the
+  // section away. Its body remains the way in to editing.
+  if (target.closest && target.closest('summary')) return;
+  const element = blockOf(target);
   if (element) beginEdit(element);
 });
 

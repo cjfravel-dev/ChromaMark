@@ -235,3 +235,100 @@ test('a tab with nothing to edit reports no action', () => {
   assert.deepEqual(resolveToggleAction({}, undefined), { action: 'none' });
   assert.deepEqual(resolveToggleAction(undefined, undefined), { action: 'none' });
 });
+
+// --- reachability ----------------------------------------------------------
+
+test('callouts, details and fields are clickable blocks in the rendered DOM', () => {
+  // The container render rules bypass markdown-it's default token renderer, so
+  // a regression there strands every callout: nothing carries data-cm-block, and
+  // clicking one finds no block to edit.
+  const source = [
+    '::: info How to read this',
+    'Body text.',
+    ':::',
+    '',
+    '::: fields',
+    'Region: eastus',
+    ':::',
+    '',
+    '::: details Extra',
+    'hidden',
+    ':::',
+  ].join('\n');
+
+  const elements = blockElements(renderEditable(source).html);
+  assert.deepEqual(
+    elements.map((el) => el.tagName.toLowerCase()),
+    ['div', 'dl', 'details'],
+  );
+  for (const element of elements) {
+    assert.equal(element.getAttribute('data-cm-mode'), 'source');
+  }
+});
+
+test('content nested in a callout resolves to the callout block', () => {
+  const source = [
+    '::: info Wrapper',
+    '',
+    '| a | b |',
+    '| - | - |',
+    '| 1 | 2 |',
+    '',
+    ':::',
+  ].join('\n');
+
+  const host = document.createElement('div');
+  host.innerHTML = renderEditable(source).html;
+  const cell = host.querySelector('td');
+
+  assert.ok(cell, 'the nested table renders');
+  const owner = cell.closest('[data-cm-block]');
+  assert.ok(owner, 'a nested table must resolve to an editable ancestor');
+  assert.equal(owner.className.includes('cm-block'), true, 'the callout owns the nested table');
+});
+
+test('a nested table is not stamped as a block of its own', () => {
+  const source = ['::: info Wrapper', '', '| a |', '| - |', '| 1 |', '', ':::'].join('\n');
+  const { blocks } = renderEditable(source);
+  assert.equal(blocks.length, 1, 'editing must rewrite the whole callout, not a fragment of it');
+});
+
+test('rewriting every block with its own source leaves the document byte-identical', () => {
+  // The safety property the whole design rests on: a block's line range must
+  // cover exactly the source it was rendered from, no more and no less.
+  const source = [
+    '# Report',
+    '',
+    '::: info How to read this',
+    'Body with a [!pill] and *emphasis*.',
+    ':::',
+    '',
+    '::: fields',
+    'Region: eastus',
+    'Status: [!ok healthy]',
+    ':::',
+    '',
+    '## Table',
+    '',
+    '| Lvl | XP |',
+    '| --: | -: |',
+    '| 1 | 29.5 |',
+    '',
+    ':::: warning Outer',
+    '::: details Inner',
+    'hidden',
+    ':::',
+    '::::',
+    '',
+    'Closing paragraph.',
+  ].join('\n');
+
+  const { blocks } = renderEditable(source);
+  const lines = source.split('\n');
+  let out = source;
+  for (const block of [...blocks].reverse()) {
+    out = replaceLines(out, block.start, block.end, lines.slice(block.start, block.end).join('\n'));
+  }
+
+  assert.equal(out, source);
+});
