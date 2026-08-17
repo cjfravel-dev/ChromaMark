@@ -2,7 +2,9 @@
  * ChromaMark preview outline. Injected into the built-in Markdown preview via
  * the `markdown.previewScripts` contribution point. Builds a left-hand header
  * tree with click-to-jump, scroll-spy highlighting, and a collapse toggle.
- * Rebuilds itself when the preview content updates.
+ * Rebuilds itself when the preview content updates, and remembers the reader's
+ * collapse choice across preview reloads (e.g. when the file is edited
+ * externally) via localStorage.
  */
 (function () {
   'use strict';
@@ -10,9 +12,52 @@
 
   var NAV_ID = 'cm-toc';
   var SHOW_ID = 'cm-toc-show';
+  var STORAGE_KEY = 'chromamark.toc.collapsed';
   var MIN_HEADERS = 2;
   var observer;
   var rebuildTimer;
+
+  // The preview webview is torn down and rebuilt whenever the file changes on
+  // disk, so the collapsed choice lives in localStorage instead of the DOM. It
+  // is also mirrored in memory: if storage is unavailable the choice still
+  // survives the in-session rebuilds driven by the MutationObserver below.
+  var collapsedPreference;
+
+  // Returns true/false when a choice is known, or undefined for "no preference"
+  // — never coerce an unreadable or unset value into "open".
+  function readCollapsed() {
+    if (typeof collapsedPreference === 'boolean') return collapsedPreference;
+    var stored;
+    try {
+      stored = window.localStorage.getItem(STORAGE_KEY);
+    } catch {
+      return undefined;
+    }
+    if (stored !== '0' && stored !== '1') return undefined;
+    collapsedPreference = stored === '1';
+    return collapsedPreference;
+  }
+
+  function saveCollapsed(collapsed) {
+    collapsedPreference = collapsed;
+    try {
+      window.localStorage.setItem(STORAGE_KEY, collapsed ? '1' : '0');
+    } catch {
+      /* storage unavailable; the in-memory mirror still covers this session */
+    }
+  }
+
+  function setCollapsed(collapsed, animate) {
+    if (animate) document.body.classList.add('cm-toc-animate');
+    document.body.classList.toggle('cm-toc-collapsed', collapsed);
+    saveCollapsed(collapsed);
+  }
+
+  function restoreCollapsed() {
+    var collapsed = readCollapsed();
+    if (typeof collapsed !== 'boolean') return;
+    document.body.classList.toggle('cm-toc-collapsed', collapsed);
+  }
 
   function slugify(text, used) {
     var base = String(text).toLowerCase()
@@ -68,8 +113,7 @@
       btn.title = 'Show outline';
       btn.textContent = '\u2630';
       btn.addEventListener('click', function () {
-        document.body.classList.add('cm-toc-animate');
-        document.body.classList.remove('cm-toc-collapsed');
+        setCollapsed(false, true);
       });
       document.body.appendChild(btn);
     }
@@ -101,8 +145,7 @@
     toggle.title = 'Hide outline';
     toggle.textContent = '\u2039';
     toggle.addEventListener('click', function () {
-      document.body.classList.add('cm-toc-animate');
-      document.body.classList.add('cm-toc-collapsed');
+      setCollapsed(true, true);
     });
     head.appendChild(title);
     head.appendChild(toggle);
@@ -154,6 +197,7 @@
   function safeBuild() {
     if (observer) observer.disconnect();
     try {
+      restoreCollapsed();
       build();
     } finally {
       if (observer) observer.observe(document.body, { childList: true, subtree: true });
