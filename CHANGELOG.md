@@ -5,13 +5,24 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-08-16
+
+Released as the VS Code extension 0.4.1. No other package changed.
+
+## [VS Code 0.4.1] - 2026-08-16
+
 ### Fixed
 
-- The preview outline now remembers whether the reader collapsed it. Editing a
-  file outside VS Code reloads the preview webview, which reset the outline to
-  open every time — noticeable in side-by-side source and preview, where an
-  external write made a deliberately hidden outline reappear. The collapse
-  choice is persisted and restored without animation on reload.
+- The preview outline now remembers whether the reader collapsed it. VS Code
+  rebuilds the preview webview whenever the file changes on disk, and the
+  collapsed state lived only as a class on the preview body, so any external
+  write — a formatter, a `git checkout`, an agent writing the report — reopened
+  the outline. It was most visible side by side with the source, where an
+  external edit slid a deliberately hidden outline back over the text on every
+  save. The choice is now stored per preview and restored before the outline is
+  built, without the collapse animation, which marks a reader's action rather
+  than the initial paint. A preview that denies storage keeps the choice for the
+  life of the session instead of losing it on each incremental re-render.
 
 ## [0.6.0] - 2026-08-08
 
@@ -301,6 +312,7 @@ Released as `@chromamark/renderer` 0.5.0, `@chromamark/conformance` 0.2.0,
 [#38]: https://github.com/cjfravel-dev/ChromaMark/pull/38
 [#39]: https://github.com/cjfravel-dev/ChromaMark/pull/39
 [#40]: https://github.com/cjfravel-dev/ChromaMark/pull/40
+[0.6.1]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.6.1
 [0.6.0]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.6.0
 [0.5.0]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.5.0
 [0.4.4]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.4.4
