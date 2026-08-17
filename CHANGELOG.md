@@ -5,6 +5,14 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ## [Unreleased]
 
+### Fixed
+
+- The preview outline now remembers whether the reader collapsed it. Editing a
+  file outside VS Code reloads the preview webview, which reset the outline to
+  open every time — noticeable in side-by-side source and preview, where an
+  external write made a deliberately hidden outline reappear. The collapse
+  choice is persisted and restored without animation on reload.
+
 ## [0.6.0] - 2026-08-08
 
 Released as `@chromamark/renderer` 0.6.0, `@chromamark/conformance` 0.3.0,

@@ -10,11 +10,12 @@ const headingsHtml = (n) =>
   Array.from({ length: n }, (_, i) => `<h2>Section ${i + 1}</h2><p>body ${i + 1}</p>`).join('');
 
 /** Load toc.js into a fresh jsdom document and return handles + a scrollIntoView spy. */
-function load(bodyHtml) {
+function load(bodyHtml, storage) {
   const dom = new JSDOM(`<!doctype html><html><body>${bodyHtml}</body></html>`, {
     runScripts: 'outside-only',
   });
   const { window } = dom;
+  if (storage) Object.defineProperty(window, 'localStorage', { value: storage, configurable: true });
   const scrolled = [];
   window.Element.prototype.scrollIntoView = function scrollIntoView() {
     scrolled.push(this);
@@ -71,6 +72,78 @@ test('clicking scrolls the CURRENT heading after the body is re-rendered (stale-
       freshHeadings[2],
       'should scroll the current 3rd heading, not a stale/detached node',
     );
+  } finally {
+    dom.window.close();
+  }
+});
+
+/** Minimal Storage stand-in shared across "reloads" of the preview webview. */
+function memoryStorage() {
+  const data = new Map();
+  return {
+    getItem: (k) => (data.has(k) ? data.get(k) : null),
+    setItem: (k, v) => data.set(k, String(v)),
+    removeItem: (k) => data.delete(k),
+  };
+}
+
+test('collapsed outline stays collapsed when the preview reloads', () => {
+  const storage = memoryStorage();
+  const first = load(headingsHtml(4), storage);
+  try {
+    first.document.querySelector('#cm-toc .cm-toc-toggle')
+      .dispatchEvent(new first.window.MouseEvent('click', { bubbles: true, cancelable: true }));
+    assert.ok(first.document.body.classList.contains('cm-toc-collapsed'));
+  } finally {
+    first.dom.window.close();
+  }
+
+  const reloaded = load(headingsHtml(4), storage);
+  try {
+    assert.ok(
+      reloaded.document.body.classList.contains('cm-toc-collapsed'),
+      'outline should still be collapsed after an external edit reloads the preview',
+    );
+    assert.ok(
+      !reloaded.document.body.classList.contains('cm-toc-animate'),
+      'restoring state should not animate',
+    );
+  } finally {
+    reloaded.dom.window.close();
+  }
+});
+
+test('reopened outline stays open when the preview reloads', () => {
+  const storage = memoryStorage();
+  const first = load(headingsHtml(4), storage);
+  try {
+    const click = () => new first.window.MouseEvent('click', { bubbles: true, cancelable: true });
+    first.document.querySelector('#cm-toc .cm-toc-toggle').dispatchEvent(click());
+    first.document.getElementById('cm-toc-show').dispatchEvent(click());
+    assert.ok(!first.document.body.classList.contains('cm-toc-collapsed'));
+  } finally {
+    first.dom.window.close();
+  }
+
+  const reloaded = load(headingsHtml(4), storage);
+  try {
+    assert.ok(!reloaded.document.body.classList.contains('cm-toc-collapsed'));
+  } finally {
+    reloaded.dom.window.close();
+  }
+});
+
+test('outline works when storage is unavailable', () => {
+  const denied = {
+    getItem() { throw new Error('denied'); },
+    setItem() { throw new Error('denied'); },
+  };
+  const { dom, window, document } = load(headingsHtml(4), denied);
+  try {
+    assert.equal(document.querySelectorAll('#cm-toc .cm-toc-link').length, 4);
+    document.querySelector('#cm-toc .cm-toc-toggle')
+      .dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+    assert.ok(document.body.classList.contains('cm-toc-collapsed'));
   } finally {
     dom.window.close();
   }

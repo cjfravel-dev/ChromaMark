@@ -2,7 +2,9 @@
  * ChromaMark preview outline. Injected into the built-in Markdown preview via
  * the `markdown.previewScripts` contribution point. Builds a left-hand header
  * tree with click-to-jump, scroll-spy highlighting, and a collapse toggle.
- * Rebuilds itself when the preview content updates.
+ * Rebuilds itself when the preview content updates, and remembers the reader's
+ * collapse choice across preview reloads (e.g. when the file is edited
+ * externally) via localStorage.
  */
 (function () {
   'use strict';
@@ -10,9 +12,38 @@
 
   var NAV_ID = 'cm-toc';
   var SHOW_ID = 'cm-toc-show';
+  var STORAGE_KEY = 'chromamark.toc.collapsed';
   var MIN_HEADERS = 2;
   var observer;
   var rebuildTimer;
+
+  // The preview webview is torn down and rebuilt whenever the file changes on
+  // disk, so the collapsed choice lives in localStorage instead of the DOM.
+  function readCollapsed() {
+    try {
+      return window.localStorage.getItem(STORAGE_KEY) === '1';
+    } catch {
+      return false;
+    }
+  }
+
+  function saveCollapsed(collapsed) {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, collapsed ? '1' : '0');
+    } catch {
+      /* storage unavailable; state simply is not remembered */
+    }
+  }
+
+  function setCollapsed(collapsed, animate) {
+    if (animate) document.body.classList.add('cm-toc-animate');
+    document.body.classList.toggle('cm-toc-collapsed', collapsed);
+    saveCollapsed(collapsed);
+  }
+
+  function restoreCollapsed() {
+    document.body.classList.toggle('cm-toc-collapsed', readCollapsed());
+  }
 
   function slugify(text, used) {
     var base = String(text).toLowerCase()
@@ -68,8 +99,7 @@
       btn.title = 'Show outline';
       btn.textContent = '\u2630';
       btn.addEventListener('click', function () {
-        document.body.classList.add('cm-toc-animate');
-        document.body.classList.remove('cm-toc-collapsed');
+        setCollapsed(false, true);
       });
       document.body.appendChild(btn);
     }
@@ -101,8 +131,7 @@
     toggle.title = 'Hide outline';
     toggle.textContent = '\u2039';
     toggle.addEventListener('click', function () {
-      document.body.classList.add('cm-toc-animate');
-      document.body.classList.add('cm-toc-collapsed');
+      setCollapsed(true, true);
     });
     head.appendChild(title);
     head.appendChild(toggle);
@@ -154,6 +183,7 @@
   function safeBuild() {
     if (observer) observer.disconnect();
     try {
+      restoreCollapsed();
       build();
     } finally {
       if (observer) observer.observe(document.body, { childList: true, subtree: true });
