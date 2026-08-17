@@ -11,6 +11,7 @@ const distPath = fileURLToPath(new URL('../dist/extension.js', import.meta.url))
 const diagnostics = [];
 const codeActionProviders = [];
 const customEditors = [];
+const configurationListeners = [];
 let configuration = {};
 const cmDocument = {
   languageId: 'markdown',
@@ -85,19 +86,25 @@ const vscodeStub = {
       dispose() {},
     }),
     getConfiguration: () => ({ get: (key) => configuration[key] }),
-    onDidChangeConfiguration: () => ({ dispose() {} }),
+    onDidChangeConfiguration: (listener) => {
+      configurationListeners.push(listener);
+      return { dispose() {} };
+    },
   },
   window: {
     activeTextEditor: undefined,
     onDidChangeActiveTextEditor: () => ({ dispose() {} }),
     tabGroups: { all: [], onDidChangeTabs: () => ({ dispose() {} }) },
     registerCustomEditorProvider: (viewType, provider, options) => {
-      customEditors.push({ viewType, provider, options });
-      return { dispose() {} };
+      const entry = { viewType, provider, options, disposed: false };
+      customEditors.push(entry);
+      return { dispose() { entry.disposed = true; } };
     },
   },
   commands: { executeCommand: async () => {}, registerCommand: () => ({ dispose() {} }) },
 };
+
+let lastContext;
 
 /** Activates the built bundle with `vscode` stubbed out, returning its API. */
 function activateBundle() {
@@ -109,7 +116,10 @@ function activateBundle() {
   try {
     const require = createRequire(import.meta.url);
     delete require.cache[distPath];
-    return require(distPath).activate({ subscriptions: [], extensionUri: { path: '/ext' } });
+    const context = { subscriptions: [], extensionUri: { path: '/ext' } };
+    const api = require(distPath).activate(context);
+    lastContext = context;
+    return api;
   } finally {
     Module._load = origLoad;
   }
@@ -205,4 +215,34 @@ test('the editor webview forbids inline script and allows only a per-load nonce'
   customEditors[0].provider.resolveCustomTextEditor(cmDocument, panel, {});
   const second = /script-src 'nonce-([A-Za-z0-9]+)'/.exec(panel.webview.html)[1];
   assert.notEqual(second, nonce, 'each load gets its own nonce');
+});
+
+test('toggling the setting does not accumulate dead editor registrations', () => {
+  customEditors.length = 0;
+  configurationListeners.length = 0;
+  configuration = { 'experimental.editableEditor': true };
+  activateBundle();
+
+  const context = lastContext;
+  const settled = context.subscriptions.length;
+  const notify = () => configurationListeners.forEach((l) => l({ affectsConfiguration: () => true }));
+
+  for (let i = 0; i < 5; i++) {
+    configuration = { 'experimental.editableEditor': false };
+    notify();
+    configuration = { 'experimental.editableEditor': true };
+    notify();
+  }
+
+  assert.equal(customEditors.length, 6, 'each turn back on registers afresh');
+  assert.equal(
+    context.subscriptions.length,
+    settled,
+    'but nothing is added to subscriptions, which live until the window closes',
+  );
+  assert.deepEqual(
+    customEditors.map((entry) => entry.disposed),
+    [true, true, true, true, true, false],
+    'and every superseded registration is disposed, leaving only the live one',
+  );
 });

@@ -45,10 +45,21 @@ test('the editable editor is offered, never forced, as the default for .cm', () 
 test('the built bundles are not stale relative to their sources', () => {
   // A stale dist/ silently passes the smoke tests against code that no longer
   // exists, which hides real breakage until the extension is installed.
-  const newest = (dir) =>
-    readdirSync(new URL(dir, import.meta.url), { withFileTypes: true, recursive: true })
-      .filter((entry) => entry.isFile() && /\.(js|mjs)$/.test(entry.name))
-      .reduce((max, entry) => Math.max(max, statSync(join(entry.parentPath, entry.name)).mtimeMs), 0);
+  // Walked by hand rather than with readdirSync's `recursive` option, which is
+  // not in every Node version the CI matrix covers.
+  const newest = (dir) => {
+    const root = fileURLToPath(new URL(dir, import.meta.url));
+    let max = 0;
+    const walk = (current) => {
+      for (const entry of readdirSync(current, { withFileTypes: true })) {
+        const path = join(current, entry.name);
+        if (entry.isDirectory()) walk(path);
+        else if (/\.(js|mjs)$/.test(entry.name)) max = Math.max(max, statSync(path).mtimeMs);
+      }
+    };
+    walk(root);
+    return max;
+  };
 
   const built = newest('../dist/');
   assert.ok(built > 0, 'dist/ must be built (npm run build) before running the tests');

@@ -13,17 +13,17 @@
  */
 
 import * as vscode from 'vscode';
+import { randomBytes } from 'node:crypto';
 import { renderEditable } from './blocks.mjs';
 import { resolveToggleAction, VIEW_TYPE } from './toggle.mjs';
 
 export { VIEW_TYPE };
 const SETTING = 'experimental.editableEditor';
 
+// The nonce is what stops anything but our own bundle from executing in the
+// webview, so it has to be unguessable rather than merely unique.
 function nonce() {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let out = '';
-  for (let i = 0; i < 32; i++) out += chars.charAt(Math.floor(Math.random() * chars.length));
-  return out;
+  return randomBytes(16).toString('hex');
 }
 
 function pageHtml(webview, extensionUri, cspNonce) {
@@ -135,7 +135,6 @@ export function registerEditableEditor(context) {
         new EditableEditorProvider(context),
         { webviewOptions: { retainContextWhenHidden: true }, supportsMultipleEditorsPerDocument: true },
       );
-      context.subscriptions.push(registration);
     } else if (!enabled() && registration) {
       registration.dispose();
       registration = undefined;
@@ -144,6 +143,10 @@ export function registerEditableEditor(context) {
 
   sync();
   return vscode.Disposable.from(
+    // Registrations come and go as the setting is toggled, so only the current
+    // one is disposed here; pushing each to context.subscriptions would leave
+    // every dead registration behind for the life of the session.
+    { dispose: () => { if (registration) registration.dispose(); registration = undefined; } },
     vscode.workspace.onDidChangeConfiguration((event) => {
       if (event.affectsConfiguration(`chromamark.${SETTING}`)) sync();
     }),
