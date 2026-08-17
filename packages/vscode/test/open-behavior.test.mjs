@@ -12,6 +12,12 @@ function fakeUri(path, scheme = 'file') {
   return { scheme, path, toString: () => `${scheme}://${path}` };
 }
 
+const disposableApi = {
+  Disposable: {
+    from: (...items) => ({ dispose: () => items.forEach((i) => i && i.dispose && i.dispose()) }),
+  },
+};
+
 const diagnosticApi = {
   DiagnosticSeverity: { Warning: 1 },
   CodeActionKind: { QuickFix: 'quickfix' },
@@ -62,6 +68,7 @@ async function activateWith({
   }
   const vscodeStub = {
     ...diagnosticApi,
+    ...disposableApi,
     RelativePattern,
     Uri: {
       joinPath: (uri) => fakeUri(uri.path.slice(0, uri.path.lastIndexOf('/')), uri.scheme),
@@ -70,10 +77,12 @@ async function activateWith({
       activeTextEditor: editor,
       onDidChangeActiveTextEditor: () => ({ dispose() {} }),
       tabGroups: { all: [], onDidChangeTabs: () => ({ dispose() {} }) },
+      registerCustomEditorProvider: () => ({ dispose() {} }),
     },
     workspace: {
       ...diagnosticWorkspace,
       getConfiguration: (section) => ({ get: (key) => config[`${section}.${key}`] }),
+      onDidChangeConfiguration: () => ({ dispose() {} }),
       getWorkspaceFolder: () => outsideWorkspace ? undefined : {},
       createFileSystemWatcher: (pattern) => {
         const listeners = {};
@@ -96,7 +105,7 @@ async function activateWith({
   try {
     const require = createRequire(import.meta.url);
     delete require.cache[distPath];
-    require(distPath).activate({ subscriptions: [] });
+    require(distPath).activate({ subscriptions: [], extensionUri: fakeUri('/ext', 'file') });
   } finally {
     Module._load = origLoad;
   }
@@ -218,6 +227,7 @@ async function invokeSetOpenMode({ picks }) {
   const ConfigurationTarget = { Global: 1, Workspace: 2, WorkspaceFolder: 3 };
   const vscodeStub = {
     ...diagnosticApi,
+    ...disposableApi,
     ConfigurationTarget,
     window: {
       activeTextEditor: undefined,
@@ -230,6 +240,7 @@ async function invokeSetOpenMode({ picks }) {
         return undefined;
       },
       showInformationMessage: (message) => { info = message; },
+      registerCustomEditorProvider: () => ({ dispose() {} }),
     },
     workspace: {
       ...diagnosticWorkspace,
@@ -237,6 +248,7 @@ async function invokeSetOpenMode({ picks }) {
         get: () => undefined,
         update: async (key, value, target) => { updates.push({ key: `${section}.${key}`, value, target }); },
       }),
+      onDidChangeConfiguration: () => ({ dispose() {} }),
     },
     commands: {
       executeCommand: async () => {},
@@ -251,7 +263,7 @@ async function invokeSetOpenMode({ picks }) {
   try {
     const require = createRequire(import.meta.url);
     delete require.cache[distPath];
-    require(distPath).activate({ subscriptions: [] });
+    require(distPath).activate({ subscriptions: [], extensionUri: fakeUri('/ext', 'file') });
   } finally {
     Module._load = origLoad;
   }

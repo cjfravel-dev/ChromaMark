@@ -29,4 +29,11 @@ export default [
       'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     },
   },
+  {
+    // Scripts running inside a VS Code webview get the messaging API injected.
+    files: ['packages/vscode/src/webview/**/*.js'],
+    languageOptions: {
+      globals: { acquireVsCodeApi: 'readonly' },
+    },
+  },
 ];

@@ -28,6 +28,8 @@ or [Open VSX](https://open-vsx.org/extension/chromamark/chromamark-vscode).
   the Problems panel and editor as you type. Quick fixes can unwrap backticked
   constructs, correct tone/block typos, reset invalid meters, and close
   containers. Ordinary `.md` files are not linted.
+- **Rendered editing (experimental).** Edit a `.cm` file directly in its
+  rendered form — see [Rendered editing](#rendered-editing-experimental).
 - **`.cm` files.** This extension is treated as Markdown, so it gets
   full editing and preview support.
 
@@ -51,6 +53,35 @@ Each setting accepts:
 Prefer not to edit settings by hand? Run **ChromaMark: Set Open Mode…** from the
 Command Palette (`F1`) to pick a file type and mode; it updates the matching
 setting for you.
+
+## Rendered editing (experimental)
+
+Normally the preview is read-only and you edit the source beside it. Rendered
+editing lets you change the document from the rendered view itself: run
+**ChromaMark: Toggle Rendered Editing** from the Command Palette (`F1`) or click
+the pencil in the editor title bar. The same command switches back to the source.
+
+**Double-click any block** to edit it. Paragraphs and headings become editable
+in place, with `Ctrl+B` / `Ctrl+I` for bold and italic; everything else —
+callouts, fields, tables, lists, code fences, and any text carrying pills,
+meters, colored text, or change tracking — opens as its raw ChromaMark source.
+`Enter` saves a paragraph (`Ctrl+Enter` saves source), and `Esc` cancels. A
+single click anywhere else puts the current edit away without opening anything.
+
+Edits are written back as line-range replacements covering only the block you
+touched, so the rest of the file — including formatting the editor does not
+understand — is preserved byte for byte. An edit that cannot be expressed as
+ChromaMark is refused and reverted rather than guessed at.
+
+This is experimental and off by default. The toggle turns it on the first time
+you use it, or set it yourself:
+
+```json
+"chromamark.experimental.editableEditor": true
+```
+
+The rendered preview remains the default way `.cm` files open; enabling this
+setting does not change that.
 
 ## Example
 

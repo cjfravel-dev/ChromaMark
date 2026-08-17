@@ -43,6 +43,12 @@
         "command": "chromamark.setOpenMode",
         "title": "Set Open Mode...",
         "category": "ChromaMark"
+      },
+      {
+        "command": "chromamark.toggleRenderedEditing",
+        "title": "Toggle Rendered Editing",
+        "category": "ChromaMark",
+        "icon": "$(edit)"
       }
     ],
     "languages": [
@@ -103,8 +109,40 @@
           ],
           "default": "sourceAndPreview",
           "markdownDescription": "How Markdown (`.md`) files open."
+        },
+        "chromamark.experimental.editableEditor": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Enable the experimental **ChromaMark Editor**, which edits the rendered document in place. Open a `.cm` file with it from **View: Reopen Editor With...**; the Markdown preview stays the default."
         }
       }
+    },
+    "customEditors": [
+      {
+        "viewType": "chromamark.editableEditor",
+        "displayName": "ChromaMark Editor (experimental)",
+        "selector": [
+          {
+            "filenamePattern": "*.cm"
+          }
+        ],
+        "priority": "option"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "chromamark.toggleRenderedEditing",
+          "when": "resourceExtname == .cm || activeWebviewPanelId =~ /markdown.preview/",
+          "group": "navigation@-1"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "chromamark.toggleRenderedEditing",
+          "when": "resourceExtname == .cm || activeWebviewPanelId =~ /markdown.preview/"
+        }
+      ]
     }
   },
   "dependencies": {

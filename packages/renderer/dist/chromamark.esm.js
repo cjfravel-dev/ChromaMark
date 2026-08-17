@@ -6060,17 +6060,18 @@ function containerPlugin(md, enabled) {
   md.renderer.rules.cm_container_open = (tokens, idx) => {
     const meta = tokens[idx].meta;
     const { custom, style, tone } = decorate(meta);
+    const attrs = md.renderer.renderAttrs(tokens[idx]);
     if (meta.structure === "details") {
       const open = meta.open ? " open" : "";
-      return `<details class="cm-details${custom}"${tone}${style}${open}><summary>${md.renderInline(meta.summary)}</summary><div class="cm-body">`;
+      return `<details class="cm-details${custom}"${tone}${style}${attrs}${open}><summary>${md.renderInline(meta.summary)}</summary><div class="cm-body">`;
     }
-    let html = `<div class="cm-block${custom}"${tone}${style}>`;
+    let html = `<div class="cm-block${custom}"${tone}${style}${attrs}>`;
     if (meta.title) html += `<div class="cm-title">${md.renderInline(meta.title)}</div>`;
     return html + '<div class="cm-body">';
   };
   md.renderer.rules.cm_container_close = (tokens, idx) => tokens[idx].meta.structure === "details" ? "</div></details>" : "</div></div>";
   md.renderer.rules.cm_fields = (tokens, idx) => {
-    let html = '<dl class="cm-fields">';
+    let html = `<dl class="cm-fields"${md.renderer.renderAttrs(tokens[idx])}>`;
     for (const [key, value] of tokens[idx].meta.rows) {
       html += `<dt>${esc(key)}</dt><dd>${md.renderInline(value)}</dd>`;
     }

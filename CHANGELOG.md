@@ -5,6 +5,35 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ## [Unreleased]
 
+### Added
+
+- **Rendered editing for `.cm` files in VS Code (experimental).** The preview
+  has always been read-only, so changing a rendered report meant finding the
+  same passage again in the source beside it. A `.cm` file can now be opened as
+  an editor that renders the document and lets you change it in place:
+  double-click a block to edit it, and a single click elsewhere puts the edit
+  away. Paragraphs and headings are edited as rendered text with the usual bold
+  and italic shortcuts; every other block — callouts, fields, tables, lists,
+  code fences, and anything carrying pills, meters, colored text, or change
+  tracking — opens as its raw source, because rendering those back into
+  ChromaMark cannot be done without guessing. Edits are written as line-range
+  replacements covering only the block that was touched, so the rest of the file
+  survives untouched, and an edit that cannot be expressed as ChromaMark is
+  reverted rather than written as an approximation. It is off by default behind
+  `chromamark.experimental.editableEditor`; **ChromaMark: Toggle Rendered
+  Editing** and a title-bar button switch a file between rendered and source
+  editing, enabling the setting on first use. The rendered preview remains the
+  default way `.cm` files open.
+
+### Fixed
+
+- Attributes set on container, `::: fields`, and `::: details` tokens are no
+  longer dropped. Those three render rules built their HTML by hand and skipped
+  markdown-it's attribute rendering, so anything a plugin or integration
+  attached to the token silently vanished from the output — only the blocks
+  using the default renderer, such as tables, kept theirs. Output is unchanged
+  for documents that set no attributes.
+
 ## [0.6.1] - 2026-08-16
 
 Released as the VS Code extension 0.4.1. No other package changed.

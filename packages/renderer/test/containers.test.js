@@ -173,3 +173,51 @@ test('U+FEFF (BOM) separates a container kind from its title', () => {
   assert.match(html, /data-tone="success"/);
   assert.match(html, /<div class="cm-title">Deploy<\/div>/);
 });
+
+test('container, details and fields rules keep attributes set on their tokens', () => {
+  // These rules build HTML by hand, bypassing markdown-it's default token
+  // renderer, so attributes a consumer sets have to be emitted explicitly.
+  // Tooling that annotates tokens — a source-mapped editor, for one — gets
+  // nothing back otherwise.
+  const md = new MarkdownIt().use(chromamark);
+  const source = [
+    '::: success Deploy',
+    'body',
+    ':::',
+    '',
+    '::: details Extra',
+    'hidden',
+    ':::',
+    '',
+    '::: fields',
+    'Region: eastus',
+    ':::',
+  ].join('\n');
+
+  const tokens = md.parse(source, {});
+  for (const token of tokens) {
+    if (token.type === 'cm_container_open' || token.type === 'cm_fields') {
+      token.attrSet('data-probe', token.type);
+    }
+  }
+  const html = md.renderer.render(tokens, md.options, {});
+
+  assert.match(html, /<div class="cm-block" data-tone="success" data-probe="cm_container_open">/);
+  assert.match(html, /<details class="cm-details"[^>]*data-probe="cm_container_open"/);
+  assert.match(html, /<dl class="cm-fields" data-probe="cm_fields">/);
+});
+
+test('an open details container keeps the open flag alongside added attributes', () => {
+  const md = new MarkdownIt().use(chromamark);
+  const tokens = md.parse('::: details open Extra\nhidden\n:::', {});
+  tokens.find((t) => t.type === 'cm_container_open').attrSet('data-probe', 'x');
+  const html = md.renderer.render(tokens, md.options, {});
+
+  assert.match(html, /data-probe="x" open>/, 'attributes must not displace the open flag');
+});
+
+test('rendering is unchanged when no attributes are set', () => {
+  const source = '::: success Deploy\nbody\n:::\n\n::: fields\nRegion: eastus\n:::';
+  assert.match(render(source), /<div class="cm-block" data-tone="success">/);
+  assert.match(render(source), /<dl class="cm-fields">/);
+});

@@ -1,0 +1,446 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { JSDOM } from 'jsdom';
+import { renderEditable, blockRanges, replaceLines } from '../src/blocks.mjs';
+import { blockToMarkdown, headingLevel } from '../src/inline-md.mjs';
+import { resolveToggleAction } from '../src/toggle.mjs';
+import { shiftTarget, findTarget, targetOf } from '../src/handoff.mjs';
+
+const dom = new JSDOM('<!doctype html><html><body></body></html>');
+const { document } = dom.window;
+
+/** Parses rendered HTML and returns the annotated top-level block elements. */
+function blockElements(html) {
+  const host = document.createElement('div');
+  host.innerHTML = html;
+  return [...host.querySelectorAll('[data-cm-block]')];
+}
+
+test('every top-level block carries its source line range', () => {
+  const source = ['# Title', '', 'A paragraph.', '', '- one', '- two'].join('\n');
+  const { html, blocks } = renderEditable(source);
+  const elements = blockElements(html);
+
+  assert.equal(elements.length, 3);
+  assert.deepEqual(
+    blocks.map((b) => [b.start, b.end]),
+    [[0, 1], [2, 3], [4, 6]],
+  );
+  for (const element of elements) {
+    const start = Number(element.getAttribute('data-cm-start'));
+    const end = Number(element.getAttribute('data-cm-end'));
+    assert.ok(end > start, 'a block must span at least one line');
+  }
+});
+
+test('a ChromaMark container is one block spanning its whole source', () => {
+  const source = ['::: success Deploy', '', 'Body text.', '', ':::'].join('\n');
+  const { blocks } = renderEditable(source);
+
+  assert.equal(blocks[0].start, 0);
+  assert.equal(blocks[0].end, 5, 'the container owns the closing fence');
+  assert.equal(blocks[0].mode, 'source');
+});
+
+test('editing a container rewrites its closing fence instead of orphaning it', () => {
+  // token.map for a container stops *before* the closing ":::", so a naive
+  // line-range replacement would leave a stray fence behind.
+  const source = ['::: warning Old', 'body', ':::', '', 'After.'].join('\n');
+  const { blocks } = renderEditable(source);
+  const updated = replaceLines(source, blocks[0].start, blocks[0].end, '::: danger New\nbody\n:::');
+
+  assert.equal(updated, ['::: danger New', 'body', ':::', '', 'After.'].join('\n'));
+  assert.equal((updated.match(/^:::$/gm) || []).length, 1, 'no orphaned fence');
+});
+
+test('a nested container is still a single top-level block', () => {
+  const source = [
+    ':::: info Outer',
+    '::: success Inner',
+    'body',
+    ':::',
+    '::::',
+    '',
+    'After.',
+  ].join('\n');
+  const { blocks } = renderEditable(source);
+
+  assert.equal(blocks.length, 2);
+  assert.deepEqual([blocks[0].start, blocks[0].end], [0, 5], 'the outer fence pair is one block');
+});
+
+test('an unterminated container does not claim a line that is not there', () => {
+  const { blocks } = renderEditable('::: info Open\nbody');
+  assert.equal(blocks[0].end, 2);
+});
+
+test('plain paragraphs and headings are rich-editable', () => {
+  const { blocks } = renderEditable('## Heading\n\nPlain **bold** and a [link](https://x.dev).');
+  assert.deepEqual(blocks.map((b) => b.mode), ['rich', 'rich']);
+});
+
+test('a paragraph carrying ChromaMark inline syntax is source-edited, never rich', () => {
+  for (const line of ['Status: [!ok healthy]', 'Coverage [=success 87%]', 'Rename {~~a~>b~~} here', 'A [.danger risk] word']) {
+    const { blocks } = renderEditable(line);
+    assert.equal(blocks[0].mode, 'source', `${line} must not be rich-editable`);
+  }
+});
+
+test('tables, code fences and lists are source-edited', () => {
+  const source = [
+    '| a | b |',
+    '| - | - |',
+    '| 1 | 2 |',
+    '',
+    '```js',
+    'const x = 1;',
+    '```',
+    '',
+    '- item',
+  ].join('\n');
+  const { blocks } = renderEditable(source);
+  assert.deepEqual(blocks.map((b) => b.mode), ['source', 'source', 'source']);
+});
+
+test('blockRanges skips closing tokens so blocks are not counted twice', () => {
+  const { blocks } = renderEditable('::: info One\n:::\n\n::: info Two\n:::');
+  assert.equal(blocks.length, 2);
+});
+
+test('replaceLines rewrites only the block that changed', () => {
+  const source = ['# Title', '', 'Old text.', '', '::: warning Keep', 'me', ':::'].join('\n');
+  const { blocks } = renderEditable(source);
+  const paragraph = blocks[1];
+  const updated = replaceLines(source, paragraph.start, paragraph.end, 'New **text**.');
+
+  assert.match(updated, /^New \*\*text\*\*\.$/m);
+  assert.match(updated, /^::: warning Keep$/m, 'untouched ChromaMark syntax survives byte for byte');
+});
+
+test('headingLevel reads the level off the rendered element', () => {
+  const [h3] = blockElements(renderEditable('### Three').html);
+  assert.equal(headingLevel(h3), 3);
+  const [p] = blockElements(renderEditable('Text').html);
+  assert.equal(headingLevel(p), 0);
+});
+
+test('an edited paragraph round-trips through the serializer', () => {
+  const [element] = blockElements(renderEditable('Plain text.').html);
+  element.innerHTML = 'Now <b>bold</b>, <i>italic</i>, <code>code</code> and <a href="https://x.dev">a link</a>.';
+
+  assert.equal(
+    blockToMarkdown(element),
+    'Now **bold**, *italic*, `code` and [a link](https://x.dev).',
+  );
+});
+
+test('an edited heading keeps its level', () => {
+  const [element] = blockElements(renderEditable('## Old').html);
+  element.textContent = 'New title';
+  assert.equal(blockToMarkdown(element, { heading: 2 }), '## New title');
+});
+
+test('serializing refuses content it cannot write back as ChromaMark', () => {
+  const [element] = blockElements(renderEditable('Text.').html);
+  element.innerHTML = 'A pill <span class="cm-pill">PASS</span> here';
+  assert.equal(blockToMarkdown(element), null, 'a lossy edit must be refused, not guessed at');
+});
+
+test('serializing refuses an image rather than dropping it', () => {
+  const [element] = blockElements(renderEditable('Text.').html);
+  element.innerHTML = 'Look <img src="x.png" alt="x">';
+  assert.equal(blockToMarkdown(element), null);
+});
+
+test('markdown characters typed as text are escaped, not re-parsed', () => {
+  const [element] = blockElements(renderEditable('Text.').html);
+  element.textContent = 'Use *literal* stars and _underscores_';
+  const markdown = blockToMarkdown(element);
+
+  assert.equal(markdown, 'Use \\*literal\\* stars and \\_underscores\\_');
+  const [again] = blockElements(renderEditable(markdown).html);
+  assert.equal(again.textContent, 'Use *literal* stars and _underscores_', 'escaping round-trips');
+});
+
+test('a heading edited into multiple lines is refused', () => {
+  const [element] = blockElements(renderEditable('## Old').html);
+  element.innerHTML = 'One<br>Two';
+  assert.equal(blockToMarkdown(element, { heading: 2 }), null);
+});
+
+test('an emptied block is refused rather than writing a blank line', () => {
+  const [element] = blockElements(renderEditable('Text.').html);
+  element.textContent = '   ';
+  assert.equal(blockToMarkdown(element), null);
+});
+
+test('a full edit cycle leaves the rest of the document untouched', () => {
+  const source = [
+    '# Report',
+    '',
+    'Intro paragraph.',
+    '',
+    '::: success Deploy',
+    'Replicas: 3/3 [!ok healthy]',
+    ':::',
+    '',
+    'Closing [!warn note].',
+  ].join('\n');
+
+  const { html, blocks } = renderEditable(source);
+  const elements = blockElements(html);
+  const index = blocks.findIndex((b) => b.mode === 'rich' && b.start === 2);
+  elements[index].innerHTML = 'Intro <b>paragraph</b>, edited.';
+
+  const text = blockToMarkdown(elements[index], { heading: 0 });
+  const updated = replaceLines(source, blocks[index].start, blocks[index].end, text);
+
+  assert.equal(
+    updated,
+    source.replace('Intro paragraph.', 'Intro **paragraph**, edited.'),
+    'only the edited block changes',
+  );
+  assert.deepEqual(blockRanges([]).length, 0);
+});
+
+// --- toggle dispatch -------------------------------------------------------
+
+const uri = { path: '/w/report.cm' };
+
+test('toggling from a source editor opens the editable editor', () => {
+  assert.deepEqual(resolveToggleAction({ uri }, uri), { action: 'toEditable', uri });
+});
+
+test('toggling from the editable editor goes back to the normal editor', () => {
+  const input = { uri, viewType: 'chromamark.editableEditor' };
+  assert.deepEqual(resolveToggleAction(input, undefined), { action: 'toSource', uri });
+});
+
+test('a preview with a source editor beside it toggles that document', () => {
+  // The preview tab carries no URI, so the side-by-side source editor supplies it.
+  const input = { viewType: 'mainThreadWebview-markdown.preview' };
+  assert.deepEqual(resolveToggleAction(input, uri), { action: 'toEditable', uri });
+});
+
+test('a preview alone asks VS Code to reveal the source first', () => {
+  const input = { viewType: 'mainThreadWebview-markdown.preview' };
+  assert.deepEqual(resolveToggleAction(input, undefined), { action: 'showSource' });
+});
+
+test('the editable editor is recognized through VS Code view-type prefixing', () => {
+  const input = { uri, viewType: 'mainThreadCustomEditor-chromamark.editableEditor' };
+  assert.equal(resolveToggleAction(input, undefined).action, 'toSource');
+});
+
+test('a tab with nothing to edit reports no action', () => {
+  assert.deepEqual(resolveToggleAction({}, undefined), { action: 'none' });
+  assert.deepEqual(resolveToggleAction(undefined, undefined), { action: 'none' });
+});
+
+// --- reachability ----------------------------------------------------------
+
+test('callouts, details and fields are clickable blocks in the rendered DOM', () => {
+  // The container render rules bypass markdown-it's default token renderer, so
+  // a regression there strands every callout: nothing carries data-cm-block, and
+  // clicking one finds no block to edit.
+  const source = [
+    '::: info How to read this',
+    'Body text.',
+    ':::',
+    '',
+    '::: fields',
+    'Region: eastus',
+    ':::',
+    '',
+    '::: details Extra',
+    'hidden',
+    ':::',
+  ].join('\n');
+
+  const elements = blockElements(renderEditable(source).html);
+  assert.deepEqual(
+    elements.map((el) => el.tagName.toLowerCase()),
+    ['div', 'dl', 'details'],
+  );
+  for (const element of elements) {
+    assert.equal(element.getAttribute('data-cm-mode'), 'source');
+  }
+});
+
+test('content nested in a callout resolves to the callout block', () => {
+  const source = [
+    '::: info Wrapper',
+    '',
+    '| a | b |',
+    '| - | - |',
+    '| 1 | 2 |',
+    '',
+    ':::',
+  ].join('\n');
+
+  const host = document.createElement('div');
+  host.innerHTML = renderEditable(source).html;
+  const cell = host.querySelector('td');
+
+  assert.ok(cell, 'the nested table renders');
+  const owner = cell.closest('[data-cm-block]');
+  assert.ok(owner, 'a nested table must resolve to an editable ancestor');
+  assert.equal(owner.className.includes('cm-block'), true, 'the callout owns the nested table');
+});
+
+test('a nested table is not stamped as a block of its own', () => {
+  const source = ['::: info Wrapper', '', '| a |', '| - |', '| 1 |', '', ':::'].join('\n');
+  const { blocks } = renderEditable(source);
+  assert.equal(blocks.length, 1, 'editing must rewrite the whole callout, not a fragment of it');
+});
+
+test('rewriting every block with its own source leaves the document byte-identical', () => {
+  // The safety property the whole design rests on: a block's line range must
+  // cover exactly the source it was rendered from, no more and no less.
+  const source = [
+    '# Report',
+    '',
+    '::: info How to read this',
+    'Body with a [!pill] and *emphasis*.',
+    ':::',
+    '',
+    '::: fields',
+    'Region: eastus',
+    'Status: [!ok healthy]',
+    ':::',
+    '',
+    '## Table',
+    '',
+    '| Lvl | XP |',
+    '| --: | -: |',
+    '| 1 | 29.5 |',
+    '',
+    ':::: warning Outer',
+    '::: details Inner',
+    'hidden',
+    ':::',
+    '::::',
+    '',
+    'Closing paragraph.',
+  ].join('\n');
+
+  const { blocks } = renderEditable(source);
+  const lines = source.split('\n');
+  let out = source;
+  for (const block of [...blocks].reverse()) {
+    out = replaceLines(out, block.start, block.end, lines.slice(block.start, block.end).join('\n'));
+  }
+
+  assert.equal(out, source);
+});
+
+// --- edit handoff ----------------------------------------------------------
+
+test('a block below an edit that grew shifts down by the added lines', () => {
+  const target = { start: 20, index: 4 };
+  const edit = { start: 2, end: 5, lineCount: 6 };
+  assert.deepEqual(shiftTarget(target, edit), { start: 23, index: 4 });
+});
+
+test('a block below an edit that shrank shifts up', () => {
+  assert.deepEqual(
+    shiftTarget({ start: 20, index: 4 }, { start: 2, end: 8, lineCount: 2 }),
+    { start: 16, index: 4 },
+  );
+});
+
+test('a block above an edit does not move', () => {
+  assert.deepEqual(
+    shiftTarget({ start: 1, index: 0 }, { start: 10, end: 12, lineCount: 40 }),
+    { start: 1, index: 0 },
+  );
+});
+
+test('an edit that keeps its line count moves nothing', () => {
+  assert.deepEqual(
+    shiftTarget({ start: 9, index: 3 }, { start: 2, end: 5, lineCount: 3 }),
+    { start: 9, index: 3 },
+  );
+});
+
+test('shiftTarget tolerates a missing target or edit', () => {
+  assert.equal(shiftTarget(null, { start: 0, end: 1, lineCount: 1 }), null);
+  assert.deepEqual(shiftTarget({ start: 4, index: 1 }, null), { start: 4, index: 1 });
+});
+
+test('a handoff resolves by source position, surviving renumbered blocks', () => {
+  const host = document.createElement('div');
+  host.innerHTML = renderEditable('# A\n\nB\n\nC').html;
+  const [, second] = [...host.querySelectorAll('[data-cm-block]')];
+  const target = targetOf(second);
+
+  assert.deepEqual(target, { start: 2, index: 1 });
+  assert.equal(findTarget(host, target), second);
+});
+
+test('a handoff falls back to the ordinal when the line no longer exists', () => {
+  const host = document.createElement('div');
+  host.innerHTML = renderEditable('# A\n\nB').html;
+  const found = findTarget(host, { start: 999, index: 1 });
+
+  assert.ok(found, 'a shifted line that no longer resolves still finds the block');
+  assert.equal(found.getAttribute('data-cm-block'), '1');
+});
+
+test('a handoff that matches nothing resolves to null rather than throwing', () => {
+  const host = document.createElement('div');
+  host.innerHTML = renderEditable('# A').html;
+  assert.equal(findTarget(host, { start: 999, index: 99 }), null);
+  assert.equal(findTarget(host, null), null);
+});
+
+test('handing off across a real edit lands on the intended block', () => {
+  // Editing block 1 into more lines, then opening block 3: the naive position
+  // would land on whatever moved into its place.
+  const source = ['# Title', '', 'Intro.', '', '::: info Note', 'body', ':::'].join('\n');
+  const host = document.createElement('div');
+  host.innerHTML = renderEditable(source).html;
+  const callout = targetOf([...host.querySelectorAll('[data-cm-block]')][2]);
+
+  const edit = { start: 2, end: 3, lineCount: 3 };
+  const shifted = shiftTarget(callout, edit);
+  const updated = replaceLines(source, edit.start, edit.end, 'Intro,\nnow spanning\nthree lines.');
+
+  const after = document.createElement('div');
+  after.innerHTML = renderEditable(updated).html;
+  const landed = findTarget(after, shifted);
+
+  assert.ok(landed, 'the remembered block still resolves after the document changed');
+  assert.equal(landed.className.includes('cm-block'), true, 'and it is the callout, not its neighbour');
+});
+
+// --- webview safety --------------------------------------------------------
+//
+// The webview assigns rendered HTML to `innerHTML`, which is only safe because
+// the renderer escapes author markup and the page's CSP forbids inline script.
+// Both are load-bearing, so both are pinned here.
+
+test('raw HTML in a document is escaped rather than rendered', () => {
+  const { html } = renderEditable(
+    ['<img src=x onerror=alert(1)>', '', '<script>alert(2)</script>'].join('\n'),
+  );
+
+  assert.match(html, /&lt;img src=x onerror=alert\(1\)&gt;/);
+  assert.doesNotMatch(html, /<img/i);
+  assert.doesNotMatch(html, /<script/i);
+});
+
+test('raw HTML inside a container title or body is escaped too', () => {
+  const { html } = renderEditable(
+    ['::: info <b>title</b>', '<iframe src=x></iframe>', ':::'].join('\n'),
+  );
+
+  assert.match(html, /&lt;b&gt;title&lt;\/b&gt;/);
+  assert.doesNotMatch(html, /<iframe/i);
+});
+
+test('script-bearing link targets are not turned into links', () => {
+  const { html } = renderEditable('[x](javascript:alert(1))');
+  assert.doesNotMatch(html, /<a /, 'the target is left as plain text, not a link');
+  assert.doesNotMatch(html, /href=/);
+});

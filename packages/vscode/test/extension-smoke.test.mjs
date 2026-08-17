@@ -10,6 +10,9 @@ const distPath = fileURLToPath(new URL('../dist/extension.js', import.meta.url))
 
 const diagnostics = [];
 const codeActionProviders = [];
+const customEditors = [];
+const configurationListeners = [];
+let configuration = {};
 const cmDocument = {
   languageId: 'markdown',
   uri: { scheme: 'file', path: '/workspace/report.cm', toString: () => 'file:///workspace/report.cm' },
@@ -32,6 +35,10 @@ const remoteCmDocument = {
 
 const vscodeStub = {
   DiagnosticSeverity: { Warning: 1 },
+  Disposable: {
+    from: (...items) => ({ dispose: () => items.forEach((i) => i && i.dispose && i.dispose()) }),
+  },
+  Uri: { joinPath: (base, ...parts) => ({ path: [base.path, ...parts].join('/') }) },
   Position: class Position {
     constructor(line, character) { this.line = line; this.character = character; }
   },
@@ -78,15 +85,45 @@ const vscodeStub = {
       onDidDelete: () => ({ dispose() {} }),
       dispose() {},
     }),
-    getConfiguration: () => ({ get: () => undefined }),
+    getConfiguration: () => ({ get: (key) => configuration[key] }),
+    onDidChangeConfiguration: (listener) => {
+      configurationListeners.push(listener);
+      return { dispose() {} };
+    },
   },
   window: {
     activeTextEditor: undefined,
     onDidChangeActiveTextEditor: () => ({ dispose() {} }),
     tabGroups: { all: [], onDidChangeTabs: () => ({ dispose() {} }) },
+    registerCustomEditorProvider: (viewType, provider, options) => {
+      const entry = { viewType, provider, options, disposed: false };
+      customEditors.push(entry);
+      return { dispose() { entry.disposed = true; } };
+    },
   },
   commands: { executeCommand: async () => {}, registerCommand: () => ({ dispose() {} }) },
 };
+
+let lastContext;
+
+/** Activates the built bundle with `vscode` stubbed out, returning its API. */
+function activateBundle() {
+  const origLoad = Module._load;
+  Module._load = function (request, ...args) {
+    if (request === 'vscode') return vscodeStub;
+    return origLoad.call(this, request, ...args);
+  };
+  try {
+    const require = createRequire(import.meta.url);
+    delete require.cache[distPath];
+    const context = { subscriptions: [], extensionUri: { path: '/ext' } };
+    const api = require(distPath).activate(context);
+    lastContext = context;
+    return api;
+  } finally {
+    Module._load = origLoad;
+  }
+}
 
 test('the built extension bundle activates and wires ChromaMark into markdown-it', () => {
   assert.ok(existsSync(distPath), 'dist/extension.js must be built (npm run build) before this test');
@@ -131,4 +168,81 @@ test('the built extension bundle activates and wires ChromaMark into markdown-it
   assert.equal(actions[0].edit.replacements[0].range.start.character, 8);
   assert.equal(actions[0].edit.replacements[0].range.end.character, 14);
   assert.equal(actions[0].edit.replacements[0].text, 'success');
+});
+
+test('the experimental editor stays unregistered until the setting opts in', () => {
+  customEditors.length = 0;
+  configuration = {};
+  activateBundle();
+  assert.equal(customEditors.length, 0, 'the Markdown preview must stay the only rendered view by default');
+
+  configuration = { 'experimental.editableEditor': true };
+  activateBundle();
+  assert.equal(customEditors.length, 1);
+  assert.equal(customEditors[0].viewType, 'chromamark.editableEditor');
+  assert.equal(typeof customEditors[0].provider.resolveCustomTextEditor, 'function');
+});
+
+test('the editor webview forbids inline script and allows only a per-load nonce', () => {
+  // The webview assigns rendered HTML to innerHTML, which is only safe because
+  // nothing inline can run. Escaping is pinned in editable-editor.test.mjs.
+  customEditors.length = 0;
+  configuration = { 'experimental.editableEditor': true };
+  activateBundle();
+
+  const panel = {
+    webview: {
+      cspSource: 'vscode-resource:',
+      asWebviewUri: (uri) => `vscode-resource:${uri.path}`,
+      onDidReceiveMessage: () => ({ dispose() {} }),
+      postMessage: () => {},
+      options: {},
+      html: '',
+    },
+    onDidDispose: () => ({ dispose() {} }),
+  };
+  customEditors[0].provider.resolveCustomTextEditor(cmDocument, panel, {});
+
+  const csp = /Content-Security-Policy" content="([^"]*)"/.exec(panel.webview.html)[1];
+  assert.match(csp, /default-src 'none'/);
+  assert.doesNotMatch(csp, /unsafe-inline|unsafe-eval/, 'inline script would defeat the nonce');
+
+  const nonce = /script-src 'nonce-([A-Za-z0-9]+)'/.exec(csp)[1];
+  assert.equal(nonce.length, 32);
+  assert.match(panel.webview.html, new RegExp(`<script nonce="${nonce}"`));
+
+  panel.webview.html = '';
+  customEditors[0].provider.resolveCustomTextEditor(cmDocument, panel, {});
+  const second = /script-src 'nonce-([A-Za-z0-9]+)'/.exec(panel.webview.html)[1];
+  assert.notEqual(second, nonce, 'each load gets its own nonce');
+});
+
+test('toggling the setting does not accumulate dead editor registrations', () => {
+  customEditors.length = 0;
+  configurationListeners.length = 0;
+  configuration = { 'experimental.editableEditor': true };
+  activateBundle();
+
+  const context = lastContext;
+  const settled = context.subscriptions.length;
+  const notify = () => configurationListeners.forEach((l) => l({ affectsConfiguration: () => true }));
+
+  for (let i = 0; i < 5; i++) {
+    configuration = { 'experimental.editableEditor': false };
+    notify();
+    configuration = { 'experimental.editableEditor': true };
+    notify();
+  }
+
+  assert.equal(customEditors.length, 6, 'each turn back on registers afresh');
+  assert.equal(
+    context.subscriptions.length,
+    settled,
+    'but nothing is added to subscriptions, which live until the window closes',
+  );
+  assert.deepEqual(
+    customEditors.map((entry) => entry.disposed),
+    [true, true, true, true, true, false],
+    'and every superseded registration is disposed, leaving only the live one',
+  );
 });
