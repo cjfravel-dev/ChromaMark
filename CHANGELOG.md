@@ -5,6 +5,11 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-08-25
+
+Released as the VS Code extension 0.6.0. The renderer, CLI, conformance kit, and
+Python package are unchanged.
+
 ## [VS Code 0.6.0] - 2026-08-25
 
 ### Added
@@ -382,6 +387,7 @@ Released as `@chromamark/renderer` 0.5.0, `@chromamark/conformance` 0.2.0,
 [#38]: https://github.com/cjfravel-dev/ChromaMark/pull/38
 [#39]: https://github.com/cjfravel-dev/ChromaMark/pull/39
 [#40]: https://github.com/cjfravel-dev/ChromaMark/pull/40
+[0.7.1]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.7.1
 [0.7.0]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.7.0
 [0.6.1]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.6.1
 [0.6.0]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.6.0
