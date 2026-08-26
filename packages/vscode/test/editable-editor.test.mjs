@@ -203,38 +203,74 @@ test('a full edit cycle leaves the rest of the document untouched', () => {
   assert.deepEqual(blockRanges([]).length, 0);
 });
 
-// --- toggle dispatch -------------------------------------------------------
+// --- command dispatch -----------------------------------------------------
 
 const uri = { path: '/w/report.cm' };
+const mdUri = { path: '/w/README.md' };
 
-test('toggling from a source editor opens the editable editor', () => {
-  assert.deepEqual(resolveToggleAction({ uri }, uri), { action: 'toEditable', uri });
+test('toggling from a source editor opens the rendered editor', () => {
+  assert.deepEqual(resolveToggleAction({ uri }, uri, undefined), { action: 'toEditable', uri });
 });
 
-test('toggling from the editable editor goes back to the normal editor', () => {
+test('Markdown files are edited on the same footing as ChromaMark files', () => {
+  assert.deepEqual(resolveToggleAction({ uri: mdUri }, mdUri, undefined), {
+    action: 'toEditable',
+    uri: mdUri,
+  });
+});
+
+test('files the renderer does not own are not editable', () => {
+  const other = { path: '/w/notes.txt' };
+  assert.deepEqual(resolveToggleAction({ uri: other }, other, undefined), { action: 'none' });
+});
+
+test('toggling from the rendered editor goes back to the preview', () => {
   const input = { uri, viewType: 'chromamark.editableEditor' };
-  assert.deepEqual(resolveToggleAction(input, undefined), { action: 'toSource', uri });
+  assert.deepEqual(resolveToggleAction(input, undefined, undefined), { action: 'toPreview', uri });
+});
+
+test('the rendered editor is recognized through VS Code view-type prefixing', () => {
+  const input = { uri, viewType: 'mainThreadCustomEditor-chromamark.editableEditor' };
+  assert.equal(resolveToggleAction(input, undefined, undefined).action, 'toPreview');
+});
+
+test('a focused rendered editor decides the direction even from an opaque tab', () => {
+  // A custom editor's tab input does not always name its view type, so the
+  // extension's own record of which panel has focus is what settles the toggle.
+  assert.deepEqual(resolveToggleAction({}, undefined, uri), { action: 'toPreview', uri });
+  assert.deepEqual(resolveToggleAction(undefined, undefined, uri), { action: 'toPreview', uri });
+});
+
+test('a source editor with no rendered editor focused toggles into one', () => {
+  assert.deepEqual(resolveToggleAction({ uri: mdUri }, mdUri, undefined), {
+    action: 'toEditable',
+    uri: mdUri,
+  });
 });
 
 test('a preview with a source editor beside it toggles that document', () => {
   // The preview tab carries no URI, so the side-by-side source editor supplies it.
   const input = { viewType: 'mainThreadWebview-markdown.preview' };
-  assert.deepEqual(resolveToggleAction(input, uri), { action: 'toEditable', uri });
+  assert.deepEqual(resolveToggleAction(input, uri, undefined), { action: 'toEditable', uri });
 });
 
 test('a preview alone asks VS Code to reveal the source first', () => {
   const input = { viewType: 'mainThreadWebview-markdown.preview' };
-  assert.deepEqual(resolveToggleAction(input, undefined), { action: 'showSource' });
+  assert.deepEqual(resolveToggleAction(input, undefined, undefined), { action: 'showSource' });
 });
 
-test('the editable editor is recognized through VS Code view-type prefixing', () => {
-  const input = { uri, viewType: 'mainThreadCustomEditor-chromamark.editableEditor' };
-  assert.equal(resolveToggleAction(input, undefined).action, 'toSource');
+test('a preview beside an unrelated editor does not edit that editor', () => {
+  // The active editor is whatever the user last focused, which need not be the
+  // document being previewed; a settings tab must not be opened as ChromaMark.
+  const input = { viewType: 'mainThreadWebview-markdown.preview' };
+  assert.deepEqual(resolveToggleAction(input, { path: '/w/notes.txt' }, undefined), {
+    action: 'showSource',
+  });
 });
 
 test('a tab with nothing to edit reports no action', () => {
-  assert.deepEqual(resolveToggleAction({}, undefined), { action: 'none' });
-  assert.deepEqual(resolveToggleAction(undefined, undefined), { action: 'none' });
+  assert.deepEqual(resolveToggleAction({}, undefined, undefined), { action: 'none' });
+  assert.deepEqual(resolveToggleAction(undefined, undefined, undefined), { action: 'none' });
 });
 
 // --- reachability ----------------------------------------------------------

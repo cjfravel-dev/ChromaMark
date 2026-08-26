@@ -11,7 +11,9 @@ const distPath = fileURLToPath(new URL('../dist/extension.js', import.meta.url))
 const diagnostics = [];
 const codeActionProviders = [];
 const customEditors = [];
-const configurationListeners = [];
+const registeredCommands = new Map();
+const closedTabs = [];
+const executed = [];
 let configuration = {};
 const cmDocument = {
   languageId: 'markdown',
@@ -86,25 +88,58 @@ const vscodeStub = {
       dispose() {},
     }),
     getConfiguration: () => ({ get: (key) => configuration[key] }),
-    onDidChangeConfiguration: (listener) => {
-      configurationListeners.push(listener);
-      return { dispose() {} };
-    },
+    onDidChangeConfiguration: () => ({ dispose() {} }),
   },
   window: {
     activeTextEditor: undefined,
     onDidChangeActiveTextEditor: () => ({ dispose() {} }),
-    tabGroups: { all: [], onDidChangeTabs: () => ({ dispose() {} }) },
+    tabGroups: {
+      all: [],
+      activeTabGroup: undefined,
+      close: async (tabs) => { closedTabs.push(...tabs); },
+      onDidChangeTabs: () => ({ dispose() {} }),
+    },
+    showInformationMessage: () => {},
     registerCustomEditorProvider: (viewType, provider, options) => {
       const entry = { viewType, provider, options, disposed: false };
       customEditors.push(entry);
       return { dispose() { entry.disposed = true; } };
     },
   },
-  commands: { executeCommand: async () => {}, registerCommand: () => ({ dispose() {} }) },
+  commands: {
+    executeCommand: async (command, ...args) => {
+      executed.push({ command, args });
+    },
+    registerCommand: (command, handler) => {
+      registeredCommands.set(command, handler);
+      return { dispose() {} };
+    },
+  },
 };
 
-let lastContext;
+/** A webview panel stub that records the lifecycle callbacks the editor attaches. */
+function renderPanel() {
+  const panel = {
+    active: true,
+    webview: {
+      cspSource: 'vscode-resource:',
+      asWebviewUri: (uri) => `vscode-resource:${uri.path}`,
+      onDidReceiveMessage: () => ({ dispose() {} }),
+      postMessage: () => {},
+      options: {},
+      html: '',
+    },
+    onDidDispose: (listener) => {
+      panel.fireDispose = listener;
+      return { dispose() {} };
+    },
+    onDidChangeViewState: (listener) => {
+      panel.fireViewStateChange = listener;
+      return { dispose() {} };
+    },
+  };
+  return panel;
+}
 
 /** Activates the built bundle with `vscode` stubbed out, returning its API. */
 function activateBundle() {
@@ -118,7 +153,6 @@ function activateBundle() {
     delete require.cache[distPath];
     const context = { subscriptions: [], extensionUri: { path: '/ext' } };
     const api = require(distPath).activate(context);
-    lastContext = context;
     return api;
   } finally {
     Module._load = origLoad;
@@ -170,24 +204,23 @@ test('the built extension bundle activates and wires ChromaMark into markdown-it
   assert.equal(actions[0].edit.replacements[0].text, 'success');
 });
 
-test('the experimental editor stays unregistered until the setting opts in', () => {
+test('the rendered editor is registered on activation, without displacing the preview', () => {
   customEditors.length = 0;
   configuration = {};
-  activateBundle();
-  assert.equal(customEditors.length, 0, 'the Markdown preview must stay the only rendered view by default');
-
-  configuration = { 'experimental.editableEditor': true };
   activateBundle();
   assert.equal(customEditors.length, 1);
   assert.equal(customEditors[0].viewType, 'chromamark.editableEditor');
   assert.equal(typeof customEditors[0].provider.resolveCustomTextEditor, 'function');
+  // Which surface a file opens in is settled by the manifest's "option"
+  // priority and the open-mode settings, not by registering the provider.
+  assert.equal(customEditors[0].options.supportsMultipleEditorsPerDocument, true);
 });
 
 test('the editor webview forbids inline script and allows only a per-load nonce', () => {
   // The webview assigns rendered HTML to innerHTML, which is only safe because
   // nothing inline can run. Escaping is pinned in editable-editor.test.mjs.
   customEditors.length = 0;
-  configuration = { 'experimental.editableEditor': true };
+  configuration = {};
   activateBundle();
 
   const panel = {
@@ -217,32 +250,121 @@ test('the editor webview forbids inline script and allows only a per-load nonce'
   assert.notEqual(second, nonce, 'each load gets its own nonce');
 });
 
-test('toggling the setting does not accumulate dead editor registrations', () => {
+test('the rendered editor advertises itself through a context key, so the icons swap', async () => {
+  // The exit action is only reachable while this key is set; if it never turns
+  // on there is no way out of the rendered editor but closing the tab.
   customEditors.length = 0;
-  configurationListeners.length = 0;
-  configuration = { 'experimental.editableEditor': true };
+  configuration = {};
   activateBundle();
 
-  const context = lastContext;
-  const settled = context.subscriptions.length;
-  const notify = () => configurationListeners.forEach((l) => l({ affectsConfiguration: () => true }));
+  const panel = renderPanel();
+  panel.active = true;
+  executed.length = 0;
+  customEditors[0].provider.resolveCustomTextEditor(cmDocument, panel, {});
+  assert.deepEqual(executed, [
+    { command: 'setContext', args: ['chromamark.inRenderedEditor', true] },
+  ]);
 
-  for (let i = 0; i < 5; i++) {
-    configuration = { 'experimental.editableEditor': false };
-    notify();
-    configuration = { 'experimental.editableEditor': true };
-    notify();
+  // Focusing another tab clears it, and coming back sets it again.
+  executed.length = 0;
+  panel.active = false;
+  panel.fireViewStateChange();
+  assert.deepEqual(executed, [
+    { command: 'setContext', args: ['chromamark.inRenderedEditor', false] },
+  ]);
+
+  executed.length = 0;
+  panel.active = true;
+  panel.fireViewStateChange();
+  assert.deepEqual(executed, [
+    { command: 'setContext', args: ['chromamark.inRenderedEditor', true] },
+  ]);
+
+  // Closing the editor must clear it too, or the exit icon outlives its tab.
+  executed.length = 0;
+  panel.fireDispose();
+  assert.deepEqual(executed, [
+    { command: 'setContext', args: ['chromamark.inRenderedEditor', false] },
+  ]);
+});
+
+test('switching surfaces replaces the tab rather than piling up another one', async () => {
+  configuration = {};
+  activateBundle();
+
+  const openTab = (input) => {
+    const tab = { input };
+    vscodeStub.window.tabGroups.activeTabGroup = { activeTab: tab, tabs: [tab] };
+    vscodeStub.window.tabGroups.all = [vscodeStub.window.tabGroups.activeTabGroup];
+    return tab;
+  };
+
+  // A Markdown file is edited through the same custom editor as a .cm file.
+  const source = openTab({ uri: mdDocument.uri });
+  executed.length = 0;
+  closedTabs.length = 0;
+  await registeredCommands.get('chromamark.toggleRenderedEditing')();
+  assert.deepEqual(executed, [
+    { command: 'vscode.openWith', args: [mdDocument.uri, 'chromamark.editableEditor'] },
+  ]);
+  assert.deepEqual(closedTabs, [source], 'the editor replaces the source tab it was opened from');
+
+  // Leaving lands on the preview, not on the raw source it was opened from.
+  const rendered = openTab({
+    uri: mdDocument.uri,
+    viewType: 'mainThreadCustomEditor-chromamark.editableEditor',
+  });
+  executed.length = 0;
+  closedTabs.length = 0;
+  await registeredCommands.get('chromamark.toggleRenderedEditing')();
+  assert.deepEqual(executed, [
+    { command: 'vscode.openWith', args: [mdDocument.uri, 'default'] },
+    { command: 'markdown.reopenAsPreview', args: [] },
+  ]);
+  assert.deepEqual(closedTabs, [rendered]);
+
+  vscodeStub.window.tabGroups.activeTabGroup = undefined;
+  vscodeStub.window.tabGroups.all = [];
+});
+
+test('editing from a preview cleans up the source revealed to identify it', async () => {
+  // The preview names no document, so its source has to be revealed to learn the
+  // URI. That reveal is scaffolding: left open, entering the editor from a
+  // preview would strand three tabs on one file.
+  configuration = {};
+  activateBundle();
+
+  const preview = { input: { viewType: 'mainThreadWebview-markdown.preview' } };
+  const group = { activeTab: preview, tabs: [preview] };
+  vscodeStub.window.tabGroups.activeTabGroup = group;
+  vscodeStub.window.tabGroups.all = [group];
+
+  const revealed = { input: { uri: cmDocument.uri } };
+  const origExecute = vscodeStub.commands.executeCommand;
+  vscodeStub.commands.executeCommand = async (command, ...args) => {
+    executed.push({ command, args });
+    if (command === 'markdown.showSource') {
+      group.tabs = [preview, revealed];
+      group.activeTab = revealed;
+      vscodeStub.window.activeTextEditor = { document: cmDocument };
+    }
+  };
+
+  executed.length = 0;
+  closedTabs.length = 0;
+  try {
+    await registeredCommands.get('chromamark.toggleRenderedEditing')();
+  } finally {
+    vscodeStub.commands.executeCommand = origExecute;
+    vscodeStub.window.activeTextEditor = undefined;
+    vscodeStub.window.tabGroups.activeTabGroup = undefined;
+    vscodeStub.window.tabGroups.all = [];
   }
 
-  assert.equal(customEditors.length, 6, 'each turn back on registers afresh');
-  assert.equal(
-    context.subscriptions.length,
-    settled,
-    'but nothing is added to subscriptions, which live until the window closes',
-  );
-  assert.deepEqual(
-    customEditors.map((entry) => entry.disposed),
-    [true, true, true, true, true, false],
-    'and every superseded registration is disposed, leaving only the live one',
-  );
+  assert.deepEqual(executed, [
+    { command: 'markdown.showSource', args: [] },
+    { command: 'vscode.openWith', args: [cmDocument.uri, 'chromamark.editableEditor'] },
+  ]);
+  assert.deepEqual(closedTabs, [preview, revealed], 'both the preview and its revealed source go');
 });
+

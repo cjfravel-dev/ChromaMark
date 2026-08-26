@@ -5,6 +5,40 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ## [Unreleased]
 
+## [VS Code 0.6.0] - 2026-08-25
+
+### Added
+
+- **Rendered editing now covers Markdown files.** `.cm` and `.md` are the same
+  language rendered by the same renderer, so the rendered editor is offered for
+  both rather than for `.cm` alone.
+
+### Changed
+
+- **Rendered editing is no longer experimental, and `chromamark.experimental.editableEditor`
+  is removed.** The setting gated a provider registration, not the surface: the
+  custom editor is contributed at `option` priority, so it is never what a file
+  opens in unless you ask for it. Enabling it was a step with nothing behind it.
+  Anyone who set it can delete it; the pencil works either way.
+- **The pencil now stays put and toggles back.** It was hidden the moment
+  editing began, leaving the rendered editor with no visible way out: its `when`
+  clause was written in terms of the file's extension, which VS Code does not
+  report for a custom editor. The clause now also matches the rendered editor
+  itself, so one icon covers both directions. Leaving returns to the rendered
+  preview rather than dropping to the raw source.
+- **ChromaMark: Toggle Rendered Editing is no longer in the Command Palette.**
+  Which way it goes depends on the surface you are looking at, which the palette
+  does not have; it belongs in the editor title bar, where it now lives alone.
+
+### Fixed
+
+- **Switching between the preview and the rendered editor no longer piles up
+  tabs.** Opening a surface always adds a tab, so entering the editor from a
+  preview left three open on one file: the preview, the source revealed to learn
+  which document the preview was showing, and the editor. Each switch now closes
+  what it replaced, once its replacement is open — never before, so a dirty file
+  is never momentarily closed.
+
 ## [0.7.0] - 2026-08-17
 
 Released as `@chromamark/renderer` 0.6.1 and the VS Code extension 0.5.0. The
