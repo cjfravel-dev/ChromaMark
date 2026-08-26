@@ -1,5 +1,5 @@
 /**
- * Experimental editable editor for `.cm` files.
+ * Editable rendered editor for ChromaMark (`.cm`) and Markdown (`.md`) files.
  *
  * A `CustomTextEditorProvider`, which is the only way to edit from a rendered
  * view: the built-in Markdown preview is owned by the Markdown extension, so
@@ -18,7 +18,39 @@ import { renderEditable } from './blocks.mjs';
 import { resolveToggleAction, VIEW_TYPE } from './toggle.mjs';
 
 export { VIEW_TYPE };
-const SETTING = 'experimental.editableEditor';
+
+/**
+ * Context key backing the title-bar icon swap.
+ *
+ * The built-in `activeCustomEditorId` is documented for exactly this, but it
+ * does not match a custom editor of ours in practice: with the exit action
+ * gated on it, the rendered editor showed no way out. A key we set ourselves is
+ * both reliable and testable, which the built-in one is not.
+ */
+const IN_EDITOR_CONTEXT = 'chromamark.inRenderedEditor';
+
+// Panels, not a single flag: switching between two rendered editors fires the
+// deactivation of one and the activation of the other in no guaranteed order, so
+// tracking which panels are active and deriving the key is the only way to avoid
+// a stale `false` clearing the icon on the tab that is now in front.
+const activePanels = new Map();
+
+function setPanelActive(panel, active, uri) {
+  if (active) activePanels.set(panel, uri);
+  else activePanels.delete(panel);
+  vscode.commands.executeCommand('setContext', IN_EDITOR_CONTEXT, activePanels.size > 0);
+}
+
+/**
+ * The document shown by the active rendered editor. The exit command reads the
+ * URI off the active tab, but a custom editor's tab input is not guaranteed to
+ * carry a view type we recognize; this is what it falls back to.
+ */
+function activeRenderedUri() {
+  let last;
+  for (const uri of activePanels.values()) last = uri;
+  return last;
+}
 
 // The nonce is what stops anything but our own bundle from executing in the
 // webview, so it has to be unguessable rather than merely unique.
@@ -87,7 +119,15 @@ class EditableEditorProvider {
     const changeSubscription = vscode.workspace.onDidChangeTextDocument((event) => {
       if (event.document.uri.toString() === document.uri.toString()) post();
     });
-    panel.onDidDispose(() => changeSubscription.dispose());
+
+    setPanelActive(panel, panel.active !== false, document.uri);
+    if (panel.onDidChangeViewState) {
+      panel.onDidChangeViewState(() => setPanelActive(panel, panel.active === true, document.uri));
+    }
+    panel.onDidDispose(() => {
+      changeSubscription.dispose();
+      setPanelActive(panel, false);
+    });
 
     webview.onDidReceiveMessage((message) => {
       if (!message) return;
@@ -118,79 +158,109 @@ class EditableEditorProvider {
   }
 }
 
-/**
- * Registers the editor while `chromamark.experimental.editableEditor` is on, and
- * follows the setting so toggling it does not need a window reload.
- */
+/** Registers the editor for the lifetime of the extension. */
 export function registerEditableEditor(context) {
-  let registration;
-
-  const enabled = () =>
-    vscode.workspace.getConfiguration('chromamark').get(SETTING) === true;
-
-  const sync = () => {
-    if (enabled() && !registration) {
-      registration = vscode.window.registerCustomEditorProvider(
-        VIEW_TYPE,
-        new EditableEditorProvider(context),
-        { webviewOptions: { retainContextWhenHidden: true }, supportsMultipleEditorsPerDocument: true },
-      );
-    } else if (!enabled() && registration) {
-      registration.dispose();
-      registration = undefined;
-    }
-  };
-
-  sync();
   return vscode.Disposable.from(
-    // Registrations come and go as the setting is toggled, so only the current
-    // one is disposed here; pushing each to context.subscriptions would leave
-    // every dead registration behind for the life of the session.
-    { dispose: () => { if (registration) registration.dispose(); registration = undefined; } },
-    vscode.workspace.onDidChangeConfiguration((event) => {
-      if (event.affectsConfiguration(`chromamark.${SETTING}`)) sync();
-    }),
-    vscode.commands.registerCommand('chromamark.toggleRenderedEditing', () =>
-      toggleRenderedEditing({ enabled, sync }),
+    vscode.window.registerCustomEditorProvider(
+      VIEW_TYPE,
+      new EditableEditorProvider(context),
+      { webviewOptions: { retainContextWhenHidden: true }, supportsMultipleEditorsPerDocument: true },
     ),
+    vscode.commands.registerCommand('chromamark.toggleRenderedEditing', () => toggleRenderedEditing()),
   );
 }
 
-/** The `Uri` of the active tab and editor, whichever the active surface exposes. */
-function activeTabInput() {
+/** The active tab, or undefined when no group has one. */
+function activeTab() {
   const group = vscode.window.tabGroups.activeTabGroup;
-  const tab = group && group.activeTab;
-  return (tab && tab.input) || {};
+  return (group && group.activeTab) || undefined;
+}
+
+function allTabs() {
+  const tabs = [];
+  for (const group of vscode.window.tabGroups.all) for (const tab of group.tabs) tabs.push(tab);
+  return tabs;
 }
 
 /**
- * Switches the active `.cm` file between the normal editor and the editable
- * editor. Invoking it is a deliberate opt-in, so it turns the experimental
- * setting on rather than failing with an explanation the user cannot act on.
+ * Closes the tabs a switch left behind.
+ *
+ * Switching surfaces means opening the new one and closing the old, because
+ * `vscode.openWith` always adds a tab: without this, moving into the rendered
+ * editor from a preview left three tabs open on the same file — the preview, the
+ * source revealed to learn its URI, and the editor itself.
+ *
+ * Always called after the replacement is open, never before, so the document is
+ * never momentarily closed — closing the last editor of a dirty file would
+ * prompt to save.
  */
-async function toggleRenderedEditing({ enabled, sync }) {
+async function closeTabs(tabs) {
+  const stale = tabs.filter(Boolean);
+  if (!stale.length) return;
+  try {
+    await vscode.window.tabGroups.close(stale, true);
+  } catch {
+    // Closing is tidying, not the point of the command; a tab that has already
+    // gone must not turn a successful switch into a visible failure.
+  }
+}
+
+/**
+ * Switches the active file between the rendered editor and the rendered preview,
+ * replacing the surface it was invoked from.
+ *
+ * `superseded` carries the tabs the switch has already made redundant, which is
+ * how the preview branch cleans up after itself: a preview tab does not name its
+ * document, so the source has to be revealed to learn the URI, and that revealed
+ * tab is then as stale as the preview it came from. It doubles as the retry
+ * guard — a failed reveal must not loop.
+ */
+async function toggleRenderedEditing(superseded) {
   const editor = vscode.window.activeTextEditor;
   const activeUri = editor && editor.document ? editor.document.uri : undefined;
-  const { action, uri } = resolveToggleAction(activeTabInput(), activeUri);
+  const current = activeTab();
+  const { action, uri } = resolveToggleAction(
+    current && current.input,
+    activeUri,
+    activeRenderedUri(),
+  );
 
   if (action === 'none') {
-    vscode.window.showInformationMessage('ChromaMark: open a .cm file to edit it in the rendered view.');
+    if (!superseded) {
+      vscode.window.showInformationMessage(
+        'ChromaMark: open a .cm or .md file to edit it in the rendered view.',
+      );
+    }
     return;
   }
   if (action === 'showSource') {
+    if (superseded) return;
+    const before = new Set(allTabs());
     await vscode.commands.executeCommand('markdown.showSource');
-    return toggleRenderedEditing({ enabled, sync });
+    const revealed = allTabs().filter((tab) => !before.has(tab));
+    return toggleRenderedEditing([current, ...revealed]);
   }
-  if (action === 'toSource') {
-    await vscode.commands.executeCommand('vscode.openWith', uri, 'default');
-    return;
-  }
+  if (action === 'toPreview') return showPreview(uri, current);
 
-  if (!enabled()) {
-    await vscode.workspace
-      .getConfiguration('chromamark')
-      .update(SETTING, true, vscode.ConfigurationTarget.Global);
-    sync();
-  }
   await vscode.commands.executeCommand('vscode.openWith', uri, VIEW_TYPE);
+  await closeTabs(superseded || [current]);
+}
+
+/**
+ * Leaves the rendered editor for the rendered preview.
+ *
+ * The preview cannot be opened for a document that has no editor, so the file is
+ * reopened in the default (source) editor first and then reopened in place as
+ * the preview.
+ */
+async function showPreview(uri, current) {
+  await vscode.commands.executeCommand('vscode.openWith', uri, 'default');
+  try {
+    await vscode.commands.executeCommand('markdown.reopenAsPreview');
+  } catch {
+    // The open-mode handler may already have reopened it as a preview, leaving
+    // no source editor for the command to act on. The source editor is a fine
+    // place to land, so this is not worth reporting.
+  }
+  await closeTabs([current]);
 }

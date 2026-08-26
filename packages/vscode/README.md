@@ -28,8 +28,8 @@ or [Open VSX](https://open-vsx.org/extension/chromamark/chromamark-vscode).
   the Problems panel and editor as you type. Quick fixes can unwrap backticked
   constructs, correct tone/block typos, reset invalid meters, and close
   containers. Ordinary `.md` files are not linted.
-- **Rendered editing (experimental).** Edit a `.cm` file directly in its
-  rendered form — see [Rendered editing](#rendered-editing-experimental).
+- **Rendered editing.** Edit a `.cm` or `.md` file directly in its rendered
+  form — see [Rendered editing](#rendered-editing).
 - **`.cm` files.** This extension is treated as Markdown, so it gets
   full editing and preview support.
 
@@ -54,12 +54,18 @@ Prefer not to edit settings by hand? Run **ChromaMark: Set Open Mode…** from t
 Command Palette (`F1`) to pick a file type and mode; it updates the matching
 setting for you.
 
-## Rendered editing (experimental)
+## Rendered editing
 
 Normally the preview is read-only and you edit the source beside it. Rendered
-editing lets you change the document from the rendered view itself: run
-**ChromaMark: Toggle Rendered Editing** from the Command Palette (`F1`) or click
-the pencil in the editor title bar. The same command switches back to the source.
+editing lets you change the document from the rendered view itself: click the
+pencil in the editor title bar of any `.cm` or `.md` file — from the source
+editor or from the preview. The same pencil stays in the title bar while you
+edit and takes you back to the preview. Switching either way replaces the tab
+you were on rather than opening another. The editor is also listed under
+**View: Reopen Editor With…**.
+
+Markdown files are first-class here: `.cm` and `.md` are the same language
+rendered by the same renderer, so both edit identically.
 
 **Double-click any block** to edit it. Paragraphs and headings become editable
 in place, with `Ctrl+B` / `Ctrl+I` for bold and italic; everything else —
@@ -73,15 +79,9 @@ touched, so the rest of the file — including formatting the editor does not
 understand — is preserved byte for byte. An edit that cannot be expressed as
 ChromaMark is refused and reverted rather than guessed at.
 
-This is experimental and off by default. The toggle turns it on the first time
-you use it, or set it yourself:
-
-```json
-"chromamark.experimental.editableEditor": true
-```
-
-The rendered preview remains the default way `.cm` files open; enabling this
-setting does not change that.
+The rendered preview remains the default way `.cm` and `.md` files open;
+rendered editing is somewhere you go deliberately, from the pencil or from
+**Reopen Editor With…**.
 
 ## Example
 
