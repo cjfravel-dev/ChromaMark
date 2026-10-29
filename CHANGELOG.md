@@ -5,6 +5,12 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ## [Unreleased]
 
+### Fixed
+
+- VS Code previews no longer refresh when unrelated `.md` or `.cm` files change.
+  External edits use VS Code's document-scoped preview updates instead of
+  triggering a global refresh that repeatedly rebuilds preview outlines.
+
 ## [0.7.1] - 2026-08-25
 
 Released as the VS Code extension 0.6.0. The renderer, CLI, conformance kit, and
