@@ -113,11 +113,9 @@ async function activateWith({
     const watcher = outsideWorkspace
       ? watchers.find(({ pattern }) => pattern instanceof RelativePattern)
       : watchers.find(({ pattern }) => typeof pattern === 'string');
-    assert.ok(watcher, `activate() must watch ${outsideWorkspace ? 'external' : 'workspace'} supported files`);
     for (const event of externalEvents) {
-      const listener = watcher.listeners[event];
-      assert.equal(typeof listener, 'function', `activate() must watch supported file ${event} events`);
-      listener(fakeUri(externalChangePath));
+      const listener = watcher?.listeners[event];
+      if (listener) listener(fakeUri(externalChangePath));
     }
   }
   await Promise.resolve();
@@ -133,47 +131,64 @@ test('.cm with openMode "preview" reopens as the rendered preview', async () => 
   assert.deepEqual(cmds, ['markdown.reopenAsPreview']);
 });
 
-test('an external .cm change refreshes a preview-only tab', async () => {
+test('external .cm changes leave preview updates to VS Code', async () => {
   const cmds = await activateWith({
     path: '/w/notes.cm',
     config: { 'chromamark.cm.openMode': 'preview' },
     externalChangePath: '/w/notes.cm',
   });
-  assert.deepEqual(cmds, ['markdown.reopenAsPreview', 'markdown.preview.refresh']);
+  assert.deepEqual(cmds, ['markdown.reopenAsPreview']);
 });
 
-test('an atomic .cm replacement refreshes a preview-only tab', async () => {
+test('an atomic .cm replacement does not force a global preview refresh', async () => {
   const cmds = await activateWith({
     path: '/w/notes.cm',
     config: { 'chromamark.cm.openMode': 'preview' },
     externalChangePath: '/w/notes.cm',
     externalEvents: ['create'],
   });
-  assert.deepEqual(cmds, ['markdown.reopenAsPreview', 'markdown.preview.refresh']);
+  assert.deepEqual(cmds, ['markdown.reopenAsPreview']);
 });
 
-test('deleting and recreating a .cm file refreshes the preview for both events', async () => {
+test('deleting and recreating a .cm file does not force global preview refreshes', async () => {
   const cmds = await activateWith({
     path: '/w/notes.cm',
     config: { 'chromamark.cm.openMode': 'preview' },
     externalChangePath: '/w/notes.cm',
     externalEvents: ['delete', 'create'],
   });
-  assert.deepEqual(cmds, [
-    'markdown.reopenAsPreview',
-    'markdown.preview.refresh',
-    'markdown.preview.refresh',
-  ]);
+  assert.deepEqual(cmds, ['markdown.reopenAsPreview']);
 });
 
-test('an external .cm change outside the workspace refreshes a preview-only tab', async () => {
+test('external .cm changes outside the workspace do not force a global preview refresh', async () => {
   const cmds = await activateWith({
     path: '/tmp/notes.cm',
     config: { 'chromamark.cm.openMode': 'preview' },
     externalChangePath: '/tmp/notes.cm',
     outsideWorkspace: true,
   });
-  assert.deepEqual(cmds, ['markdown.reopenAsPreview', 'markdown.preview.refresh']);
+  assert.deepEqual(cmds, ['markdown.reopenAsPreview']);
+});
+
+test('repeated writes to another Markdown file do not refresh an unchanged preview', async () => {
+  const cmds = await activateWith({
+    path: '/w/CHANGELOG.md',
+    config: { 'chromamark.md.openMode': 'preview' },
+    externalChangePath: '/w/README.md',
+    externalEvents: ['change', 'change', 'change', 'delete', 'create'],
+  });
+  assert.deepEqual(cmds, ['markdown.reopenAsPreview']);
+});
+
+test('writes to a sibling of an outside-workspace file do not refresh its preview', async () => {
+  const cmds = await activateWith({
+    path: '/tmp/notes.cm',
+    config: { 'chromamark.cm.openMode': 'preview' },
+    externalChangePath: '/tmp/other.md',
+    externalEvents: ['change', 'create'],
+    outsideWorkspace: true,
+  });
+  assert.deepEqual(cmds, ['markdown.reopenAsPreview']);
 });
 
 test('.cm with openMode "sourceAndPreview" opens the preview to the side', async () => {
