@@ -5,13 +5,24 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ## [Unreleased]
 
+## [0.7.2] - 2026-10-29
+
+Released as `@chromamark/renderer` 0.6.2 and the VS Code extension 0.6.1.
+The CLI, conformance kit, and Python package are unchanged.
+
 ### Fixed
 
 - Upgrade markdown-it to 14.3.3, including upstream security fixes in the
   renderer and its browser bundles.
+
+## [VS Code 0.6.1] - 2026-10-29
+
+### Fixed
+
 - VS Code previews no longer refresh when unrelated `.md` or `.cm` files change.
   External edits use VS Code's document-scoped preview updates instead of
   triggering a global refresh that repeatedly rebuilds preview outlines.
+- The extension bundles markdown-it 14.3.3 with its upstream security fixes.
 
 ## [0.7.1] - 2026-08-25
 
@@ -395,6 +406,7 @@ Released as `@chromamark/renderer` 0.5.0, `@chromamark/conformance` 0.2.0,
 [#38]: https://github.com/cjfravel-dev/ChromaMark/pull/38
 [#39]: https://github.com/cjfravel-dev/ChromaMark/pull/39
 [#40]: https://github.com/cjfravel-dev/ChromaMark/pull/40
+[0.7.2]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.7.2
 [0.7.1]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.7.1
 [0.7.0]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.7.0
 [0.6.1]: https://github.com/cjfravel-dev/ChromaMark/releases/tag/v0.6.1
