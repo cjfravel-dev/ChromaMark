@@ -7,6 +7,8 @@ from the [ChromaMark language version](./docs/compatibility.md).
 
 ### Fixed
 
+- Upgrade markdown-it to 14.3.3, including upstream security fixes in the
+  renderer and its browser bundles.
 - VS Code previews no longer refresh when unrelated `.md` or `.cm` files change.
   External edits use VS Code's document-scoped preview updates instead of
   triggering a global refresh that repeatedly rebuilds preview outlines.
